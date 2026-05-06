@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. Receipt — Delivery Confirmed and Sealed</title>
+<meta name="description" content="Verified SENT. delivery receipt — cryptographic proof that a file was delivered at a specific moment.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --panel:#f0f2f5;
+  --ink:#111318;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --green:#00b356;
+  --green-dk:#009347;
+  --green-bg:rgba(0,179,86,0.07);
+  --green-bd:rgba(0,179,86,0.2);
+  --border:#e1e4e8;
+  --border-md:#c8cdd6;
+  --shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* BANNER */
+.banner{background:var(--green);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+.bn-left{display:flex;align-items:center;gap:10px}
+.bn-check{font-size:20px;font-weight:700}
+.bn-text{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em}
+.bn-right{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;opacity:0.8}
+
+/* PAGE */
+.page{max-width:700px;margin:0 auto;padding:44px 20px 80px}
+
+/* RECEIPT */
+.receipt{background:var(--surface);border:1.5px solid var(--border-md);box-shadow:var(--shadow-md);border-radius:8px;overflow:hidden;animation:appear 0.4s ease forwards}
+@keyframes appear{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.receipt::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+
+.r-top{padding:32px 36px;border-bottom:1px solid var(--border)}
+.r-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.15em;display:flex;align-items:center;gap:8px;margin-bottom:18px;text-decoration:none;color:var(--ink)}
+.r-logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%}
+.r-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,44px);line-height:0.92;letter-spacing:0.02em;margin-bottom:10px}
+.r-sub{font-size:14px;color:var(--ink-2);line-height:1.65}
+
+/* PROOF ID */
+.pib{margin:22px 36px;padding:16px 20px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:5px;position:relative}
+.pib-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--green-dk);margin-bottom:7px;font-weight:500}
+.pib-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);word-break:break-all;padding-right:70px}
+.pib-copy{position:absolute;top:14px;right:14px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dk);cursor:pointer;padding:4px 10px;border:1.5px solid var(--green-bd);background:var(--surface);border-radius:3px;transition:all 0.15s}
+.pib-copy:hover{background:var(--green-bg)}
+
+/* STATUS */
+.status{margin:0 36px 22px;padding:14px 18px;display:flex;align-items:center;gap:12px;border:1.5px solid var(--green-bd);background:var(--green-bg);border-radius:5px}
+.st-icon{font-size:20px;flex-shrink:0}
+.st-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:3px;font-weight:500}
+.st-text{font-size:14px;color:var(--ink);font-weight:700}
+
+/* TABLE */
+.r-table{margin:0 36px 22px}
+.rt-row{display:grid;grid-template-columns:120px 1fr;padding:12px 0;border-bottom:1px solid var(--border)}
+.rt-row:last-child{border-bottom:none}
+.rt-key{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);padding-top:1px}
+.rt-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink);word-break:break-all;line-height:1.6}
+.rt-val.green{color:var(--green-dk);font-weight:500}
+.rt-val.dim{color:var(--ink-2)}
+
+/* HASH */
+.hash-block{margin:0 36px 22px;padding:16px 20px;background:#1a1f2e;border-radius:5px;font-family:'JetBrains Mono',monospace}
+.hb-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:9px}
+.hb-val{font-size:10px;color:#4ade80;word-break:break-all;line-height:1.8}
+.hb-note{font-size:9px;color:rgba(255,255,255,0.38);margin-top:8px;letter-spacing:0.1em;text-transform:uppercase;line-height:1.5}
+
+/* PROVES */
+.proves{margin:0 36px 22px;padding:20px;background:var(--panel);border-left:3px solid var(--green);border-radius:0 5px 5px 0}
+.pv-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:12px;font-weight:500}
+.pv-items{display:flex;flex-direction:column;gap:8px}
+.pv-item{font-size:13px;color:var(--ink-2);line-height:1.55;display:flex;gap:9px}
+.pv-check{color:var(--green);flex-shrink:0;font-weight:700}
+
+/* VERIFY */
+.verify{margin:0 36px;padding:20px;border:1.5px solid var(--border-md);text-align:center;margin-bottom:22px;border-radius:5px;background:var(--panel)}
+.vf-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
+.vf-url{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green-dk);margin-bottom:14px;word-break:break-all;padding:10px;background:var(--surface);border:1px solid var(--green-bd);display:block;text-align:left;border-radius:4px}
+.vf-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.vf-btn{padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.15s;border-radius:3px;white-space:nowrap}
+.vf-primary{background:var(--green);color:#fff}
+.vf-primary:hover{background:var(--green-dk)}
+.vf-secondary{background:var(--surface);border:1.5px solid var(--border-md);color:var(--ink-2)}
+.vf-secondary:hover{border-color:var(--border-hi,var(--ink-4));color:var(--ink)}
+
+/* POWERED */
+.powered{margin:0 36px 36px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pw-l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.pw-l a{color:var(--ink-3);text-decoration:none}
+.pw-l a:hover{color:var(--ink)}
+.pw-r{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3)}
+.pw-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* DISPUTE GUIDE */
+.dg{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px 36px;box-shadow:var(--shadow)}
+.dg-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.06em;margin-bottom:18px;color:var(--ink)}
+.dg-steps{display:flex;flex-direction:column;gap:12px}
+.dg-step{display:flex;gap:14px;font-size:14px;color:var(--ink-2);line-height:1.65}
+.dg-num{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);flex-shrink:0;width:20px}
+
+/* NOT YOURS */
+.ny{margin-top:14px;text-align:center;padding:18px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px}
+.ny-text{font-size:14px;color:var(--ink-2);margin-bottom:12px;line-height:1.55}
+.ny-link{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);text-decoration:none;border:1.5px solid var(--green-bd);padding:8px 16px;display:inline-block;border-radius:3px;transition:all 0.15s;background:var(--surface)}
+.ny-link:hover{background:var(--green-bg)}
+
+
+/* PERMANENCE LINE */
+.permanence-line{margin:0 36px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dk);padding:10px 14px;background:var(--green-bg);border-radius:4px;border-left:3px solid var(--green)}
+
+/* HABIT FOOTER */
+.habit-footer{margin-top:14px;background:var(--ink);border-radius:6px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hf-routine{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hf-step{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.45)}
+.hf-step.hf-active{color:#00e87a;font-weight:500}
+.hf-arrow{color:rgba(255,255,255,0.2);font-size:12px}
+.hf-line{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.3)}
+@media(max-width:600px){.habit-footer{flex-direction:column;align-items:flex-start}}
+
+
+/* ── RAC CHAIN ── */
+.rac-block{margin:0 36px 22px;border:1.5px solid var(--green-bd);border-radius:6px;overflow:hidden}
+.rac-header{background:var(--green-dk);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.rac-header-icon{font-size:14px}
+.rac-header-text{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:500}
+.rac-header-badge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:2px}
+.rac-layers{background:var(--green-lt,#e6f7ee)}
+.rac-layer{padding:11px 16px;border-bottom:1px solid rgba(0,147,71,0.12);display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:start}
+.rac-layer:last-child{border-bottom:none}
+.rac-layer-key{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--green-dk);font-weight:500;padding-top:2px}
+.rac-layer-val{font-size:13px;color:var(--ink);font-weight:500}
+.rac-layer-val.check{color:var(--green-dk);font-weight:700}
+.rac-chain{padding:10px 16px;background:rgba(0,147,71,0.04);border-top:1px solid rgba(0,147,71,0.12)}
+.rac-chain-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:4px}
+.rac-chain-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-2);word-break:break-all}
+/* Access counter */
+.access-block{margin:0 36px 20px;padding:11px 16px;background:var(--panel);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--ink-2)}
+.access-block strong{color:var(--ink)}
+.access-status{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4)}
+/* Confirm block */
+.confirm-block{margin:0 36px 20px;padding:18px;border:1.5px solid var(--border-md);border-radius:6px;background:var(--surface)}
+.cb-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+.cb-body{font-size:13px;color:var(--ink-2);line-height:1.55;margin-bottom:12px}
+.cb-btn{width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;cursor:pointer;transition:background 0.2s}
+.cb-btn:hover{background:#374151}
+.cb-btn:disabled{background:var(--green);cursor:not-allowed}
+.cb-done{margin-top:10px;text-align:center;font-size:13px;color:var(--green-dk);font-weight:700;display:none}
+/* PRINT */
+@media print{
+  .ny,.dg{display:none}
+  body{background:#fff}
+  .receipt{box-shadow:none;border:1px solid #ddd}
+  .banner{background:#009347;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+@media(max-width:600px){
+  .r-top,.pib,.status,.r-table,.hash-block,.proves,.verify,.powered{padding-left:18px;padding-right:18px}
+  .pib,.status,.r-table,.hash-block,.proves,.verify,.powered{margin-left:0;margin-right:0}
+  .pib-val{padding-right:0;margin-bottom:8px}
+  .pib-copy{position:static;display:inline-block;margin-top:6px}
+  .rt-row{grid-template-columns:100px 1fr}
+  .vf-btns{flex-direction:column}
+  .vf-btn{width:100%}
+  .dg{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="bn-left"><div class="bn-check">✓</div><div class="bn-text">DELIVERY VERIFIED</div></div>
+  <div class="bn-right">SENT. Receipt · vxsent.com</div>
+</div>
+
+<div class="page">
+  <div class="receipt">
+    <div class="r-top">
+      <a href="/" class="r-logo"><div class="r-logo-dot"></div>SENT.</a>
+      <div class="r-hl" id="receiptHl">DELIVERY CONFIRMED<br>AND SEALED.</div>
+      <div class="r-sub">This receipt proves the file below existed in this exact state at the timestamp recorded. It has not been altered since. This proof is permanent and independently verifiable by anyone, from any device, forever.</div>
+    </div>
+
+    <div class="pib">
+      <div class="pib-label">SENT. Proof ID</div>
+      <div class="pib-val" id="proofIdVal">SENT-2026-VX9F3A-D72C-E4B1-A892</div>
+      <button class="pib-copy" id="copyIdBtn" onclick="copyId()">Copy</button>
+    </div>
+
+    <div class="status">
+      <div class="st-icon">🔒</div>
+      <div>
+        <div class="st-label">Verification status</div>
+        <div class="st-text">Sealed · Unaltered · Permanently valid</div>
+      </div>
+    </div>
+
+    <div class="r-table">
+      <div class="rt-row"><div class="rt-key">File name</div><div class="rt-val" id="dtFile">brand-guidelines-final-v3.pdf</div></div>
+      <div class="rt-row"><div class="rt-key">File size</div><div class="rt-val dim" id="dtSize">4.2 MB</div></div>
+      <div class="rt-row"><div class="rt-key">Sealed at</div><div class="rt-val green" id="dtTime">2026-05-03 · 11:44:02 UTC</div></div>
+      <div class="rt-row"><div class="rt-key">Sealed by</div><div class="rt-val dim">Veridex guardedCommit() · Ed25519</div></div>
+      <div class="rt-row"><div class="rt-key">Algorithm</div><div class="rt-val dim">SHA-256</div></div>
+      <div class="rt-row"><div class="rt-key">Valid until</div><div class="rt-val green">Permanent · No expiry</div></div>
+    </div>
+
+    <div class="hash-block">
+      <div class="hb-label">SHA-256 Cryptographic Fingerprint</div>
+      <div class="hb-val" id="hashVal">a3f9d2e847bc6f1a0d5e92c38b741f96e2d4c87a1b3f9d2e847bc6f1a0d5e92c38b741f96</div>
+      <div class="hb-note">If this file is altered by even one character, this hash will not match. That is proof of tampering.</div>
+    </div>
+
+    <div class="permanence-line">This proof is permanent and publicly verifiable. It cannot be altered or deleted.</div>
+    
+    <!-- RAC CHAIN BLOCK -->
+    <div class="rac-block" id="racBlock" style="display:none">
+      <div class="rac-header">
+        <span class="rac-header-icon">⛓️</span>
+        <span class="rac-header-text">RAC Authorization Chain</span>
+        <span class="rac-header-badge">Veridex</span>
+      </div>
+      <div class="rac-layers">
+        <div class="rac-layer"><div class="rac-layer-key">WHO</div><div class="rac-layer-val" id="racWho">Freelancer — payment verified</div></div>
+        <div class="rac-layer"><div class="rac-layer-key">FOR</div><div class="rac-layer-val" id="racRecipient">—</div></div>
+        <div class="rac-layer"><div class="rac-layer-key">UNDER</div><div class="rac-layer-val" id="racProject">—</div></div>
+        <div class="rac-layer"><div class="rac-layer-key">CONFIRMED BY</div><div class="rac-layer-val check">Stripe payment ✓</div></div>
+      </div>
+      <div class="rac-chain">
+        <div class="rac-chain-label">Chain hash</div>
+        <div class="rac-chain-val" id="racChainHash">—</div>
+      </div>
+    </div>
+
+    <!-- ACCESS COUNTER -->
+    <div class="access-block" id="accessBlock" style="display:none">
+      <div>Accessed <strong id="accessCount">0</strong> time(s)</div>
+      <div class="access-status" id="accessStatus">Not yet confirmed</div>
+    </div>
+
+<div class="proves">
+      <div class="pv-label">What this receipt proves</div>
+      <div class="pv-items">
+        <div class="pv-item"><span class="pv-check">✓</span>This exact file existed at the exact timestamp above</div>
+        <div class="pv-item"><span class="pv-check">✓</span>The file has not been modified since it was sealed</div>
+        <div class="pv-item"><span class="pv-check">✓</span>The timestamp cannot be backdated or altered</div>
+        <div class="pv-item"><span class="pv-check">✓</span>This proof is independently verifiable by anyone, from any device, forever</div>
+      </div>
+    </div>
+
+    <div class="verify">
+      <div class="vf-title">Public verification link — share with anyone</div>
+      <div class="vf-url" id="verifyUrl">https://vxsent.com/verify/SENT-2026-VX9F3A-D72C-E4B1-A892</div>
+      <div class="vf-btns">
+        <button class="vf-btn vf-primary" id="copyLinkBtn" onclick="copyLink()">Copy link</button>
+        <button class="vf-btn vf-secondary" onclick="window.print()">Download PDF</button>
+        <button class="vf-btn vf-secondary" onclick="share()">Share</button>
+        <button class="vf-btn vf-secondary" onclick="openEmail()">Open email</button>
+      </div>
+    </div>
+
+    
+    <!-- RECIPIENT CONFIRMATION — Level 3 -->
+    <div class="confirm-block" id="confirmBlock" style="display:none">
+      <div class="cb-title">Are you the intended recipient?</div>
+      <div class="cb-body">If you received this file, click to confirm. Your confirmation will be logged and the sender will be notified.</div>
+      <button class="cb-btn" id="confirmBtn" onclick="confirmReceipt()">CONFIRM I RECEIVED THIS DELIVERY</button>
+      <div class="cb-done" id="confirmDone">✓ Confirmed. Sender has been notified.</div>
+    </div>
+
+<div class="powered">
+      <div class="pw-l">Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc.</div>
+      <div class="pw-r"><div class="pw-dot"></div>Sealed · Immutable</div>
+    </div>
+  </div>
+
+  <div class="dg">
+    <div class="dg-title">If your client disputes this delivery</div>
+    <div class="dg-steps">
+      <div class="dg-step"><span class="dg-num">1</span>Send them the verification link above. They can check from any browser — no account required.</div>
+      <div class="dg-step"><span class="dg-num">2</span>The link shows file name, SHA-256 hash, and exact timestamp — independently verified by anyone.</div>
+      <div class="dg-step"><span class="dg-num">3</span>If they claim the file they received is different, they can hash their copy and compare. A matching hash means the files are byte-for-byte identical.</div>
+      <div class="dg-step"><span class="dg-num">4</span>Click "Download PDF" to export a court-ready receipt. The cryptographic proof chain is admissible evidence.</div>
+    </div>
+  </div>
+
+  <div class="habit-footer">
+  <div class="hf-routine">
+    <span class="hf-step">Finish work</span>
+    <span class="hf-arrow">→</span>
+    <span class="hf-step">Proof it</span>
+    <span class="hf-arrow">→</span>
+    <span class="hf-step hf-active">Send it</span>
+  </div>
+  <div class="hf-line">Send work? Proof it. Every time.</div>
+</div>
+<div class="ny">
+    <div class="ny-text">Received this receipt from a freelancer? This is their verifiable proof of delivery. You can independently confirm it — no account required.</div>
+    <a href="/" class="ny-link">Create your own proof — $0.99 →</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const p=new URLSearchParams(window.location.search);
+  const id=p.get('id');
+  const isPending=p.get('pending')==='true';
+
+  // Demo/fallback data from URL params
+  const file=p.get('file')||'brand-guidelines-final-v3.pdf';
+  const hash=p.get('hash')||'a3f9d2e847bc6f1a0d5e92c38b741f96e2d4c87a1b3f9d2e847bc6f1a0d5e92c38b741f96';
+  const size=p.get('size')||'4.2 MB';
+  const time=p.get('time')||new Date().toISOString();
+  const proofId=id||genId();
+
+  function populate(data){
+    document.getElementById('dtFile').textContent=data.fileName||file;
+    document.getElementById('dtSize').textContent=data.fileSize||size;
+    document.getElementById('dtTime').textContent=fmtTime(data.sealedAt||time);
+    document.getElementById('hashVal').textContent=data.fileHash||hash;
+    document.getElementById('proofIdVal').textContent=data.id||proofId;
+    document.getElementById('verifyUrl').textContent='https://vxsent.com/verify/'+(data.id||proofId);
+    document.title='SENT. Receipt — '+((data.fileName||file).substring(0,40));
+  }
+
+  currentProofId = proofId;
+
+  // Try to load from API first
+  if(id){
+    fetch(`/api/proof/${id}`)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data.error){
+          if(isPending||data.error.includes('pending')){ showPending(); setTimeout(()=>location.reload(),3000); }
+          populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+        } else {
+          populate(data);
+          currentProofId = data.id;
+          hidePending();
+          // RAC chain
+          if(data.rac?.enabled || data.rac?.chainHash) showRAC(data.rac);
+          // Access count
+          if(data.accessCount !== undefined) showAccessCount(data.accessCount, data.recipientConfirmed);
+          // Confirm button for recipient
+          if(!data.recipientConfirmed) {
+            const cb = document.getElementById('confirmBlock');
+            if(cb) cb.style.display = 'block';
+          }
+        }
+      })
+      .catch(()=>{
+        populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+      });
+  } else {
+    populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+  }
+
+  function showPending(){
+    const banner=document.querySelector('.banner');
+    if(banner){
+      banner.style.background='#f59e0b';
+      banner.querySelector('.bn-text').textContent='SEALING IN PROGRESS...';
+      // Auto-refresh after 3 seconds
+      setTimeout(()=>location.reload(),3000);
+    }
+  }
+  function hidePending(){
+    const banner=document.querySelector('.banner');
+    if(banner){
+      banner.style.background='#00b356';
+      banner.querySelector('.bn-text').textContent='DELIVERY VERIFIED';
+    }
+  }
+})();
+
+let currentProofId = null;
+
+function showRAC(rac) {
+  if (!rac) return;
+  const block = document.getElementById('racBlock');
+  if (!block) return;
+  block.style.display = 'block';
+  if (rac.authorizedRecipient) document.getElementById('racRecipient').textContent = rac.authorizedRecipient;
+  if (rac.project) document.getElementById('racProject').textContent = rac.project;
+  if (rac.chainHash) document.getElementById('racChainHash').textContent = rac.chainHash;
+}
+
+function showAccessCount(count, confirmed) {
+  const block = document.getElementById('accessBlock');
+  if (!block) return;
+  block.style.display = 'flex';
+  document.getElementById('accessCount').textContent = count;
+  const status = document.getElementById('accessStatus');
+  if (confirmed) { status.textContent = '✓ Recipient confirmed'; status.style.color = 'var(--green-dk)'; }
+  else { status.textContent = count > 0 ? 'Opened · not confirmed' : 'Not yet accessed'; }
+}
+
+async function confirmReceipt() {
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = 'CONFIRMING...'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/confirm-receipt', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ proofId: currentProofId })
+    });
+    const data = await res.json();
+    if (data.confirmed) {
+      btn.style.display = 'none';
+      document.getElementById('confirmDone').style.display = 'block';
+      showToast('Receipt confirmed. Sender notified.');
+    } else { btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY'; btn.disabled = false; }
+  } catch(e) { btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY'; btn.disabled = false; }
+}
+
+function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
+function fmtTime(iso){try{return new Date(iso).toISOString().replace('T',' · ').replace(/\.\d{3}Z$/,' UTC')}catch(e){return iso}}
+function copyId(){copy(document.getElementById('proofIdVal').textContent,document.getElementById('copyIdBtn'),'Copy','Copied ✓')}
+function copyLink(){copy(document.getElementById('verifyUrl').textContent,document.getElementById('copyLinkBtn'),'Copy link','Copied ✓')}
+function copy(text,btn,orig,done){navigator.clipboard.writeText(text).then(()=>{btn.textContent=done;setTimeout(()=>btn.textContent=orig,2200)}).catch(()=>fallback(text))}
+function openEmail(){
+  const url=document.getElementById('verifyUrl').textContent;
+  const file=document.getElementById('dtFile').textContent;
+  const subject=encodeURIComponent('Delivery proof — '+file);
+  const body=encodeURIComponent('Here is the verified proof of delivery for '+file+':\n\n'+url+'\n\nThis link shows the exact file, timestamp, and cryptographic seal. Anyone can verify it — no account required.');
+  window.location.href='mailto:?subject='+subject+'&body='+body;
+}
+function fallback(t){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(ta)}
+function showAutoCopyToast(){
+  const t=document.createElement('div');
+  t.textContent='Proof link copied — paste it with your delivery';
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111318;color:#fff;padding:12px 20px;border-radius:4px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),4000);
+}
+function share(){const url=document.getElementById('verifyUrl').textContent;const file=document.getElementById('dtFile').textContent;if(navigator.share)navigator.share({title:'SENT. Delivery Receipt',text:'Verified proof of delivery: '+file,url}).catch(()=>{});else copyLink()}
+</script>
+<div style="text-align:center;padding:16px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#9ca3af">Powered by SENT. · <a href="https://vxsent.com" style="color:#9ca3af;text-decoration:none">vxsent.com</a></div>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. Pricing — $0.99 or $12.99/month</title>
+<meta name="description" content="Two options. $0.99 for one proof right now. $12.99/month for unlimited proofs. Both create permanent, cryptographic proof of delivery.">
+<link rel="canonical" href="https://vxsent.com/pricing">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --panel:#f0f2f5;
+  --panel-hi:#e4e7ec;
+  --ink:#111318;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --green:#00b356;
+  --green-dk:#009347;
+  --green-lt:#e6f7ee;
+  --green-bg:rgba(0,179,86,0.07);
+  --green-bd:rgba(0,179,86,0.2);
+  --blue:#2563eb;
+  --blue-bg:rgba(37,99,235,0.06);
+  --blue-bd:rgba(37,99,235,0.2);
+  --border:#e1e4e8;
+  --border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:58px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.15em;color:var(--ink);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%}
+.hdr-back{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;transition:color 0.15s}
+.hdr-back:hover{color:var(--ink)}
+
+/* HERO */
+.hero{padding:120px 48px 56px;text-align:center;max-width:800px;margin:0 auto}
+.hero-over{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--green-dk);margin-bottom:18px;opacity:0;animation:fu 0.5s 0.1s forwards;font-weight:500}
+.hero-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,90px);line-height:0.88;letter-spacing:0.02em;margin-bottom:18px;opacity:0;animation:fu 0.5s 0.22s forwards}
+.hero-hl .dim{color:var(--ink-4)}
+.hero-hl .green{color:var(--green-dk)}
+.hero-sub{font-size:16px;color:var(--ink-2);line-height:1.65;opacity:0;animation:fu 0.5s 0.36s forwards}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARDS */
+.cards-wrap{max-width:880px;margin:0 auto;padding:0 48px 52px}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--surface);border:1.5px solid var(--border-md);border-radius:8px;overflow:hidden;box-shadow:var(--shadow);opacity:0;animation:fu 0.5s forwards}
+.card:nth-child(1){animation-delay:0.44s}
+.card:nth-child(2){animation-delay:0.56s}
+.card-bar{height:3px}
+.card-body{padding:36px 32px;display:flex;flex-direction:column}
+.card-num{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-4);margin-bottom:16px}
+.card-answer{font-size:14px;color:var(--ink-3);margin-bottom:20px;font-weight:500;line-height:1.5;font-style:italic}
+.price-row{display:flex;align-items:baseline;gap:3px;margin-bottom:5px}
+.price-cur{font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--ink-3);align-self:flex-start;margin-top:8px}
+.price-num{font-family:'Bebas Neue',sans-serif;font-size:76px;line-height:1;letter-spacing:0.01em;color:var(--ink)}
+.price-period{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);align-self:flex-end;margin-bottom:6px}
+.card-save{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:22px;min-height:13px;color:var(--ink-4)}
+.card-divider{height:1px;background:var(--border);margin-bottom:20px}
+.card-headline{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:7px}
+.card-desc{font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:22px}
+.card-items{display:flex;flex-direction:column;gap:9px;margin-bottom:28px;flex:1}
+.card-item{display:flex;gap:9px;font-size:13px;color:var(--ink-2);line-height:1.5;align-items:flex-start}
+.card-check{flex-shrink:0;font-size:12px;margin-top:1px;color:var(--ink-4)}
+.card-cta{width:100%;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;border:none;cursor:pointer;transition:all 0.15s;border-radius:4px}
+/* featured */
+.card.feat{border-color:var(--green);box-shadow:var(--shadow-md)}
+.card.feat .price-num{color:var(--green-dk)}
+.card.feat .price-cur{color:rgba(0,147,71,0.5)}
+.card.feat .price-period{color:var(--green-dk)}
+.card.feat .card-save{color:var(--green-dk)}
+.card.feat .card-check{color:var(--green)}
+.card.feat .card-divider{background:var(--green-bd)}
+.card.feat .card-cta{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(0,179,86,0.28)}
+.card.feat .card-cta:hover{background:var(--green-dk);transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,179,86,0.32)}
+.card:not(.feat) .card-cta{background:var(--panel);color:var(--ink-2);border:1.5px solid var(--border-md)}
+.card:not(.feat) .card-cta:hover{background:var(--panel-hi);border-color:var(--border-md)}
+
+/* WHEN */
+.when{max-width:880px;margin:0 auto;padding:0 48px 48px}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;font-weight:500}
+.when-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.when-cell{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:24px 26px;box-shadow:var(--shadow-sm)}
+.when-tier{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:14px;font-weight:500}
+.when-item{display:flex;gap:9px;font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:9px}
+.when-item:last-child{margin-bottom:0}
+.wa{color:var(--green);flex-shrink:0;font-weight:700}
+
+/* MATH */
+.math-wrap{max-width:880px;margin:0 auto;padding:0 48px 48px}
+.math-box{background:var(--green-lt);border:1.5px solid var(--green-bd);border-radius:8px;padding:32px 36px}
+.math-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--green-dk);margin-bottom:16px;font-weight:500}
+.math-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,40px);line-height:0.92;letter-spacing:0.03em;margin-bottom:14px;color:var(--ink)}
+.math-hl span{color:var(--green-dk)}
+.math-body{font-size:14px;color:var(--ink-2);line-height:1.7}
+
+/* COMPARISON */
+.comp-wrap{max-width:880px;margin:0 auto;padding:0 48px 48px}
+.comp-table{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.comp-row{display:grid;grid-template-columns:1fr 96px 96px;border-bottom:1px solid var(--border)}
+.comp-row:last-child{border-bottom:none}
+.comp-row:hover:not(.hdr){background:var(--panel)}
+.comp-row.hdr{background:var(--panel)}
+.comp-cell{padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.09em;text-transform:uppercase}
+.comp-cell.feat{color:var(--ink-2)}
+.comp-cell.val{text-align:center;border-left:1px solid var(--border);color:var(--ink-4)}
+.comp-row.hdr .comp-cell{color:var(--ink-3);font-size:9px;letter-spacing:0.16em}
+.comp-row.hdr .val-solo{color:var(--green-dk);font-weight:500}
+.gcheck{color:var(--green);font-weight:700}
+.dash{color:var(--ink-4)}
+
+/* ENTERPRISE */
+.ent-wrap{max-width:880px;margin:0 auto;padding:0 48px 48px}
+.ent-inner{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px 36px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.ent-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;font-weight:500}
+.ent-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.04em;margin-bottom:6px;color:var(--ink)}
+.ent-desc{font-size:13px;color:var(--ink-2);line-height:1.6;max-width:400px}
+.ent-cta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:11px 22px;border:1.5px solid var(--blue-bd);color:var(--blue);background:var(--blue-bg);cursor:pointer;white-space:nowrap;border-radius:4px;transition:all 0.15s;text-decoration:none;display:inline-block;flex-shrink:0}
+.ent-cta:hover{background:rgba(37,99,235,0.1);border-color:var(--blue)}
+
+/* CLOSING */
+.closing{border-top:1px solid var(--border);padding:80px 48px;text-align:center;max-width:880px;margin:0 auto}
+.closing-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,66px);line-height:0.9;letter-spacing:0.02em;margin-bottom:18px;color:var(--ink)}
+.closing-hl .green{color:var(--green-dk)}
+.closing-hl .dim{color:var(--ink-4)}
+.closing-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);line-height:2.2}
+.closing-sub a{color:var(--ink-3);text-decoration:none}
+.closing-sub a:hover{color:var(--ink)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.ft-l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.ft-l a{color:var(--ink-3);text-decoration:none}
+.ft-l a:hover{color:var(--ink)}
+.ft-r{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3)}
+.ft-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+@media(max-width:700px){
+  header{padding:0 20px}
+  .hero,.cards-wrap,.when,.math-wrap,.comp-wrap,.ent-wrap,.closing,footer{padding-left:20px;padding-right:20px}
+  .cards-grid,.when-grid{grid-template-columns:1fr}
+  .ent-inner{flex-direction:column;gap:18px}
+  .comp-row{grid-template-columns:1fr 68px 68px}
+  .comp-cell{padding:10px 10px;font-size:9px}
+  footer{padding:18px 20px;flex-direction:column;gap:8px;text-align:center}
+  .card-body{padding:28px 22px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><div class="logo-dot"></div>SENT.</a>
+  <a href="/" class="hdr-back">← Back</a>
+</header>
+
+<div class="hero">
+  <div class="hero-over">Simple. Two options.</div>
+  <div class="hero-hl">
+    <span class="dim">HOW OFTEN DO</span><br>
+    YOU NEED TO<br>
+    <span class="green">PROVE IT?</span>
+  </div>
+  <p class="hero-sub">That's the only question. Pick the answer that fits. Both give you the same proof — permanently sealed, independently verifiable, court-ready.</p>
+</div>
+
+<div class="cards-wrap">
+  <div class="cards-grid">
+
+    <div class="card">
+      <div class="card-bar" style="background:var(--border-md)"></div>
+      <div class="card-body">
+        <div class="card-num">Option 01</div>
+        <div class="card-answer">"I have one thing to prove right now."</div>
+        <div class="price-row"><span class="price-cur">$</span><span class="price-num">0.99</span></div>
+        <div class="price-period">/ 24 hours</div>
+        <div class="card-save">&nbsp;</div>
+        <div class="card-divider"></div>
+        <div class="card-headline">Prove it once. Today.</div>
+        <div class="card-desc">You have a deliverable to send. Or a dispute happening right now. One proof. One receipt. Permanent. $0.99. No subscription. No account lock.</div>
+        <div class="card-items">
+          <div class="card-item"><span class="card-check">✓</span>Unlimited proofs for 24 hours</div>
+          <div class="card-item"><span class="card-check">✓</span>SHA-256 + Ed25519 cryptographic seal</div>
+          <div class="card-item"><span class="card-check">✓</span>Permanent public verification link</div>
+          <div class="card-item"><span class="card-check">✓</span>Downloadable PDF receipt</div>
+          <div class="card-item"><span class="card-check">✓</span>No account required</div>
+        </div>
+        <button class="card-cta" onclick="location.href='/'">PROVE IT NOW — $0.99</button>
+      </div>
+    </div>
+
+    <div class="card feat">
+      <div class="card-bar" style="background:var(--green)"></div>
+      <div class="card-body">
+        <div class="card-num">Option 02</div>
+        <div class="card-answer">"I proof things more than I realize."</div>
+        <div class="price-row"><span class="price-cur">$</span><span class="price-num">12.99</span></div>
+        <div class="price-period">/ month</div>
+        <div class="card-save">Unlimited all month · Saves $16.89 vs daily</div>
+        <div class="card-divider"></div>
+        <div class="card-headline">Proof on every project. Always.</div>
+        <div class="card-desc">If you send deliverables more than twice a month, Solo pays for itself. Unlimited proofs, full history, exportable records. Never lose a dispute again.</div>
+        <div class="card-items">
+          <div class="card-item"><span class="card-check">✓</span>Everything in Day Pass</div>
+          <div class="card-item"><span class="card-check">✓</span>Unlimited proofs all month</div>
+          <div class="card-item"><span class="card-check">✓</span>Full proof history dashboard</div>
+          <div class="card-item"><span class="card-check">✓</span>Exportable records for invoices</div>
+          <div class="card-item"><span class="card-check">✓</span>One-click re-verify any proof</div>
+          <div class="card-item"><span class="card-check">✓</span>Scope Lock — seal project agreements</div>
+        </div>
+        <button class="card-cta" onclick="location.href='/dashboard'">START SOLO — $12.99/MONTH</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="when">
+  <div class="section-label">// Who buys which</div>
+  <div class="when-grid">
+    <div class="when-cell">
+      <div class="when-tier">Day Pass — $0.99</div>
+      <div class="when-item"><span class="wa">→</span>Client dispute happening right now</div>
+      <div class="when-item"><span class="wa">→</span>One-off project you need to proof</div>
+      <div class="when-item"><span class="wa">→</span>First time — try before committing</div>
+      <div class="when-item"><span class="wa">→</span>Irregular work, one or two projects a month</div>
+      <div class="when-item"><span class="wa">→</span>Already in the dispute. Need proof yesterday.</div>
+    </div>
+    <div class="when-cell">
+      <div class="when-tier">Solo — $12.99/month</div>
+      <div class="when-item"><span class="wa">→</span>More than 2 deliverables per month</div>
+      <div class="when-item"><span class="wa">→</span>Multiple clients at the same time</div>
+      <div class="when-item"><span class="wa">→</span>Had a dispute before, never want one again</div>
+      <div class="when-item"><span class="wa">→</span>Proof on every draft, revision, and final</div>
+      <div class="when-item"><span class="wa">→</span>Want the history dashboard and scope lock</div>
+    </div>
+  </div>
+</div>
+
+<div class="math-wrap">
+  <div class="math-box">
+    <div class="math-label">// The math is simple</div>
+    <div class="math-hl">IF YOU PROOF MORE THAN<br><span>13 TIMES A MONTH</span><br>SOLO PAYS FOR ITSELF.</div>
+    <div class="math-body">At $0.99 per day pass, 13 day passes cost $12.87 — more than a month of Solo. The first time you proof a draft, a revision, and a final on one project you've already crossed the threshold. Most freelancers who buy a day pass convert to Solo within the first month.</div>
+  </div>
+</div>
+
+<div class="comp-wrap">
+  <div class="section-label">// Feature comparison</div>
+  <div class="comp-table">
+    <div class="comp-row hdr">
+      <div class="comp-cell feat"></div>
+      <div class="comp-cell val">Day Pass</div>
+      <div class="comp-cell val val-solo">Solo</div>
+    </div>
+    <div class="comp-row"><div class="comp-cell feat">Unlimited 24hr proofs</div><div class="comp-cell val"><span class="gcheck">✓</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">SHA-256 + Ed25519 seal</div><div class="comp-cell val"><span class="gcheck">✓</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Permanent verification link</div><div class="comp-cell val"><span class="gcheck">✓</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">PDF receipt download</div><div class="comp-cell val"><span class="gcheck">✓</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Proof history dashboard</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Unlimited monthly proofs</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Exportable records</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Scope Lock</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">One-click re-verify</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+  </div>
+</div>
+
+<div class="ent-wrap">
+  <div class="ent-inner">
+    <div>
+      <div class="ent-kicker">For teams and platforms</div>
+      <div class="ent-title">Need more?</div>
+      <div class="ent-desc">Team plans from $29/month. Enterprise rail access for platforms. AXIS consent management. Court-ready dispute exports. Veridex infrastructure at scale.</div>
+    </div>
+    <a href="https://eyespai.com/pricing" target="_blank" rel="noopener" class="ent-cta">See all plans →</a>
+  </div>
+</div>
+
+<div class="closing">
+  <div class="closing-hl">
+    <span class="dim">EVERY PROOF YOU</span><br>
+    DON'T CREATE IS<br>
+    <span class="green">EVIDENCE YOU DON'T HAVE.</span>
+  </div>
+  <div class="closing-sub">
+    The proof costs $0.99.<br>
+    The dispute costs everything else.<br>
+    Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a>
+  </div>
+</div>
+
+<footer>
+  <div class="ft-l">SENT. — Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-r"><div class="ft-dot"></div>Infrastructure active</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. Dashboard — Your Proof History</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --panel:#f0f2f5;
+  --panel-hi:#e8eaed;
+  --ink:#111318;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --green:#00b356;
+  --green-dk:#009347;
+  --green-bg:rgba(0,179,86,0.07);
+  --green-bd:rgba(0,179,86,0.2);
+  --border:#e1e4e8;
+  --border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;display:grid;grid-template-columns:240px 1fr;grid-template-rows:58px 1fr;overflow:hidden}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;grid-row:1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
+.tb-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-plan{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);padding:3px 10px;border:1.5px solid var(--green-bd);background:var(--green-bg);border-radius:3px}
+.tb-user{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.tb-new{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:3px;transition:background 0.15s}
+.tb-new:hover{background:var(--green-dk)}
+.tb-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);font-size:20px;padding:4px 8px}
+
+/* SIDEBAR */
+.sidebar{grid-column:1;grid-row:2;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;overflow-y:auto}
+.sb-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-4);padding:0 18px 7px;font-weight:500}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;border:none;background:none;width:100%;text-align:left}
+.sb-item:hover{color:var(--ink);background:var(--panel)}
+.sb-item.active{color:var(--green-dk);border-left:2px solid var(--green);background:var(--green-bg)}
+.sb-icon{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.sb-div{height:1px;background:var(--border);margin:10px 18px}
+.sb-upgrade{margin:auto 14px 14px;padding:14px;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px}
+.sb-up-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);margin-bottom:5px;font-weight:500}
+.sb-up-text{font-size:12px;color:var(--ink-2);margin-bottom:10px;line-height:1.5}
+.sb-up-btn{width:100%;padding:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;background:var(--green);color:#fff;border:none;cursor:pointer;border-radius:3px;transition:background 0.15s}
+.sb-up-btn:hover{background:var(--green-dk)}
+
+/* MAIN */
+.main{grid-column:2;grid-row:2;padding:24px;overflow-y:auto}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--surface);border:1px solid var(--border);padding:18px 20px;border-radius:6px;box-shadow:var(--shadow-sm)}
+.sc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+.sc-num{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:var(--ink)}
+.sc-num.green{color:var(--green-dk)}
+.sc-sub{font-size:12px;color:var(--ink-3);margin-top:3px}
+
+/* QUICK PROOF */
+.qp{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.qp-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
+.qp-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3)}
+.qp-plan{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);font-weight:500}
+.qp-body{padding:16px 20px;display:flex;align-items:center;gap:12px}
+.qp-drop{flex:1;border:2px dashed var(--border-md);padding:14px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.15s;background:var(--panel);border-radius:4px}
+.qp-drop:hover{border-color:var(--green);background:var(--green-bg)}
+.qp-di{font-size:16px}
+.qp-dt{font-size:13px;color:var(--ink-2)}
+.qp-dt strong{color:var(--ink);font-weight:600}
+.qp-btn{padding:11px 20px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;border:none;cursor:pointer;white-space:nowrap;border-radius:3px;transition:background 0.15s}
+.qp-btn:hover{background:var(--green-dk)}
+
+/* DISPUTE BANNER */
+.db-banner{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.db-l{display:flex;align-items:center;gap:10px}
+.db-icon{font-size:20px;flex-shrink:0}
+.db-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:1px}
+.db-sub{font-size:12px;color:var(--ink-2)}
+.db-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:7px 13px;border:1.5px solid var(--green-bd);color:var(--green-dk);background:var(--surface);cursor:pointer;white-space:nowrap;border-radius:3px;transition:all 0.15s;flex-shrink:0}
+.db-btn:hover{background:var(--green-bg)}
+
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)}
+.filters{display:flex;gap:6px}
+.filter{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink-3);cursor:pointer;border-radius:3px;transition:all 0.15s}
+.filter.active{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
+.filter:hover:not(.active){color:var(--ink);border-color:var(--border-md)}
+
+/* PROOF LIST */
+.proof-list{display:flex;flex-direction:column;gap:8px}
+.pi{background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all 0.15s;box-shadow:var(--shadow-sm)}
+.pi:hover{border-color:var(--border-md);box-shadow:var(--shadow)}
+.pi-inner{padding:14px 16px;display:grid;grid-template-columns:10px 1fr auto auto;gap:12px;align-items:center}
+.pi-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.pi-file{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;word-break:break-word}
+.pi-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);letter-spacing:0.08em;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.pi-tag{padding:1px 6px;border:1px solid var(--border);color:var(--ink-3);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;border-radius:2px}
+.pi-amount{color:var(--green-dk);font-weight:700}
+.pi-hash{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-4);white-space:nowrap}
+.pi-actions{display:flex;gap:6px;flex-shrink:0}
+.pi-btn{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink-3);cursor:pointer;border-radius:3px;transition:all 0.15s;white-space:nowrap}
+.pi-btn.primary{border-color:var(--green-bd);color:var(--green-dk)}
+.pi-btn:hover{border-color:var(--border-md);color:var(--ink)}
+.pi-btn.primary:hover{background:var(--green-bg)}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;border-radius:4px;z-index:999;transform:translateY(70px);transition:transform 0.25s;pointer-events:none}
+.toast.show{transform:translateY(0)}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr;overflow:auto;height:auto}
+  .sidebar{display:none;position:fixed;top:58px;left:0;bottom:0;width:240px;z-index:200;box-shadow:4px 0 16px rgba(0,0,0,0.1)}
+  .sidebar.open{display:flex}
+  .main{grid-column:1;padding:16px}
+  .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tb-user{display:none}
+  .tb-ham{display:block}
+  .pi-inner{grid-template-columns:10px 1fr;gap:8px}
+  .pi-hash{display:none}
+  .pi-actions{grid-column:2;padding-left:20px;margin-top:2px}
+  .qp-body{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="tb-logo"><div class="tb-dot"></div>SENT.</a>
+  <div class="tb-right">
+    <div class="tb-plan">Solo · $12.99/mo</div>
+    <div class="tb-user">you@email.com</div>
+    <button class="tb-new" onclick="location.href='/'">+ New Proof</button>
+    <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
+  </div>
+</div>
+
+<nav class="sidebar" id="sidebar">
+  <div>
+    <div class="sb-label">Workspace</div>
+    <button class="sb-item active" onclick="setSb(this)"><span class="sb-icon">📋</span>All Proofs</button>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">📁</span>By Project</button>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">⚠️</span>Disputes</button>
+  </div>
+  <div class="sb-div"></div>
+  <div>
+    <div class="sb-label">Tools</div>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">🔍</span>Verify a Proof</button>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">📄</span>Export Records</button>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">🔗</span>Scope Lock</button>
+  </div>
+  <div class="sb-div"></div>
+  <div>
+    <div class="sb-label">Account</div>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">⚙️</span>Settings</button>
+    <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">💳</span>Billing</button>
+  </div>
+  <div class="sb-upgrade">
+    <div class="sb-up-label">Upgrade to Professional</div>
+    <div class="sb-up-text">Add AXIS consent management and get 1 court-ready dispute export per month.</div>
+    <button class="sb-up-btn" onclick="location.href='/pricing'">View plans →</button>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="stats">
+    <div class="sc"><div class="sc-label">Total proofs</div><div class="sc-num green">47</div><div class="sc-sub">Since joining</div></div>
+    <div class="sc"><div class="sc-label">This month</div><div class="sc-num">12</div><div class="sc-sub">Proofs generated</div></div>
+    <div class="sc"><div class="sc-label">Disputes won</div><div class="sc-num green">3</div><div class="sc-sub">Using SENT. receipts</div></div>
+    <div class="sc"><div class="sc-label">Value protected</div><div class="sc-num green">$8.4K</div><div class="sc-sub">In recovered payments</div></div>
+  </div>
+
+  <div class="qp">
+    <div class="qp-head">
+      <div class="qp-title">// Quick proof</div>
+      <div class="qp-plan">Unlimited · Solo plan</div>
+    </div>
+    <div class="qp-body">
+      <div class="qp-drop" onclick="location.href='/'">
+        <div class="qp-di">📁</div>
+        <div class="qp-dt"><strong>Drop a file to seal it</strong> — or click to browse</div>
+      </div>
+      <button class="qp-btn" onclick="location.href='/'">SEAL NOW</button>
+    </div>
+  </div>
+
+  <div class="db-banner">
+    <div class="db-l">
+      <div class="db-icon">🛡️</div>
+      <div>
+        <div class="db-title">Dispute protection active</div>
+        <div class="db-sub">All 47 proofs are permanently sealed and independently verifiable. Upgrade for court-ready exports.</div>
+      </div>
+    </div>
+    <button class="db-btn" onclick="location.href='/pricing'">Upgrade →</button>
+  </div>
+
+  <div class="sec-hdr">
+    <div class="sec-title">// Recent proofs</div>
+    <div class="filters">
+      <button class="filter active" onclick="setF(this)">All</button>
+      <button class="filter" onclick="setF(this)">This month</button>
+      <button class="filter" onclick="setF(this)">Disputed</button>
+    </div>
+  </div>
+
+  <div class="proof-list" id="proofList"></div>
+</main>
+
+<div class="toast" id="toast">Link copied</div>
+
+<script>
+const PROOFS=[
+  {file:'brand-guidelines-final-v3.pdf',size:'4.2 MB',time:'2026-05-03 · 11:44 UTC',hash:'a3f9d2e8...d72c',project:'Acme Corp Rebrand',amount:'$3,200'},
+  {file:'website-mockup-approved.fig',size:'18.7 MB',time:'2026-05-02 · 09:22 UTC',hash:'b7e1c4f9...a01b',project:'TechCo Website',amount:'$5,500'},
+  {file:'copywriting-deliverable-final.docx',size:'124 KB',time:'2026-04-29 · 16:05 UTC',hash:'c9d3a7e2...f33a',project:'Newsletter Campaign',amount:'$1,200'},
+  {file:'project-scope-agreed.pdf',size:'89 KB',time:'2026-04-28 · 10:00 UTC',hash:'d2f8b1c7...e94c',project:'TechCo Website',amount:'Scope Lock'},
+  {file:'logo-package-v2.zip',size:'34.1 MB',time:'2026-04-25 · 14:30 UTC',hash:'e4a9c2d8...b17f',project:'Startup Identity',amount:'$800'},
+  {file:'motion-graphics-export.mp4',size:'2.1 GB',time:'2026-04-22 · 18:45 UTC',hash:'f1b7e3c9...d42a',project:'Product Launch Video',amount:'$4,500'},
+  {file:'ui-components-handoff.zip',size:'8.4 MB',time:'2026-04-20 · 11:15 UTC',hash:'g5c2a8f1...e63d',project:'App Redesign',amount:'$2,800'},
+  {file:'seo-audit-report.pdf',size:'2.3 MB',time:'2026-04-18 · 09:00 UTC',hash:'h8d4b7e2...f91c',project:'SEO Consultation',amount:'$650'}
+];
+function render(list){
+  const c=document.getElementById('proofList');c.innerHTML='';
+  list.forEach(p=>{
+    const isAmt=p.amount.startsWith('$');
+    const el=document.createElement('div');el.className='pi';
+    el.innerHTML=`<div class="pi-inner">
+      <div class="pi-dot"></div>
+      <div><div class="pi-file">${p.file}</div>
+        <div class="pi-meta">
+          <span>📅 ${p.time}</span><span>📦 ${p.size}</span>
+          <span class="pi-tag">${p.project}</span>
+          ${p.amount?`<span class="${isAmt?'pi-amount':''}">${p.amount}</span>`:''}
+        </div>
+      </div>
+      <div class="pi-hash">${p.hash}</div>
+      <div class="pi-actions">
+        <button class="pi-btn primary" onclick="event.stopPropagation();viewR('${encodeURIComponent(p.file)}','${encodeURIComponent(p.hash)}','${encodeURIComponent(p.size)}')">View receipt</button>
+        <button class="pi-btn" onclick="event.stopPropagation();cpLink()">Copy link</button>
+      </div>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+function viewR(f,h,s){const p=new URLSearchParams({file:decodeURIComponent(f),hash:decodeURIComponent(h),size:decodeURIComponent(s),time:new Date().toISOString(),id:genId()});location.href='/receipt?'+p}
+function cpLink(){navigator.clipboard.writeText('https://vxsent.com/verify/'+genId()).then(()=>showToast('Link copied')).catch(()=>{})}
+function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function setSb(el){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active')}
+function setF(el){document.querySelectorAll('.filter').forEach(f=>f.classList.remove('active'));el.classList.add('active');loadDashboard()}
+function toggleSb(){document.getElementById('sidebar').classList.toggle('open')}
+document.addEventListener('click',e=>{const sb=document.getElementById('sidebar');if(sb.classList.contains('open')&&!sb.contains(e.target)&&!e.target.classList.contains('tb-ham'))sb.classList.remove('open')});
+
+async function loadDashboard(){
+  try{
+    const sessRes=await fetch('/api/auth/session');
+    if(sessRes.ok){
+      const sess=await sessRes.json();
+      document.querySelector('.tb-user').textContent=sess.email;
+      document.querySelector('.tb-plan').textContent=sess.plan==='solo'?'Solo · $12.99/mo':sess.plan==='none'?'Day Pass':sess.plan;
+      const proofsRes=await fetch('/api/proofs');
+      if(proofsRes.ok){
+        const data=await proofsRes.json();
+        const nums=document.querySelectorAll('.sc-num');
+        if(nums[0])nums[0].textContent=data.stats.totalProofs;
+        if(nums[1])nums[1].textContent=data.stats.monthProofs;
+        if(data.proofs&&data.proofs.length>0)renderReal(data.proofs);
+        else render(PROOFS);
+      } else { render(PROOFS); }
+    } else {
+      // Not authenticated — show demo data
+      // In production with backend live, uncomment the line below:
+      // window.location.href='/login';
+      render(PROOFS);
+    }
+  }catch(e){
+    // Backend not yet connected — show demo data
+    render(PROOFS);
+  }
+}
+
+function renderReal(proofs){
+  const c=document.getElementById('proofList');c.innerHTML='';
+  proofs.forEach(p=>{
+    const el=document.createElement('div');el.className='pi';
+    el.innerHTML=`<div class="pi-inner">
+      <div class="pi-dot"></div>
+      <div><div class="pi-file">${p.fileName}</div>
+        <div class="pi-meta"><span>📅 ${new Date(p.sealedAt).toLocaleDateString()}</span><span>📦 ${p.fileSize}</span></div>
+      </div>
+      <div class="pi-hash">${p.fileHash}</div>
+      <div class="pi-actions">
+        <button class="pi-btn primary" onclick="event.stopPropagation();window.location.href='${p.receiptUrl}'">View receipt</button>
+        <button class="pi-btn" onclick="event.stopPropagation();cpD('${p.verifyUrl}')">Copy link</button>
+      </div>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+function cpD(url){navigator.clipboard.writeText(url).then(()=>showToast('Link copied')).catch(()=>{})}
+function logout(){window.location.href='/api/auth/logout'}
+
+loadDashboard();
+</script>
+</body>
+</html>

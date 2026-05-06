@@ -1,0 +1,124 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "npm install || true"
+
+[dev]
+  port = 8888
+
+# ── PAGE ROUTES — must come BEFORE API routes ──
+# These rewrite clean URLs to .html files
+# force = true ensures these win over any conflicting rules
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/receipt"
+  to = "/receipt.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/pricing"
+  to = "/pricing.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/verify/:id"
+  to = "/receipt?id=:id"
+  status = 301
+
+# ── API ROUTES → NETLIFY FUNCTIONS ──
+
+[[redirects]]
+  from = "/api/create-payment-intent"
+  to = "/.netlify/functions/create-payment-intent"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-subscription"
+  to = "/.netlify/functions/create-subscription"
+  status = 200
+
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/proof/:id"
+  to = "/.netlify/functions/get-proof"
+  status = 200
+
+[[redirects]]
+  from = "/api/proofs"
+  to = "/.netlify/functions/get-proofs"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/magic-link"
+  to = "/.netlify/functions/auth-magic-link"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/verify"
+  to = "/.netlify/functions/auth-verify"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/session"
+  to = "/.netlify/functions/auth-session"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
+
+[[redirects]]
+  from = "/api/cancel-subscription"
+  to = "/.netlify/functions/cancel-subscription"
+  status = 200
+
+[[redirects]]
+  from = "/api/confirm-receipt"
+  to = "/.netlify/functions/confirm-receipt"
+  status = 200
+
+# ── SECURITY HEADERS ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── ENVIRONMENT ──
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "development"
