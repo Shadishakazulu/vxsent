@@ -2,7 +2,7 @@
 
 exports.handler = async (event) => {
   // Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
+  if (event.httpMethod === 'OPTIONS' ) {
     return {
       statusCode: 200,
       headers: {
@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     };
   }
 
-  if (event.httpMethod !== 'POST') {
+  if (event.httpMethod !== 'POST' ) {
     return {
       statusCode: 405,
       headers: {
@@ -28,7 +28,7 @@ exports.handler = async (event) => {
     // Check if Stripe key is available
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) {
-      console.error('STRIPE_SECRET_KEY not set');
+      console.error('[create-checkout-session] STRIPE_SECRET_KEY not set');
       return {
         statusCode: 500,
         headers: {
@@ -41,28 +41,12 @@ exports.handler = async (event) => {
       };
     }
 
-    // Dynamically require stripe
-    let stripe;
-    try {
-      stripe = require('stripe')(stripeKey);
-    } catch (err) {
-      console.error('Failed to initialize Stripe:', err);
-      return {
-        statusCode: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          error: 'Payment service initialization failed'
-        })
-      };
-    }
-
+    // Parse request body
     let body;
     try {
       body = JSON.parse(event.body);
-    } catch {
+    } catch (err) {
+      console.error('[create-checkout-session] Invalid JSON:', err.message);
       return {
         statusCode: 400,
         headers: {
@@ -76,14 +60,25 @@ exports.handler = async (event) => {
     const { email, fileName, fileHash } = body;
 
     // Validation
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
       return {
         statusCode: 400,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ error: 'Invalid email address' })
+        body: JSON.stringify({ error: 'Email is required' })
+      };
+    }
+
+    if (!fileName) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ error: 'File name is required' })
       };
     }
 
@@ -98,21 +93,31 @@ exports.handler = async (event) => {
       };
     }
 
-    if (!fileName) {
+    // Initialize Stripe
+    let stripe;
+    try {
+      stripe = require('stripe')(stripeKey);
+      console.log('[create-checkout-session] Stripe initialized successfully');
+    } catch (err) {
+      console.error('[create-checkout-session] Failed to initialize Stripe:', err.message, err.stack);
       return {
-        statusCode: 400,
+        statusCode: 500,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ error: 'File name required' })
+        body: JSON.stringify({
+          error: 'Payment service initialization failed'
+        })
       };
     }
 
-    // Get the origin for success/cancel URLs
-    const origin = event.headers.origin || event.headers.referer?.split('/').slice(0, 3).join('/') || 'https://vxsent.com';
+    // Get the origin for redirect URLs
+    const origin = event.headers.origin || 'https://vxsent.com';
 
     // Create Stripe Checkout Session
+    console.log('[create-checkout-session] Creating checkout session for:', email, fileName );
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -120,12 +125,8 @@ exports.handler = async (event) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'SENT. Delivery Proof Receipt',
-              description: `Cryptographic proof for: ${fileName.substring(0, 50)}`,
-              metadata: {
-                file_hash: fileHash,
-                file_name: fileName.substring(0, 100)
-              }
+              name: 'SENT. Delivery Proof',
+              description: `Proof of delivery for: ${fileName}`
             },
             unit_amount: 99 // $0.99 in cents
           },
@@ -134,16 +135,16 @@ exports.handler = async (event) => {
       ],
       mode: 'payment',
       customer_email: email,
+      success_url: `${origin}/receipt?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?canceled=true`,
       metadata: {
         file_hash: fileHash,
         file_name: fileName.substring(0, 100),
-        user_email: email,
-        product: 'day_pass'
-      },
-      success_url: `${origin}/receipt?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/?canceled=true`,
-      billing_address_collection: 'auto'
+        user_email: email
+      }
     });
+
+    console.log('[create-checkout-session] Session created:', session.id);
 
     return {
       statusCode: 200,
@@ -156,7 +157,9 @@ exports.handler = async (event) => {
       })
     };
   } catch (error) {
-    console.error('create-checkout-session error:', error.message, error.stack);
+    console.error('[create-checkout-session] Error:', error.message);
+    console.error('[create-checkout-session] Stack:', error.stack);
+    
     return {
       statusCode: 500,
       headers: {
@@ -164,7 +167,7 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        error: 'Checkout session creation failed. Please try again.'
+        error: error.message || 'Checkout session creation failed. Please try again.'
       })
     };
   }
