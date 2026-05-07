@@ -1,0 +1,58 @@
+// netlify/functions/get-proof.js
+
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS' ) {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
+    };
+  }
+
+  if (event.httpMethod !== 'GET' ) {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  try {
+    const { proofId } = event.queryStringParameters || {};
+
+    if (!proofId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Proof ID required' })
+      };
+    }
+
+    // In a real app, fetch from database
+    // For now, return mock data
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        proofId,
+        status: 'valid',
+        timestamp: new Date().toISOString(),
+        message: 'Proof retrieved successfully'
+      })
+    };
+  } catch (error) {
+    console.error('get-proof error:', error);
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ error: 'Failed to retrieve proof' })
+    };
+  }
+};
