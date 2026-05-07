@@ -1,0 +1,15 @@
+{
+  "name": "vxsent",
+  "version": "1.0.0",
+  "description": "SENT - Delivery proof and RAC integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["proof", "delivery", "rac"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}
