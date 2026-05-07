@@ -3,7 +3,7 @@
   functions = "netlify/functions"
 
 [build.environment]
-  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,_redirects,vxsent-production"
+  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,_redirects,vxsent-production"
 
 [dev]
   port = 8888
