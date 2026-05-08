@@ -4,8 +4,8 @@ const crypto = require('crypto');
 
 // Initialize Supabase client with service role key for admin operations
 const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://fjowiopznwafjqhdbrsv.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqb3dpb3B6bndhZmpxaGRicnN2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzg0OTcwNSwiZXhwIjoyMDkzNDI1NzA1fQ._nRE-09j8VxXSgXeUZMCxu5Cihxw-xjPjmqqUs5jv7Q'
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
 );
 
 /**
