@@ -138,7 +138,7 @@ exports.handler = async (event) => {
       },
       description: `SENT. delivery proof — ${fileName}`,
       receipt_email: email || undefined,
-      statement_descriptor: 'SENT PROOF'
+      statement_descriptor_suffix: 'SENT PROOF'
     });
 
     return {
