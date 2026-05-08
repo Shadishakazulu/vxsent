@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Proof - SENT.</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .search-box {
+      margin-bottom: 30px;
+    }
+
+    .search-box label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-verify {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-verify:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-clear {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-clear:hover {
+      background: #e0e0e0;
+    }
+
+    .loading {
+      text-align: center;
+      display: none;
+      margin: 20px 0;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .result {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .result-icon {
+      font-size: 32px;
+      margin-right: 15px;
+    }
+
+    .result-status {
+      flex: 1;
+    }
+
+    .result-status h3 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .result-status p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .proof-details {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .detail-value {
+      color: #333;
+      word-break: break-all;
+      text-align: right;
+      max-width: 50%;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .success {
+      background: #efe;
+      color: #3c3;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .success.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">SENT.</div>
+      <h1 class="title">Verify Proof</h1>
+      <p class="subtitle">Enter a Proof ID to verify its authenticity</p>
+    </div>
+
+    <div class="search-box">
+      <label for="proofId">Proof ID</label>
+      <input 
+        type="text" 
+        id="proofId" 
+        placeholder="e.g., PROOF-1234567890ABCDEF"
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="button-group">
+      <button class="btn-verify" onclick="verifyProof()">Verify Proof</button>
+      <button class="btn-clear" onclick="clearForm()">Clear</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Verifying proof...</p>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="success" id="success"></div>
+
+    <div class="result" id="result">
+      <div class="result-header">
+        <div class="result-icon">✅</div>
+        <div class="result-status">
+          <h3>Proof Verified</h3>
+          <p>This proof is authentic and has been verified</p>
+        </div>
+      </div>
+
+      <div class="proof-details" id="proofDetails"></div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // PRODUCTION CREDENTIALS
+    // ============================================
+    const SUPABASE_URL = 'https://fjowiopznwafjqhdbrsv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqb3dpb3B6bndhZmpxaGRicnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NDk3MDUsImV4cCI6MjA5MzQyNTcwNX0.sZGqyswWD3DZW7pygWkdbWw2h149X1FnW_Iz3aajUAs';
+
+    /**
+     * Verify a proof by querying Supabase
+     */
+    async function verifyProof() {
+      const proofId = document.getElementById('proofId').value.trim().toUpperCase();
+
+      if (!proofId) {
+        showError('Please enter a Proof ID');
+        return;
+      }
+
+      showLoading(true);
+      clearMessages();
+
+      try {
+        // Query Supabase REST API
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/proofs?proof_id=eq.${encodeURIComponent(proofId)}&select=*`,
+          {
+            method: 'GET',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || data.length === 0) {
+          showError('Proof not found. Please check the Proof ID and try again.');
+          showLoading(false);
+          return;
+        }
+
+        const proof = data[0];
+        displayProof(proof);
+        showSuccess('✅ Proof verified successfully!');
+      } catch (error) {
+        console.error('Verification error:', error);
+        showError(`Error verifying proof: ${error.message}`);
+      }
+
+      showLoading(false);
+    }
+
+    /**
+     * Display proof details
+     */
+    function displayProof(proof) {
+      const timestamp = new Date(proof.timestamp);
+      const verifiedDate = new Date(proof.verified_at);
+
+      const details = `
+        <div class="detail-row">
+          <span class="detail-label">Proof ID</span>
+          <span class="detail-value">${proof.proof_id}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">File Hash (SHA-256)</span>
+          <span class="detail-value">${proof.file_hash}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">RAC Signature</span>
+          <span class="detail-value">${proof.rac_signature}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Timestamp</span>
+          <span class="detail-value">${timestamp.toLocaleString()}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Verified Date</span>
+          <span class="detail-value">${verifiedDate.toLocaleString()}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Sender Email</span>
+          <span class="detail-value">${proof.sender_email}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Recipient Email</span>
+          <span class="detail-value">${proof.recipient_email}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">File Name</span>
+          <span class="detail-value">${proof.file_name}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">File Size</span>
+          <span class="detail-value">${proof.file_size}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status</span>
+          <span class="detail-value">${proof.status.toUpperCase()}</span>
+        </div>
+      `;
+
+      document.getElementById('proofDetails').innerHTML = details;
+      document.getElementById('result').classList.add('show');
+    }
+
+    /**
+     * UI Helper Functions
+     */
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+    }
+
+    function showSuccess(message) {
+      const successEl = document.getElementById('success');
+      successEl.textContent = message;
+      successEl.classList.add('show');
+    }
+
+    function clearMessages() {
+      document.getElementById('error').classList.remove('show');
+      document.getElementById('success').classList.remove('show');
+      document.getElementById('result').classList.remove('show');
+    }
+
+    function clearForm() {
+      document.getElementById('proofId').value = '';
+      clearMessages();
+    }
+
+    // Allow Enter key to verify
+    document.getElementById('proofId').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        verifyProof();
+      }
+    });
+  </script>
+</body>
+</html>
