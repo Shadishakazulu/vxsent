@@ -493,6 +493,12 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Email for receipt</label>
     <input id="payEmail" type="email" placeholder="you@example.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Client email (recipient)</label>
+    <input id="payRecipientEmail" type="email" placeholder="client@example.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Project name (optional)</label>
+    <input id="payProjectName" type="text" placeholder="e.g. Brand Redesign Q2" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
     <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:8px;min-height:44px;background:#fff"></div>
 
@@ -551,6 +557,8 @@ async function initPayment(){
 
 async function submitPayment() {
   const email = document.getElementById('payEmail').value.trim();
+  const recipientEmail = document.getElementById('payRecipientEmail').value.trim();
+  const projectName = document.getElementById('payProjectName').value.trim();
   const cardEl = document.getElementById('card-element');
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -573,7 +581,9 @@ async function submitPayment() {
         fileName: currentFile.name,
         fileSize: fmt(currentFile.size),
         timestamp: currentTimestamp,
-        email: email
+        email: email,
+        recipientEmail: recipientEmail,
+        projectName: projectName
       })
     });
 
@@ -582,8 +592,8 @@ async function submitPayment() {
 
     const { clientSecret, proofId, publishableKey } = data;
 
-    // Step 2: Confirm payment with Stripe
-    const stripe = Stripe(publishableKey);
+    // Step 2: Confirm payment with Stripe (reuse the same instance that created the card Element)
+    const stripe = window._stripeInstance || Stripe(publishableKey);
     const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
       {
@@ -667,6 +677,7 @@ async function mountStripeCard() {
     if (!publishableKey) return;
 
     const stripe = Stripe(publishableKey);
+    window._stripeInstance = stripe;
     const elements = stripe.elements();
     const card = elements.create('card', {
       style: {
