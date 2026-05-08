@@ -1,0 +1,9 @@
+{
+  "name": "vxsent-netlify-functions",
+  "version": "1.0.0",
+  "description": "Netlify functions for SENT. platform",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "@supabase/supabase-js": "^2.38.0"
+  }
+}
