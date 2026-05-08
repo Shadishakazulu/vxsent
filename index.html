@@ -225,6 +225,59 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 
 @media(max-width:960px){.convo-section{padding-left:20px;padding-right:20px}.convo-block{max-width:100%}}
 
+/* MOBILE RESPONSIVE */
+@media(max-width:768px){
+  header{padding:0 16px;height:52px}
+  .hdr-nav .hdr-link:not(.hdr-signin){display:none}
+  .hdr-signin{font-size:10px;padding:5px 10px}
+  .hero{grid-template-columns:1fr;gap:28px;padding:70px 16px 40px;min-height:auto}
+  .hero-h1{font-size:clamp(38px,10vw,52px)}
+  .hero-sub{font-size:16px;max-width:100%}
+  .stat-row{gap:20px;flex-wrap:wrap}
+  .proof-box{margin-top:0}
+  .how{padding:48px 16px}
+  .how-grid{grid-template-columns:1fr;gap:12px}
+  .dispute{padding:48px 16px}
+  .dispute-inner{grid-template-columns:1fr;gap:24px}
+  .dispute-hl{font-size:clamp(28px,8vw,42px)}
+  .testi{padding:48px 16px}
+  .testi-grid{grid-template-columns:1fr;gap:12px}
+  .proof-visual-section{padding:48px 16px}
+  .pv-block,.pv-noact{max-width:100%}
+  .pv-row{grid-template-columns:70px 1fr}
+  .pv-val{font-size:10px}
+  .convo-section{padding:48px 16px}
+  .convo-block{max-width:100%;padding:20px 18px}
+  .final{padding:60px 16px}
+  .final-hl{font-size:clamp(32px,8vw,48px)}
+  .final-btn{padding:15px 32px;font-size:18px}
+  footer{padding:18px 16px;flex-direction:column;gap:10px;text-align:center}
+  .ft-l,.ft-r{justify-content:center}
+  .habit-strip{padding:12px 16px;gap:10px}
+  .dropzone{margin:12px;padding:28px 14px}
+  .hash-preview{margin:0 12px;padding:10px 12px}
+  .hp-key{width:60px;font-size:9px}
+  .hp-val{font-size:9px}
+  .proof-cta{margin:10px 12px 0;width:calc(100% - 24px);padding:14px;font-size:18px}
+  .proof-cta-sub{padding:8px 12px 14px}
+  #payModal>div{padding:24px 20px;margin:0 12px}
+}
+
+@media(max-width:480px){
+  .hero-h1{font-size:36px}
+  .hero-kicker{font-size:10px}
+  .stat-num{font-size:26px}
+  .stat-label{font-size:9px}
+  .pbx-head{padding:12px 14px}
+  .pbx-title{font-size:9px}
+  .pbx-price{font-size:18px}
+  .pv-row{grid-template-columns:1fr;gap:2px}
+  .pv-key{padding-bottom:0}
+  .convo-who{width:36px;font-size:9px}
+  .convo-msg{font-size:14px}
+  .convo-result{font-size:22px}
+}
+
 </style>
 </head>
 <body>

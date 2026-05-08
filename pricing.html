@@ -149,14 +149,20 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
 .ft-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
 
 @media(max-width:700px){
-  header{padding:0 20px}
-  .hero,.cards-wrap,.when,.math-wrap,.comp-wrap,.ent-wrap,.closing,footer{padding-left:20px;padding-right:20px}
+  header{padding:0 16px}
+  .hero{padding:90px 16px 40px}
+  .hero-hl{font-size:clamp(36px,9vw,56px)}
+  .hero-sub{font-size:14px}
+  .hero,.cards-wrap,.when,.math-wrap,.comp-wrap,.ent-wrap,.closing,footer{padding-left:16px;padding-right:16px}
   .cards-grid,.when-grid{grid-template-columns:1fr}
-  .ent-inner{flex-direction:column;gap:18px}
-  .comp-row{grid-template-columns:1fr 68px 68px}
-  .comp-cell{padding:10px 10px;font-size:9px}
-  footer{padding:18px 20px;flex-direction:column;gap:8px;text-align:center}
-  .card-body{padding:28px 22px}
+  .ent-inner{flex-direction:column;gap:18px;padding:22px 20px}
+  .comp-row{grid-template-columns:1fr 60px 60px}
+  .comp-cell{padding:8px 8px;font-size:8px}
+  footer{padding:18px 16px;flex-direction:column;gap:8px;text-align:center}
+  .card-body{padding:24px 18px}
+  .price-num{font-size:56px}
+  .math-box{padding:22px 20px}
+  .closing-hl{font-size:clamp(28px,7vw,44px)}
 }
 </style>
 </head>
