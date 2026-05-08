@@ -116,6 +116,16 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .pi-btn:hover{border-color:var(--border-md);color:var(--ink)}
 .pi-btn.primary:hover{background:var(--green-bg)}
 
+
+/* HABIT REINFORCEMENT BANNER */
+.habit-reinforce{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hr-left{display:flex;align-items:center;gap:12px}
+.hr-icon{font-size:20px;flex-shrink:0}
+.hr-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.hr-sub{font-size:12px;color:var(--ink-2)}
+.hr-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--green-bd);color:var(--green-dk);background:var(--surface);cursor:pointer;border-radius:3px;white-space:nowrap;flex-shrink:0;transition:all 0.15s}
+.hr-btn:hover{background:var(--green-bg)}
+
 /* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;border-radius:4px;z-index:999;transform:translateY(70px);transition:transform 0.25s;pointer-events:none}
 .toast.show{transform:translateY(0)}
@@ -142,7 +152,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   <div class="tb-right">
     <div class="tb-plan">Solo · $12.99/mo</div>
     <div class="tb-user">you@email.com</div>
-    <button class="tb-new" onclick="location.href='/'">+ New Proof</button>
+    <button class="tb-new" onclick="location.href='/'">Proof a file →</button>
     <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
   </div>
 </div>
@@ -182,6 +192,10 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
     <div class="sc"><div class="sc-label">Value protected</div><div class="sc-num green">$8.4K</div><div class="sc-sub">In recovered payments</div></div>
   </div>
 
+  <!-- HABIT REINFORCEMENT -->
+  <div class="habit-reinforce" id="habitReinforce" style="display:none"></div>
+  </div>
+
   <div class="qp">
     <div class="qp-head">
       <div class="qp-title">// Quick proof</div>
@@ -190,7 +204,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
     <div class="qp-body">
       <div class="qp-drop" onclick="location.href='/'">
         <div class="qp-di">📁</div>
-        <div class="qp-dt"><strong>Drop a file to seal it</strong> — or click to browse</div>
+        <div class="qp-dt"><strong>Proof your next file</strong> — drop it here before you send</div>
       </div>
       <button class="qp-btn" onclick="location.href='/'">SEAL NOW</button>
     </div>
@@ -276,6 +290,7 @@ async function loadDashboard(){
         const data=await proofsRes.json();
         const nums=document.querySelectorAll('.sc-num');
         if(nums[0])nums[0].textContent=data.stats.totalProofs;
+      showHabitReinforce(data.stats.totalProofs, sess.plan);
         if(nums[1])nums[1].textContent=data.stats.monthProofs;
         if(data.proofs&&data.proofs.length>0)renderReal(data.proofs);
         else render(PROOFS);
@@ -314,6 +329,42 @@ function cpD(url){navigator.clipboard.writeText(url).then(()=>showToast('Link co
 function logout(){window.location.href='/api/auth/logout'}
 
 loadDashboard();
+
+function showHabitReinforce(totalProofs, plan){
+  const el=document.getElementById('habitReinforce');
+  if(!el)return;
+
+  // Subscription trigger after 2nd proof
+  if(totalProofs>=2 && plan!=='solo'){
+    el.style.display='flex';
+    el.innerHTML=`
+      <div class="hr-left">
+        <div class="hr-icon">🔥</div>
+        <div>
+          <div class="hr-title">You've created ${totalProofs} proofs.</div>
+          <div class="hr-sub">Unlimited is $12.99/month. Skip the $0.99 every time.</div>
+        </div>
+      </div>
+      <button class="hr-btn" onclick="location.href='/pricing'">Go unlimited →</button>
+    `;
+    return;
+  }
+
+  // Habit reinforcement for solo users
+  if(plan==='solo'){
+    el.style.display='flex';
+    const week=Math.min(totalProofs,7);
+    el.innerHTML=`
+      <div class="hr-left">
+        <div class="hr-icon">✓</div>
+        <div>
+          <div class="hr-title">You've protected ${totalProofs} deliveries.</div>
+          <div class="hr-sub">Send work? Proof it. Every time.</div>
+        </div>
+      </div>
+    `;
+  }
+}
 </script>
 </body>
 </html>
