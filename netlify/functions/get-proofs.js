@@ -1,5 +1,5 @@
-// netlify/functions/get-proof.js
-// Production-grade: queries Supabase for proof data by proof_id
+// netlify/functions/get-proofs.js
+// Production-grade: authenticated endpoint returning user's proof history from Supabase
 
 exports.handler = async (event) => {
   // Handle CORS preflight
@@ -9,7 +9,7 @@ exports.handler = async (event) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Access-Control-Allow-Headers': 'Content-Type, Cookie'
       }
     };
   }
@@ -17,38 +17,39 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
 
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase credentials not configured');
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Service unavailable' })
+    };
+  }
+
   try {
-    // The redirect rule sends /api/proof/:id → get-proof?id=:id
-    const proofId = event.queryStringParameters?.id || event.queryStringParameters?.proofId;
+    // Parse session token from cookie
+    const cookieHeader = event.headers.cookie || '';
+    const sessionToken = parseCookie(cookieHeader, 'vxsent_session');
 
-    if (!proofId) {
+    if (!sessionToken) {
       return {
-        statusCode: 400,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Proof ID required' })
+        statusCode: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Not authenticated' })
       };
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase credentials not configured');
-      return {
-        statusCode: 500,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Service unavailable' })
-      };
-    }
-
-    // Query Supabase for the proof record
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/proofs?proof_id=eq.${encodeURIComponent(proofId)}&limit=1`,
+    // Validate session — look up user by session token
+    const userRes = await fetch(
+      `${supabaseUrl}/rest/v1/users?session_token=eq.${encodeURIComponent(sessionToken)}&limit=1`,
       {
         method: 'GET',
         headers: {
@@ -59,75 +60,122 @@ exports.handler = async (event) => {
       }
     );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`Supabase query failed: ${response.status} ${errText}`);
+    if (!userRes.ok) {
+      console.error('get-proofs: user lookup failed', await userRes.text());
       return {
         statusCode: 500,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Failed to retrieve proof' })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Service unavailable' })
       };
     }
 
-    const results = await response.json();
+    const users = await userRes.json();
 
-    if (!results || results.length === 0) {
+    if (!users || users.length === 0) {
       return {
-        statusCode: 404,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Proof not found' })
+        statusCode: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Invalid session' })
       };
     }
 
-    const proof = results[0];
+    const user = users[0];
 
-    // Check if proof is still pending payment
-    if (proof.status === 'pending') {
+    // Check session expiry
+    if (user.session_expires_at && new Date(user.session_expires_at) < new Date()) {
       return {
-        statusCode: 202,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          error: 'Proof is pending — payment not yet confirmed',
-          status: 'pending',
-          id: proof.proof_id
-        })
+        statusCode: 401,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Session expired' })
       };
     }
 
-    // Return full proof data for verified/sealed proofs
+    // Query proofs for this user (by email, since proofs store user_email/sender_email)
+    const userEmail = user.email;
+    
+    // Fetch proofs where sender_email or user_email matches, ordered by newest first
+    const proofsRes = await fetch(
+      `${supabaseUrl}/rest/v1/proofs?or=(sender_email.eq.${encodeURIComponent(userEmail)},user_email.eq.${encodeURIComponent(userEmail)})&status=eq.sealed&order=sealed_at.desc.nullsfirst,timestamp.desc&limit=50`,
+      {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!proofsRes.ok) {
+      const errText = await proofsRes.text();
+      console.error(`get-proofs: Supabase query failed: ${proofsRes.status} ${errText}`);
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Failed to retrieve proofs' })
+      };
+    }
+
+    const proofs = await proofsRes.json();
+
+    // Calculate stats
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const totalProofs = proofs.length;
+    const monthProofs = proofs.filter(p => {
+      const sealDate = new Date(p.sealed_at || p.timestamp);
+      return sealDate >= startOfMonth;
+    }).length;
+
+    // Calculate total value protected (sum of amounts from project metadata)
+    // For now, count proofs as value indicator
+    const disputesWon = proofs.filter(p => p.dispute_status === 'won').length;
+
+    // Format proofs for frontend
+    const formattedProofs = proofs.map(p => ({
+      proofId: p.proof_id,
+      fileName: p.file_name,
+      fileSize: p.file_size,
+      fileHash: p.file_hash ? `${p.file_hash.substring(0, 8)}...${p.file_hash.substring(p.file_hash.length - 4)}` : '',
+      sealedAt: p.sealed_at || p.timestamp,
+      status: p.status,
+      projectName: p.project_name || '',
+      recipientEmail: p.recipient_email || '',
+      receiptUrl: `https://vxsent.com/receipt?id=${p.proof_id}`,
+      verifyUrl: `https://vxsent.com/verify/${p.proof_id}`
+    }));
+
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id: proof.proof_id,
-        proofId: proof.proof_id,
-        fileName: proof.file_name,
-        fileSize: proof.file_size,
-        fileHash: proof.file_hash,
-        sealedAt: proof.sealed_at || proof.timestamp,
-        verifiedAt: proof.verified_at,
-        status: proof.status,
-        isValid: proof.is_valid,
-        racSignature: proof.rac_signature,
-        racEnabled: proof.rac_enabled,
-        senderEmail: proof.sender_email,
-        recipientEmail: proof.recipient_email,
-        projectName: proof.project_name,
-        receiptUrl: proof.receipt_url,
-        veridexProofId: proof.veridex_proof_id,
-        veridexSignature: proof.veridex_signature
+        stats: {
+          totalProofs,
+          monthProofs,
+          disputesWon,
+          valueProtected: '$0' // Will be populated when payment amounts are tracked
+        },
+        proofs: formattedProofs
       })
     };
   } catch (error) {
-    console.error('get-proof error:', error.message, error.stack);
+    console.error('get-proofs error:', error.message, error.stack);
     return {
       statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Failed to retrieve proof' })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Failed to load proofs' })
     };
   }
 };
+
+// Parse a specific cookie value from the Cookie header
+function parseCookie(cookieHeader, name) {
+  const cookies = cookieHeader.split(';');
+  for (const cookie of cookies) {
+    const [key, ...valueParts] = cookie.trim().split('=');
+    if (key === name) {
+      return valueParts.join('=');
+    }
+  }
+  return null;
+}
