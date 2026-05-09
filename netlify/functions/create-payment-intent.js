@@ -1,6 +1,6 @@
 // netlify/functions/create-payment-intent.js
 // SENT. RAC v1 — Creates PaymentIntent + inserts PENDING proof into Supabase
-// Signing and chain linking happen AFTER payment succeeds (webhook)
+// Ed25519 signing and chain linking happen AFTER payment succeeds (webhook)
 
 const crypto = require('crypto');
 
@@ -20,7 +20,8 @@ async function supabaseInsert(table, record) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw new Error('SUPABASE credentials not configured');
+    console.error('Supabase credentials not configured');
+    return null;
   }
 
   const response = await fetch(`${url}/rest/v1/${table}`, {
@@ -36,7 +37,8 @@ async function supabaseInsert(table, record) {
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Supabase insert failed: ${response.status} ${errText}`);
+    console.error(`Supabase insert failed: ${response.status} ${errText}`);
+    return null;
   }
 
   const data = await response.json();
@@ -46,64 +48,91 @@ async function supabaseInsert(table, record) {
 // ─── Handler ───────────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
-
+  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS' ) {
-    return { statusCode: 200, headers };
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
+    };
   }
 
   if (event.httpMethod !== 'POST' ) {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return {
+      statusCode: 405,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
   }
 
   try {
-    // ─── Validate environment ───────────────────────────────────────────────
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) {
       console.error('[FATAL] STRIPE_SECRET_KEY not configured');
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Payment service not configured' }) };
+      return {
+        statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Payment service not configured. Please contact support.' })
+      };
     }
 
     const stripe = require('stripe')(stripeKey);
 
-    // ─── Parse and validate request body ────────────────────────────────────
     let body;
     try {
       body = JSON.parse(event.body);
     } catch {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) };
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Invalid request body' })
+      };
     }
 
     const { fileHash, fileName, fileSize, timestamp, email, recipientEmail, projectName } = body;
 
-    // Strict validation
-    if (!fileHash || typeof fileHash !== 'string' || fileHash.length !== 64 || !/^[a-fA-F0-9]{64}$/.test(fileHash)) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid SHA-256 file hash (must be 64 hex characters)' }) };
+    // Validation
+    if (!fileHash || fileHash.length !== 64) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Invalid file hash' })
+      };
     }
-    if (!fileName || typeof fileName !== 'string' || fileName.length === 0) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'File name required' }) };
+    if (!fileName) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'File name required' })
+      };
     }
-    if (!fileSize || typeof fileSize !== 'string') {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'File size required' }) };
+    if (!fileSize) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'File size required' })
+      };
     }
-    if (!timestamp || typeof timestamp !== 'string') {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Timestamp required' }) };
+    if (!timestamp) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Timestamp required' })
+      };
     }
 
     // ─── Generate proof ID ──────────────────────────────────────────────────
     const proofId = generateProofId();
-    const createdAt = new Date().toISOString();
+    const sealTimestamp = new Date().toISOString();
 
     console.log(`[RAC] Creating proof: ${proofId} | file: ${fileName} | hash: ${fileHash.substring(0, 16)}...`);
 
     // ─── Create Stripe PaymentIntent ────────────────────────────────────────
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 99, // $0.99 USD
+      amount: 99,
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
       metadata: {
@@ -124,51 +153,60 @@ exports.handler = async (event) => {
     });
 
     // ─── Insert PENDING proof into Supabase ─────────────────────────────────
-    // No cryptographic signing yet — that happens in the webhook after payment confirms
+    // Uses ONLY columns that exist in the table
+    // Ed25519 signing happens in the webhook AFTER payment confirms
     const proofRecord = {
       proof_id: proofId,
       file_name: fileName.substring(0, 255),
       file_size: fileSize,
-      file_hash: fileHash.toLowerCase(), // Normalize to lowercase hex
-      timestamp: timestamp,
+      file_hash: fileHash,
+      timestamp: sealTimestamp,
       sealed_at: null,
       verified_at: null,
       user_email: email || null,
       sender_email: email || null,
       recipient_email: recipientEmail || null,
       project_name: projectName ? projectName.substring(0, 100) : null,
+      rac_signature: null,
+      rac_chain_hash: null,
+      rac_enabled: false,
       ed25519_signature: null,
       ed25519_public_key: null,
       chain_hash: null,
       previous_proof_id: null,
       rac_version: 'SENT.RAC.V1',
       stripe_payment_id: paymentIntent.id,
+      stripe_session_id: null,
+      user_id: null,
       receipt_url: `https://vxsent.com/receipt?id=${proofId}`,
       is_valid: false,
-      status: 'pending_payment',
-      created_at: createdAt,
-      updated_at: createdAt
+      status: 'pending',
+      veridex_proof_id: null,
+      veridex_signature: null
     };
 
-    await supabaseInsert('proofs', proofRecord );
-    console.log(`[RAC] Pending proof inserted: ${proofId}`);
+    const insertResult = await supabaseInsert('proofs', proofRecord );
+    if (!insertResult) {
+      console.warn('[RAC] Failed to insert pending proof into Supabase — payment will still proceed');
+    } else {
+      console.log(`[RAC] Pending proof inserted: ${proofId}`);
+    }
 
     // ─── Return to frontend ─────────────────────────────────────────────────
     return {
       statusCode: 200,
-      headers,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
       body: JSON.stringify({
         clientSecret: paymentIntent.client_secret,
         proofId: proofId,
         publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
       })
     };
-
   } catch (error) {
     console.error('[RAC] create-payment-intent error:', error.message, error.stack);
     return {
       statusCode: 500,
-      headers,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: 'Payment initialization failed. Please try again.' })
     };
   }
