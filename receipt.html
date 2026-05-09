@@ -273,45 +273,57 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-
   const id=p.get('id');
   const isPending=p.get('pending')==='true';
 
-  // Demo/fallback data from URL params
-  const file=p.get('file')||'brand-guidelines-final-v3.pdf';
-  const hash=p.get('hash')||'a3f9d2e847bc6f1a0d5e92c38b741f96e2d4c87a1b3f9d2e847bc6f1a0d5e92c38b741f96';
-  const size=p.get('size')||'4.2 MB';
+  // Fallback data from URL params
+  const file=p.get('file')||'';
+  const hash=p.get('hash')||'';
+  const size=p.get('size')||'';
   const time=p.get('time')||new Date().toISOString();
   const proofId=id||genId();
 
   function populate(data){
-    document.getElementById('dtFile').textContent=data.fileName||file;
-    document.getElementById('dtSize').textContent=data.fileSize||size;
+    document.getElementById('dtFile').textContent=data.fileName||file||'—';
+    document.getElementById('dtSize').textContent=data.fileSize||size||'—';
     document.getElementById('dtTime').textContent=fmtTime(data.sealedAt||time);
-    document.getElementById('hashVal').textContent=data.fileHash||hash;
-    document.getElementById('proofIdVal').textContent=data.id||proofId;
-    document.getElementById('verifyUrl').textContent='https://vxsent.com/verify/'+(data.id||proofId);
-    document.title='SENT. Receipt — '+((data.fileName||file).substring(0,40));
+    document.getElementById('hashVal').textContent=data.fileHash||hash||'—';
+    // Use data.id or data.proofId (API returns both)
+    const displayId=data.id||data.proofId||proofId;
+    document.getElementById('proofIdVal').textContent=displayId;
+    document.getElementById('verifyUrl').textContent='https://vxsent.com/verify/'+displayId;
+    document.title='SENT. Receipt — '+((data.fileName||file||'Proof').substring(0,40));
   }
 
-  // Try to load from API first
+  // Load proof from API
   if(id){
     fetch(`/api/proof/${id}`)
-      .then(r=>r.json())
-      .then(data=>{
-        if(data.error){
-          // Proof still pending — show pending state
-          if(isPending||data.error.includes('pending')){
-            showPending();
-          }
-          populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
-        } else {
-          populate(data);
-          hidePending();
+      .then(r=>{
+        if(r.status===202){
+          // Proof exists but payment still pending
+          showPending();
+          return r.json().then(d=>{
+            populate({id:d.id||proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+          });
         }
+        return r.json().then(data=>{
+          if(data.error){
+            if(isPending||data.error.includes('pending')){
+              showPending();
+            }
+            populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+          } else {
+            populate(data);
+            hidePending();
+          }
+        });
       })
       .catch(()=>{
         populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
       });
-  } else {
-    // URL params only (demo mode)
+  } else if(file||hash){
+    // URL params only (shared link with data)
     populate({id:proofId,fileName:file,fileSize:size,fileHash:hash,sealedAt:time});
+  } else {
+    // No data at all
+    populate({id:genId(),fileName:'—',fileSize:'—',fileHash:'—',sealedAt:new Date().toISOString()});
   }
 
   function showPending(){
@@ -319,7 +331,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-
     if(banner){
       banner.style.background='#f59e0b';
       banner.querySelector('.bn-text').textContent='SEALING IN PROGRESS...';
-      // Auto-refresh after 3 seconds
       setTimeout(()=>location.reload(),3000);
     }
   }
