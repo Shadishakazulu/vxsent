@@ -313,10 +313,9 @@ async function loadDashboard(){
         else render(PROOFS);
       } else { render(PROOFS); }
     } else {
-      // Not authenticated — show demo data
-      // In production with backend live, uncomment the line below:
-      // window.location.href='/login';
-      render(PROOFS);
+      // Not authenticated — redirect to login
+      window.location.href='/login';
+      return;
     }
   }catch(e){
     // Backend not yet connected — show demo data
