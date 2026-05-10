@@ -1,5 +1,5 @@
 // netlify/functions/stripe-webhook.js
-const crypto = require('crypto' );
+const crypto = require('crypto');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { getSupabase, ok, err, corsHeaders, sendRecipientNotification } = require('../../src/lib/index.js');
 
@@ -20,12 +20,12 @@ function computeChainHash(previousHash, signature) {
 
 exports.handler = async (event, context) => {
   console.log('[webhook] Received request');
-  
-  if (event.httpMethod === 'OPTIONS' ) {
+
+  if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: corsHeaders };
   }
 
-  if (event.httpMethod !== 'POST' ) {
+  if (event.httpMethod !== 'POST') {
     return err('Method not allowed', 405);
   }
 
@@ -34,7 +34,7 @@ exports.handler = async (event, context) => {
     const body = event.body;
 
     console.log('[webhook] Verifying signature');
-    
+
     let stripeEvent;
     try {
       stripeEvent = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
@@ -45,19 +45,21 @@ exports.handler = async (event, context) => {
 
     console.log(`[webhook] Event type: ${stripeEvent.type}`);
 
-    if (stripeEvent.type !== 'payment_intent.succeeded') {
-      console.log('[webhook] Ignoring non-payment event');
+    // Handle checkout.session.completed (fired by Stripe Checkout Sessions)
+    if (stripeEvent.type !== 'checkout.session.completed') {
+      console.log('[webhook] Ignoring non-checkout event:', stripeEvent.type);
       return ok({ received: true });
     }
 
-    const paymentIntent = stripeEvent.data.object;
-    const metadata = paymentIntent.metadata || {};
+    const session = stripeEvent.data.object;
+    const metadata = session.metadata || {};
 
-    console.log('[webhook] Metadata:', JSON.stringify(metadata));
+    console.log('[webhook] Session metadata:', JSON.stringify(metadata));
 
     const recipientEmail = metadata.recipient_email;
     const senderEmail = metadata.sender_email;
     const fileName = metadata.file_name || 'Verified Delivery';
+    const fileHash = metadata.file_hash || '';
 
     if (!recipientEmail || !senderEmail) {
       console.error('[webhook] Missing emails:', { recipientEmail, senderEmail });
@@ -85,6 +87,7 @@ exports.handler = async (event, context) => {
         id: proofId,
         proof_id: proofId,
         file_name: fileName,
+        file_hash: fileHash,
         sender_email: senderEmail,
         recipient_email: recipientEmail,
         status: 'sealed',
@@ -92,8 +95,8 @@ exports.handler = async (event, context) => {
         sealed_at: sealedAt,
         ed25519_signature: signature,
         chain_hash: chainHash,
-        stripe_payment_id: paymentIntent.id,
-        amount_cents: paymentIntent.amount,
+        stripe_payment_id: session.payment_intent || session.id,
+        amount_cents: session.amount_total,
         user_email: senderEmail,
         timestamp: sealedAt,
         rac_enabled: true,
