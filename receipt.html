@@ -3,648 +3,753 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Receipt — SENT.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <title>SENT. — Proof of Delivery</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{
-      --bg:#0a1628;
-      --surface:#0d1f3c;
-      --surface-2:#111d35;
-      --border:#1a3a6b;
-      --green:#00ff88;
-      --green-dk:#00b356;
-      --green-bg:rgba(0,255,136,0.06);
-      --amber:#ffc800;
-      --amber-bg:rgba(255,200,0,0.08);
-      --red:#ff4444;
-      --text:#e0e8ff;
-      --muted:#6b7a99;
-      --mono:'JetBrains Mono',monospace;
-      --sans:'DM Sans',sans-serif;
-      --display:'Bebas Neue',sans-serif;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a1628;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
     }
-    body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+    .container { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
 
     /* ── HEADER ── */
-    header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border)}
-    .logo{font-family:var(--display);font-size:1.5rem;color:var(--green);letter-spacing:0.1em;text-decoration:none;display:flex;align-items:center;gap:8px}
-    .logo-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
-    .hdr-nav{display:flex;gap:20px;align-items:center}
-    .hdr-link{color:var(--muted);text-decoration:none;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.15s}
-    .hdr-link:hover{color:var(--text)}
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo { font-size: 28px; letter-spacing: 6px; color: #00ff88; font-weight: bold; }
+    .logo-sub { font-size: 11px; letter-spacing: 3px; color: #4a6a8a; margin-top: 4px; }
 
-    /* ── MAIN CONTAINER ── */
-    .container{max-width:800px;margin:0 auto;padding:40px 24px 80px}
-
-    /* ── STATUS BANNERS ── */
-    .banner{border-radius:4px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700}
-    .banner-sealed{background:var(--green-bg);border:1px solid var(--green);color:var(--green)}
-    .banner-pending{background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber)}
-    .banner-confirmed{background:rgba(0,255,136,0.1);border:1px solid var(--green);color:var(--green);margin-top:16px}
-    .banner-error{background:rgba(255,68,68,0.08);border:1px solid var(--red);color:var(--red)}
-    .banner-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
-    .spinner{width:14px;height:14px;border:2px solid rgba(255,200,0,0.3);border-top-color:var(--amber);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    /* ── STATUS BANNER ── */
+    .banner {
+      padding: 16px 20px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    .banner-sealed { background: #0d2a1a; border: 1px solid #00ff88; color: #00ff88; }
+    .banner-pending { background: #1a1a0d; border: 1px solid #ffaa00; color: #ffaa00; }
+    .banner-confirmed { background: #0d2a1a; border: 2px solid #00ff88; color: #00ff88; }
+    .banner-error { background: #2a0d0d; border: 1px solid #ff4444; color: #ff4444; }
 
     /* ── PROOF CARD ── */
-    .proof-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:24px}
-    .proof-card-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-    .proof-id-label{font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px}
-    .proof-id-value{font-family:var(--mono);font-size:0.85rem;color:var(--green);letter-spacing:0.05em;word-break:break-all}
-    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700}
-    .badge-sealed{background:var(--green-bg);border:1px solid var(--green);color:var(--green)}
-    .badge-pending{background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber)}
-
-    /* ── PROOF ROWS ── */
-    .proof-section{padding:20px 24px;border-bottom:1px solid var(--border)}
-    .proof-section:last-child{border-bottom:none}
-    .proof-section-title{font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px}
-    .proof-row{display:grid;grid-template-columns:140px 1fr;gap:8px;margin-bottom:10px;align-items:start}
-    .proof-row:last-child{margin-bottom:0}
-    .proof-label{font-family:var(--mono);font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding-top:2px}
-    .proof-value{font-family:var(--mono);font-size:0.75rem;color:var(--text);word-break:break-all}
-    .proof-value.highlight{color:var(--green);font-weight:700}
-    .proof-value.mono-lg{font-size:0.65rem;line-height:1.6}
-    .access-counter{font-family:var(--mono);font-size:0.7rem;color:var(--muted);letter-spacing:0.08em}
+    .proof-card {
+      background: #0d1e35;
+      border: 1px solid #1e3a5f;
+      border-radius: 4px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .proof-card h2 {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #4a6a8a;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .field { margin-bottom: 16px; }
+    .field-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #4a6a8a;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .field-value {
+      font-size: 13px;
+      color: #e0e0e0;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+    .field-value.highlight { color: #00ff88; font-size: 14px; letter-spacing: 1px; }
+    .field-value.mono { font-size: 11px; color: #8899aa; }
 
     /* ── RAC CHAIN BLOCK ── */
-    .rac-block{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:16px 20px;margin:0 24px 20px}
-    .rac-title{font-family:var(--mono);font-size:0.65rem;color:var(--green);letter-spacing:0.15em;text-transform:uppercase;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-    .rac-row{display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:8px;align-items:start}
-    .rac-row:last-child{margin-bottom:0}
-    .rac-key{font-family:var(--mono);font-size:0.65rem;color:var(--green);letter-spacing:0.1em;text-transform:uppercase;opacity:0.7}
-    .rac-val{font-family:var(--mono);font-size:0.7rem;color:var(--text)}
-    .rac-hash{font-size:0.6rem;color:var(--muted);word-break:break-all;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,255,136,0.1)}
+    .rac-block {
+      background: #071020;
+      border: 1px solid #1e3a5f;
+      border-radius: 4px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .rac-block h3 {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #00ff88;
+      margin-bottom: 16px;
+    }
+    .rac-row { display: flex; margin-bottom: 10px; gap: 12px; }
+    .rac-key {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: #4a6a8a;
+      min-width: 100px;
+      text-transform: uppercase;
+    }
+    .rac-val { font-size: 12px; color: #e0e0e0; word-break: break-all; }
 
-    /* ── WHAT THIS PROVES ── */
-    .proves-list{list-style:none;padding:0}
-    .proves-list li{display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:0.85rem;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.04)}
-    .proves-list li:last-child{border-bottom:none}
-    .proves-check{color:var(--green);font-family:var(--mono);font-size:0.75rem;flex-shrink:0;margin-top:2px}
+    /* ── SPINNER ── */
+    .spinner-wrap { text-align: center; padding: 48px 0; }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid #1e3a5f;
+      border-top-color: #00ff88;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-text { font-size: 14px; letter-spacing: 3px; color: #00ff88; }
+    .spinner-sub { font-size: 12px; color: #4a6a8a; margin-top: 8px; }
 
-    /* ── ACTION BUTTONS ── */
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:4px;font-family:var(--display);font-size:1rem;letter-spacing:0.1em;cursor:pointer;text-decoration:none;border:none;transition:all 0.15s}
-    .btn-primary{background:var(--green);color:#0a1628;font-weight:700}
-    .btn-primary:hover{background:#00e07a}
-    .btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
-    .btn-secondary:hover{border-color:var(--green);color:var(--green)}
-    .btn-danger{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:0.85rem;font-family:var(--sans);font-weight:500;letter-spacing:0.05em}
-
-    /* ── CONFIRMATION SECTION ── */
-    #confirmationUI{margin-top:24px}
-    .confirm-section{border-radius:6px;padding:20px 24px;margin-bottom:16px}
-    .confirm-section.default{background:var(--surface);border:1px solid var(--border)}
-    .confirm-section.highlighted{background:rgba(0,255,136,0.04);border:2px solid var(--green);animation:pulse-border 2s ease-in-out infinite}
-    .confirm-section.done{background:rgba(0,255,136,0.06);border:1px solid var(--green)}
-    @keyframes pulse-border{0%,100%{border-color:rgba(0,255,136,0.4)}50%{border-color:var(--green)}}
-    .confirm-title{font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px}
-    .confirm-helper{font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5}
-    .confirm-btn{width:100%;padding:16px;background:var(--green);color:#0a1628;border:none;border-radius:4px;font-family:var(--display);font-size:1.2rem;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s}
-    .confirm-btn:hover{background:#00e07a}
-    .confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
-    .confirm-done-msg{font-family:var(--mono);font-size:0.8rem;color:var(--green);letter-spacing:0.05em;margin-bottom:8px}
-    .confirm-hash{font-family:var(--mono);font-size:0.6rem;color:var(--muted);word-break:break-all;line-height:1.5;margin-top:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:3px}
+    /* ── BUTTONS ── */
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .btn {
+      flex: 1; min-width: 120px;
+      padding: 12px 16px;
+      border: none; border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #00ff88; color: #0a1628; }
+    .btn-secondary { background: transparent; color: #00ff88; border: 1px solid #00ff88; }
+    .btn-confirm {
+      width: 100%;
+      padding: 16px;
+      background: #00ff88;
+      color: #0a1628;
+      font-size: 13px;
+      letter-spacing: 2px;
+      border: none; border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-confirm.pulse {
+      animation: pulse-border 1.5s ease-in-out infinite;
+      border: 2px solid #00ff88;
+    }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(0,255,136,0); }
+    }
 
     /* ── TOAST ── */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:4px;font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;transition:transform 0.3s ease;z-index:1000;white-space:nowrap}
-    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: #00ff88;
+      color: #0a1628;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── WHAT THIS PROVES ── */
+    .proves-list { margin: 20px 0; }
+    .proves-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e3a5f;
+      font-size: 12px;
+      color: #8899aa;
+    }
+    .proves-item .check { color: #00ff88; flex-shrink: 0; }
+
+    /* ── CONFIRM SECTION ── */
+    .confirm-section {
+      background: #071020;
+      border: 1px solid #1e3a5f;
+      border-radius: 4px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .confirm-section.highlight-confirm {
+      border-color: #00ff88;
+      animation: pulse-border 1.5s ease-in-out infinite;
+    }
+    .confirm-helper {
+      font-size: 12px;
+      color: #8899aa;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
 
     /* ── HABIT FOOTER ── */
-    .habit-footer{background:var(--surface);border-top:1px solid var(--border);padding:20px 24px;margin-top:40px}
-    .habit-steps{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-    .habit-step-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
-    .habit-step-item.active{color:var(--green)}
-    .habit-step-num{width:18px;height:18px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700}
-    .habit-step-item.active .habit-step-num{background:var(--green);color:#0a1628}
-    .habit-arrow{color:var(--border);font-size:0.7rem}
-    .habit-tagline{font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase}
+    .habit-footer {
+      background: #071020;
+      border-top: 1px solid #1e3a5f;
+      padding: 20px;
+      text-align: center;
+      margin-top: 40px;
+      border-radius: 4px;
+    }
+    .habit-steps { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .habit-step { font-size: 11px; letter-spacing: 1px; color: #4a6a8a; }
+    .habit-step.active { color: #00ff88; font-weight: bold; }
+    .habit-arrow { color: #1e3a5f; }
+    .habit-tagline { font-size: 11px; letter-spacing: 2px; color: #4a6a8a; }
+
+    /* ── RECIPIENT CONFIRMED BANNER ── */
+    .confirmed-banner {
+      background: #0d2a1a;
+      border: 1px solid #00ff88;
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    .confirmed-banner h3 { font-size: 12px; letter-spacing: 2px; color: #00ff88; margin-bottom: 8px; }
+    .confirmed-banner p { font-size: 11px; color: #8899aa; margin: 2px 0; }
+
+    /* ── ACCESS COUNTER ── */
+    .access-counter {
+      font-size: 11px;
+      color: #4a6a8a;
+      letter-spacing: 1px;
+      text-align: right;
+      margin-bottom: 8px;
+    }
 
     /* ── VERIFY URL ── */
-    .verify-url-box{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:4px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-    .verify-url-text{font-family:var(--mono);font-size:0.7rem;color:var(--muted);word-break:break-all;flex:1}
-    .verify-url-copy{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:3px;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.08em;cursor:pointer;white-space:nowrap;transition:all 0.15s}
-    .verify-url-copy:hover{border-color:var(--green);color:var(--green)}
-
-    /* ── LOADING STATE ── */
-    .loading-state{text-align:center;padding:80px 24px}
-    .loading-spinner-lg{width:40px;height:40px;border:3px solid rgba(0,255,136,0.2);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
-    .loading-text{font-family:var(--mono);font-size:0.8rem;color:var(--muted);letter-spacing:0.1em}
-
-    @media(max-width:600px){
-      .proof-row{grid-template-columns:1fr;gap:2px}
-      .proof-label{padding-top:0}
-      .rac-row{grid-template-columns:1fr;gap:2px}
-      .actions{flex-direction:column}
-      .btn{justify-content:center}
+    .verify-url-box {
+      background: #071020;
+      border: 1px solid #1e3a5f;
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .verify-url-text {
+      flex: 1;
+      font-size: 11px;
+      color: #00ff88;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      padding: 6px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 2px;
+      flex-shrink: 0;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <a href="/" class="logo"><div class="logo-dot"></div>SENT.</a>
-  <nav class="hdr-nav">
-    <a href="/pricing" class="hdr-link">Pricing</a>
-    <a href="/dashboard" class="hdr-link">Dashboard</a>
-    <a href="https://eyespai.com" class="hdr-link" target="_blank" rel="noopener">EYEspAI</a>
-  </nav>
-</header>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">SENT.</div>
+    <div class="logo-sub">SENT. RAC V1 — PROOF OF DELIVERY</div>
+  </div>
+
+  <!-- STATUS BANNER -->
+  <div id="statusBanner" class="banner banner-pending" style="display:none"></div>
+
+  <!-- PENDING / SEALING STATE -->
+  <div id="pendingState">
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <div class="spinner-text">SEALING YOUR PROOF...</div>
+      <div class="spinner-sub">Payment confirmed. Sealing your proof on RAC chain...</div>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="errorState" style="display:none">
+    <div class="proof-card">
+      <div class="field">
+        <div class="field-label">Error</div>
+        <div class="field-value" id="errorMsg">Proof not found.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="window.location.href='/'">← Create New Proof</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEALED PROOF STATE -->
+  <div id="sealedState" style="display:none">
+
+    <div class="access-counter" id="accessCounter"></div>
+
+    <!-- Recipient Confirmed Banner (shown if confirmed) -->
+    <div id="recipientConfirmedBanner" class="confirmed-banner" style="display:none">
+      <h3>✓ RECIPIENT CONFIRMED DELIVERY</h3>
+      <p id="confirmedAtLine"></p>
+      <p id="confirmHashLine"></p>
+    </div>
+
+    <!-- Main Proof Card -->
+    <div class="proof-card">
+      <h2>Proof of Delivery</h2>
+
+      <div class="field">
+        <div class="field-label">Proof ID</div>
+        <div class="field-value highlight" id="proofIdDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Status</div>
+        <div class="field-value" style="color:#00ff88">Sealed · Unaltered · Permanently valid</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">File Name</div>
+        <div class="field-value" id="fileNameDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">File Size</div>
+        <div class="field-value" id="fileSizeDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Sealed At</div>
+        <div class="field-value" id="sealedAtDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">SHA-256 Hash</div>
+        <div class="field-value mono" id="hashDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Ed25519 Signature</div>
+        <div class="field-value mono" id="signatureDisplay"></div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Veridex Proof ID</div>
+        <div class="field-value mono" id="veridexIdDisplay"></div>
+      </div>
+    </div>
+
+    <!-- RAC Chain Block -->
+    <div id="racBlock" class="rac-block" style="display:none">
+      <h3>RAC CHAIN — RECEIPT AUTHENTICATION CHAIN</h3>
+      <div class="rac-row">
+        <div class="rac-key">WHO</div>
+        <div class="rac-val">Freelancer — payment verified</div>
+      </div>
+      <div class="rac-row" id="racForRow" style="display:none">
+        <div class="rac-key">FOR</div>
+        <div class="rac-val" id="racForVal"></div>
+      </div>
+      <div class="rac-row" id="racUnderRow" style="display:none">
+        <div class="rac-key">UNDER</div>
+        <div class="rac-val" id="racUnderVal"></div>
+      </div>
+      <div class="rac-row">
+        <div class="rac-key">CONFIRMED BY</div>
+        <div class="rac-val">Stripe payment ✓</div>
+      </div>
+      <div class="rac-row">
+        <div class="rac-key">Chain Hash</div>
+        <div class="rac-val mono" id="racChainHash"></div>
+      </div>
+    </div>
+
+    <!-- Verify URL -->
+    <div class="verify-url-box">
+      <div class="verify-url-text" id="verifyUrlDisplay"></div>
+      <button class="copy-btn" onclick="copyVerifyUrl()">COPY</button>
+    </div>
+
+    <!-- What This Receipt Proves -->
+    <div class="proves-list" id="provesList">
+      <div class="proves-item"><span class="check">✓</span><span>The file existed at the exact timestamp shown</span></div>
+      <div class="proves-item"><span class="check">✓</span><span>The file has not been altered since sealing</span></div>
+      <div class="proves-item"><span class="check">✓</span><span>Payment was verified by Stripe</span></div>
+      <div class="proves-item"><span class="check">✓</span><span>The proof is permanently sealed and independently verifiable</span></div>
+    </div>
+
+    <!-- Confirm Section -->
+    <div id="confirmSection" class="confirm-section" style="display:none">
+      <div class="confirm-helper" id="confirmHelper"></div>
+      <button class="btn-confirm" id="confirmBtn" onclick="confirmReceipt()">CONFIRM I RECEIVED THIS DELIVERY</button>
+      <div id="confirmResult" style="display:none; margin-top:12px; font-size:12px; color:#00ff88; letter-spacing:1px;"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyVerifyUrl()">COPY PROOF LINK</button>
+      <button class="btn btn-secondary" onclick="window.location.href='/'">← Create New Proof</button>
+    </div>
+
+  </div>
+
+  <!-- HABIT FOOTER -->
+  <div class="habit-footer">
+    <div class="habit-steps">
+      <span class="habit-step">1 Finish</span>
+      <span class="habit-arrow">→</span>
+      <span class="habit-step">2 Drop</span>
+      <span class="habit-arrow">→</span>
+      <span class="habit-step">3 Proof</span>
+      <span class="habit-arrow">→</span>
+      <span class="habit-step active">4 SEND IT</span>
+    </div>
+    <div class="habit-tagline">Send work? Proof it. Every time.</div>
+  </div>
+
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- MAIN -->
-<div class="container" id="mainContainer">
-  <!-- Loading state shown while fetching -->
-  <div class="loading-state" id="loadingState">
-    <div class="loading-spinner-lg"></div>
-    <div class="loading-text">Loading proof...</div>
-  </div>
-
-  <!-- Error state -->
-  <div id="errorState" style="display:none">
-    <div class="banner banner-error">
-      <div class="banner-dot"></div>
-      <span id="errorMsg">Proof not found.</span>
-    </div>
-    <p style="color:var(--muted);font-size:0.85rem;margin-top:8px">Check the URL and try again, or <a href="/" style="color:var(--green)">create a new proof</a>.</p>
-  </div>
-
-  <!-- Proof content (hidden until loaded) -->
-  <div id="proofContent" style="display:none">
-
-    <!-- Status banner -->
-    <div class="banner banner-sealed" id="bannerSealed">
-      <div class="banner-dot"></div>
-      <span>✓ DELIVERY CONFIRMED AND SEALED</span>
-    </div>
-    <div class="banner banner-pending" id="bannerPending" style="display:none">
-      <div class="spinner"></div>
-      <span>SEALING... Payment received — cryptographic proof being generated</span>
-    </div>
-
-    <!-- Proof card -->
-    <div class="proof-card">
-      <div class="proof-card-header">
-        <div>
-          <div class="proof-id-label">Proof ID</div>
-          <div class="proof-id-value" id="proofIdDisplay">—</div>
-        </div>
-        <div>
-          <span class="status-badge badge-sealed" id="statusBadge">Sealed · Unaltered · Permanently valid</span>
-        </div>
-      </div>
-
-      <!-- File details -->
-      <div class="proof-section">
-        <div class="proof-section-title">File Details</div>
-        <div class="proof-row">
-          <span class="proof-label">File name</span>
-          <span class="proof-value" id="fileName">—</span>
-        </div>
-        <div class="proof-row">
-          <span class="proof-label">File size</span>
-          <span class="proof-value" id="fileSize">—</span>
-        </div>
-        <div class="proof-row">
-          <span class="proof-label">Sealed at</span>
-          <span class="proof-value" id="sealedAt">—</span>
-        </div>
-        <div class="proof-row" id="accessRow">
-          <span class="proof-label">Access count</span>
-          <span class="proof-value access-counter" id="accessCount">—</span>
-        </div>
-      </div>
-
-      <!-- Cryptographic proof -->
-      <div class="proof-section">
-        <div class="proof-section-title">Cryptographic Proof</div>
-        <div class="proof-row">
-          <span class="proof-label">SHA-256 hash</span>
-          <span class="proof-value mono-lg" id="fileHash">—</span>
-        </div>
-        <div class="proof-row">
-          <span class="proof-label">Ed25519 sig</span>
-          <span class="proof-value mono-lg" id="signature">—</span>
-        </div>
-        <div class="proof-row">
-          <span class="proof-label">Proof ID</span>
-          <span class="proof-value mono-lg" id="veridexProofId">—</span>
-        </div>
-      </div>
-
-      <!-- RAC chain block (shown if rac.enabled = true) -->
-      <div id="racSection" style="display:none">
-        <div class="rac-block">
-          <div class="rac-title">
-            <span>RAC CHAIN — SEALED</span>
-          </div>
-          <div class="rac-row">
-            <span class="rac-key">WHO</span>
-            <span class="rac-val">Freelancer — payment verified</span>
-          </div>
-          <div class="rac-row" id="racForRow" style="display:none">
-            <span class="rac-key">FOR</span>
-            <span class="rac-val" id="racFor">—</span>
-          </div>
-          <div class="rac-row" id="racUnderRow" style="display:none">
-            <span class="rac-key">UNDER</span>
-            <span class="rac-val" id="racUnder">—</span>
-          </div>
-          <div class="rac-row">
-            <span class="rac-key">CONFIRMED BY</span>
-            <span class="rac-val">Stripe payment ✓</span>
-          </div>
-          <div class="rac-hash" id="racChainHash">Chain hash: —</div>
-        </div>
-      </div>
-
-      <!-- What this receipt proves -->
-      <div class="proof-section">
-        <div class="proof-section-title">What this receipt proves</div>
-        <ul class="proves-list" id="provesList">
-          <li><span class="proves-check">✓</span><span>This exact file existed at the sealed timestamp</span></li>
-          <li><span class="proves-check">✓</span><span>The file has not been altered since sealing (hash match)</span></li>
-          <li><span class="proves-check">✓</span><span>Payment was made and verified by Stripe</span></li>
-          <li><span class="proves-check">✓</span><span>Proof is permanently sealed via Veridex cryptographic infrastructure</span></li>
-          <li id="recipientProveItem" style="display:none"><span class="proves-check">✓</span><span id="recipientProveText">Addressed to a specific recipient</span></li>
-          <li id="confirmedProveItem" style="display:none"><span class="proves-check">✓</span><span id="confirmedProveText">The recipient cryptographically confirmed receipt</span></li>
-        </ul>
-      </div>
-
-      <!-- Permanence line -->
-      <div class="proof-section" style="border-bottom:none">
-        <p style="font-size:0.8rem;color:var(--muted);line-height:1.6">This receipt is permanently valid. The proof cannot be altered. The timestamp cannot be backdated. Anyone can verify it independently using the public key and Ed25519 signature above.</p>
-      </div>
-    </div>
-
-    <!-- Verify URL + actions -->
-    <div class="verify-url-box">
-      <span class="verify-url-text" id="verifyUrlText">—</span>
-      <button class="verify-url-copy" onclick="copyLink()">COPY</button>
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-primary" onclick="copyLink()">📋 COPY PROOF LINK</button>
-      <button class="btn btn-secondary" onclick="downloadPDF()">⬇ DOWNLOAD PDF</button>
-      <button class="btn btn-secondary" onclick="shareProof()">↗ SHARE</button>
-      <a class="btn btn-secondary" id="emailBtn" href="#" target="_blank">✉ OPEN EMAIL</a>
-    </div>
-
-    <!-- Recipient confirmation section -->
-    <div id="confirmationUI">
-      <!-- State: recipient confirmed -->
-      <div id="confirmedSection" style="display:none">
-        <div class="banner banner-confirmed">
-          <div class="banner-dot"></div>
-          <span>✓ RECIPIENT CONFIRMED DELIVERY</span>
-        </div>
-        <div class="confirm-section done">
-          <div class="confirm-title">Delivery confirmed by recipient</div>
-          <div class="proof-row" style="margin-bottom:8px">
-            <span class="proof-label">Confirmed</span>
-            <span class="proof-value" id="confirmedAt">—</span>
-          </div>
-          <div class="confirm-hash" id="confirmationHash">Confirmation hash: —</div>
-        </div>
-      </div>
-
-      <!-- State: awaiting confirmation (recipient email exists, not yet confirmed) -->
-      <div id="confirmButtonSection" style="display:none">
-        <div class="confirm-section default" id="confirmCard">
-          <div class="confirm-title">Confirm receipt</div>
-          <div class="confirm-helper" id="confirmHelper">Click below to cryptographically confirm you received this delivery. This adds a fourth layer to the proof chain.</div>
-          <button class="confirm-btn" id="confirmBtn" onclick="confirmReceipt()">CONFIRM I RECEIVED THIS DELIVERY</button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /proofContent -->
-</div><!-- /container -->
-
-<!-- HABIT FOOTER -->
-<div class="habit-footer">
-  <div class="habit-steps">
-    <div class="habit-step-item">
-      <div class="habit-step-num">1</div>
-      <span>Finish work</span>
-    </div>
-    <div class="habit-arrow">→</div>
-    <div class="habit-step-item">
-      <div class="habit-step-num">2</div>
-      <span>Proof it</span>
-    </div>
-    <div class="habit-arrow">→</div>
-    <div class="habit-step-item active">
-      <div class="habit-step-num">3</div>
-      <span>SEND IT</span>
-    </div>
-  </div>
-  <div class="habit-tagline">Send work? Proof it. Every time.</div>
-</div>
-
 <script>
-// ── URL params ──────────────────────────────────────────────────────────────
-const params = new URLSearchParams(window.location.search);
-const proofId = params.get('id');
-const isPending = params.get('pending') === 'true';
-const isConfirmMode = params.get('confirm') === 'true';
+  // ── URL PARAMS ──────────────────────────────────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  let proofId = params.get('id');
+  const sessionId = params.get('session_id');
+  const confirmParam = params.get('confirm') === 'true';
+  const pendingParam = params.get('pending') === 'true';
 
-// ── Toast helper ─────────────────────────────────────────────────────────────
-function showToast(msg, duration) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration || 4000);
-}
+  let pollCount = 0;
+  const MAX_POLLS = 30; // 30 seconds
+  let pollTimer = null;
+  let proofData = null;
 
-// ── Copy link ────────────────────────────────────────────────────────────────
-function copyLink() {
-  const url = document.getElementById('verifyUrlText').textContent;
-  if (navigator.clipboard && url && url !== '—') {
+  // ── TOAST ───────────────────────────────────────────────────────────────────
+  function showToast(msg, duration = 4000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // ── COPY ────────────────────────────────────────────────────────────────────
+  function copyVerifyUrl() {
+    const url = document.getElementById('verifyUrlDisplay').textContent;
+    if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
-      showToast('Proof link copied — paste it with your delivery', 4000);
+      showToast('Proof link copied — paste it with your delivery');
     }).catch(() => {
-      fallbackCopy(url);
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Proof link copied — paste it with your delivery');
     });
   }
-}
 
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  showToast('Proof link copied — paste it with your delivery', 4000);
-}
-
-// ── Download PDF ─────────────────────────────────────────────────────────────
-function downloadPDF() {
-  showToast('PDF download coming soon', 2000);
-}
-
-// ── Share ────────────────────────────────────────────────────────────────────
-function shareProof() {
-  const url = document.getElementById('verifyUrlText').textContent;
-  if (navigator.share && url && url !== '—') {
-    navigator.share({ title: 'SENT. Proof of Delivery', url });
-  } else {
-    copyLink();
-  }
-}
-
-// ── Mask email ───────────────────────────────────────────────────────────────
-function maskEmail(email) {
-  if (!email) return '—';
-  const [user, domain] = email.split('@');
-  if (!domain) return email;
-  const masked = user.substring(0, 2) + '***';
-  return masked + '@' + domain;
-}
-
-// ── Populate proof data ───────────────────────────────────────────────────────
-function populateProof(data) {
-  // Status banner
-  if (data.isValid) {
-    document.getElementById('bannerSealed').style.display = 'flex';
-    document.getElementById('bannerPending').style.display = 'none';
-    document.getElementById('statusBadge').className = 'status-badge badge-sealed';
-    document.getElementById('statusBadge').textContent = 'Sealed · Unaltered · Permanently valid';
-  } else {
-    document.getElementById('bannerSealed').style.display = 'none';
-    document.getElementById('bannerPending').style.display = 'flex';
-    document.getElementById('statusBadge').className = 'status-badge badge-pending';
-    document.getElementById('statusBadge').textContent = 'Pending · Sealing in progress';
+  // ── SHOW STATES ─────────────────────────────────────────────────────────────
+  function showPending(msg) {
+    document.getElementById('pendingState').style.display = 'block';
+    document.getElementById('sealedState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+    const banner = document.getElementById('statusBanner');
+    banner.className = 'banner banner-pending';
+    banner.textContent = msg || '⏳ SEALING YOUR PROOF...';
+    banner.style.display = 'block';
   }
 
-  // Proof ID
-  document.getElementById('proofIdDisplay').textContent = data.id || proofId || '—';
-
-  // File details
-  document.getElementById('fileName').textContent = data.fileName || '—';
-  document.getElementById('fileSize').textContent = data.fileSize || '—';
-  document.getElementById('sealedAt').textContent = data.sealedAt ? new Date(data.sealedAt).toLocaleString() : '—';
-
-  // Access counter
-  if (data.accessCount) {
-    document.getElementById('accessCount').textContent = `Accessed ${data.accessCount} time${data.accessCount === 1 ? '' : 's'}`;
+  function showError(msg) {
+    document.getElementById('pendingState').style.display = 'none';
+    document.getElementById('sealedState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    document.getElementById('errorMsg').textContent = msg || 'Proof not found.';
+    const banner = document.getElementById('statusBanner');
+    banner.className = 'banner banner-error';
+    banner.textContent = '✗ ERROR';
+    banner.style.display = 'block';
   }
 
-  // Cryptographic proof
-  document.getElementById('fileHash').textContent = data.fileHash || '—';
-  document.getElementById('signature').textContent = data.veridexSignature || (data.isValid ? 'Ed25519 — sealed' : 'Pending');
-  document.getElementById('veridexProofId').textContent = data.veridexProofId || data.id || '—';
+  function showSealed(data) {
+    document.getElementById('pendingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('sealedState').style.display = 'block';
 
-  // Verify URL
-  const verifyUrl = `https://vxsent.com/verify/${data.id || proofId}`;
-  document.getElementById('verifyUrlText').textContent = verifyUrl;
+    const banner = document.getElementById('statusBanner');
+    banner.className = 'banner banner-sealed';
+    banner.textContent = '✓ DELIVERY CONFIRMED AND SEALED';
+    banner.style.display = 'block';
 
-  // Email button
-  const emailHref = `mailto:?subject=SENT.%20Proof%20of%20Delivery%20%E2%80%94%20${encodeURIComponent(data.fileName || '')}&body=Here%20is%20my%20cryptographic%20proof%20of%20delivery%3A%0A%0A${encodeURIComponent(verifyUrl)}`;
-  document.getElementById('emailBtn').href = emailHref;
+    // Populate fields
+    document.getElementById('proofIdDisplay').textContent = data.id || proofId || '';
+    document.getElementById('fileNameDisplay').textContent = data.fileName || data.file_name || '';
+    document.getElementById('fileSizeDisplay').textContent = data.fileSize || data.file_size || 'N/A';
+    document.getElementById('sealedAtDisplay').textContent = data.sealedAt || data.sealed_at || '';
+    document.getElementById('hashDisplay').textContent = data.fileHash || data.file_hash || '';
+    document.getElementById('signatureDisplay').textContent = data.veridexSignature || data.veridex_signature || 'Pending...';
+    document.getElementById('veridexIdDisplay').textContent = data.veridexProofId || data.veridex_proof_id || proofId || '';
 
-  // RAC chain block
-  if (data.rac && data.rac.enabled) {
-    document.getElementById('racSection').style.display = 'block';
+    // Verify URL
+    const pid = data.id || proofId;
+    const verifyUrl = `https://vxsent.com/receipt?id=${pid}`;
+    document.getElementById('verifyUrlDisplay').textContent = verifyUrl;
 
-    if (data.rac.authorizedRecipient) {
-      document.getElementById('racForRow').style.display = 'grid';
-      document.getElementById('racFor').textContent = maskEmail(data.rac.authorizedRecipient);
+    // Access counter
+    if (data.accessCount) {
+      document.getElementById('accessCounter').textContent = `Accessed ${data.accessCount} time(s)`;
     }
 
-    if (data.rac.project) {
-      document.getElementById('racUnderRow').style.display = 'grid';
-      document.getElementById('racUnder').textContent = data.rac.project;
-    }
+    // RAC block
+    const rac = data.rac || {};
+    if (rac.enabled || data.rac_enabled || data.rac_chain_hash) {
+      document.getElementById('racBlock').style.display = 'block';
+      const chainHash = rac.chainHash || data.rac_chain_hash || '';
+      document.getElementById('racChainHash').textContent = chainHash;
 
-    if (data.rac.chainHash) {
-      document.getElementById('racChainHash').textContent = 'Chain hash: ' + data.rac.chainHash;
-    }
-  }
-
-  // Recipient in "what this proves"
-  if (data.rac && data.rac.authorizedRecipient) {
-    document.getElementById('recipientProveItem').style.display = 'flex';
-    document.getElementById('recipientProveText').textContent = `Addressed to ${maskEmail(data.rac.authorizedRecipient)}`;
-  }
-
-  // Confirmation state
-  if (data.recipientConfirmed) {
-    // Show confirmed banner + details
-    document.getElementById('confirmedSection').style.display = 'block';
-    document.getElementById('confirmButtonSection').style.display = 'none';
-    document.getElementById('confirmedAt').textContent = data.recipientConfirmedAt
-      ? new Date(data.recipientConfirmedAt).toLocaleString() : '—';
-    document.getElementById('confirmationHash').textContent = 'Confirmation hash: ' + (data.recipientConfirmationHash || '—');
-
-    // Add to "what this proves"
-    document.getElementById('confirmedProveItem').style.display = 'flex';
-    document.getElementById('confirmedProveText').textContent = `The recipient cryptographically confirmed receipt on ${data.recipientConfirmedAt ? new Date(data.recipientConfirmedAt).toLocaleDateString() : '—'}`;
-
-  } else if (data.rac && data.rac.authorizedRecipient) {
-    // Show confirm button
-    document.getElementById('confirmButtonSection').style.display = 'block';
-    document.getElementById('confirmedSection').style.display = 'none';
-
-    // If ?confirm=true in URL, highlight and scroll
-    if (isConfirmMode) {
-      const card = document.getElementById('confirmCard');
-      card.classList.add('highlighted');
-      document.getElementById('confirmHelper').textContent = 'You were sent this delivery. Click below to confirm receipt.';
-      setTimeout(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 500);
-    }
-  }
-}
-
-// ── Confirm receipt ───────────────────────────────────────────────────────────
-async function confirmReceipt() {
-  const btn = document.getElementById('confirmBtn');
-  btn.textContent = 'CONFIRMING...';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch('/api/confirm-receipt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proofId: proofId })
-    });
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || 'Confirmation failed');
-
-    // Update UI
-    document.getElementById('confirmButtonSection').style.display = 'none';
-    document.getElementById('confirmedSection').style.display = 'block';
-    document.getElementById('confirmedAt').textContent = data.confirmedAt
-      ? new Date(data.confirmedAt).toLocaleString() : new Date().toLocaleString();
-    document.getElementById('confirmationHash').textContent = 'Confirmation hash: ' + (data.confirmationHash || '—');
-
-    // Add to "what this proves"
-    document.getElementById('confirmedProveItem').style.display = 'flex';
-    document.getElementById('confirmedProveText').textContent = `The recipient cryptographically confirmed receipt on ${new Date().toLocaleDateString()}`;
-
-    // Show confirmed banner
-    document.getElementById('confirmedSection').querySelector('.banner-confirmed').style.display = 'flex';
-
-    showToast('Receipt confirmed. Sender notified.', 4000);
-
-  } catch (e) {
-    btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY';
-    btn.disabled = false;
-    showToast('Error: ' + e.message, 4000);
-  }
-}
-
-// ── Load proof from API ───────────────────────────────────────────────────────
-async function loadProof(id) {
-  try {
-    const res = await fetch(`/api/proof/${id}`);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Proof not found');
-    }
-    const data = await res.json();
-    return data;
-  } catch (e) {
-    throw e;
-  }
-}
-
-// ── Pending state: poll every 3 seconds ─────────────────────────────────────
-let pendingPollInterval = null;
-let pendingPollAttempts = 0;
-
-function startPendingPoll(id) {
-  pendingPollInterval = setInterval(async () => {
-    pendingPollAttempts++;
-    try {
-      const data = await loadProof(id);
-      if (data.isValid) {
-        clearInterval(pendingPollInterval);
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('proofContent').style.display = 'block';
-        populateProof(data);
-        // Auto-copy after 600ms per spec
-        setTimeout(() => {
-          copyLink();
-        }, 600);
+      const recipient = rac.authorizedRecipient || data.recipient_email || '';
+      if (recipient) {
+        // Mask recipient email
+        const masked = recipient.replace(/(.{2}).*(@.*)/, '$1***$2');
+        document.getElementById('racForRow').style.display = 'flex';
+        document.getElementById('racForVal').textContent = masked;
       }
-    } catch (e) {
-      // Keep polling
-    }
-    if (pendingPollAttempts >= 20) {
-      // Give up after 60 seconds
-      clearInterval(pendingPollInterval);
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('errorState').style.display = 'block';
-      document.getElementById('errorMsg').textContent = 'Proof sealing timed out. Check your email for confirmation.';
-    }
-  }, 3000);
-}
 
-// ── Main init ─────────────────────────────────────────────────────────────────
-async function init() {
-  if (!proofId) {
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('errorState').style.display = 'block';
-    document.getElementById('errorMsg').textContent = 'No proof ID in URL.';
-    return;
-  }
-
-  try {
-    const data = await loadProof(proofId);
-
-    document.getElementById('loadingState').style.display = 'none';
-
-    if (!data.isValid) {
-      // Show pending state and start polling
-      document.getElementById('proofContent').style.display = 'block';
-      populateProof(data);
-      startPendingPoll(proofId);
-      return;
+      const project = rac.project || data.project_name || '';
+      if (project) {
+        document.getElementById('racUnderRow').style.display = 'flex';
+        document.getElementById('racUnderVal').textContent = project;
+      }
     }
 
-    // Proof is valid — show it
-    document.getElementById('proofContent').style.display = 'block';
-    populateProof(data);
+    // Recipient confirmed
+    const confirmed = data.recipientConfirmed || data.recipient_confirmed;
+    const confirmedAt = data.recipientConfirmedAt || data.recipient_confirmed_at;
+    const confirmHash = data.recipientConfirmationHash || data.recipient_confirmation_hash;
 
-    // Auto-copy verify URL to clipboard 600ms after load (spec Section 3, Step 5)
+    if (confirmed) {
+      document.getElementById('recipientConfirmedBanner').style.display = 'block';
+      document.getElementById('confirmedAtLine').textContent = `Confirmed: ${confirmedAt || ''}`;
+      document.getElementById('confirmHashLine').textContent = `Confirmation hash: ${confirmHash || ''}`;
+
+      // Add to proves list
+      const provesList = document.getElementById('provesList');
+      const item = document.createElement('div');
+      item.className = 'proves-item';
+      item.innerHTML = `<span class="check">✓</span><span>The recipient cryptographically confirmed receipt on ${confirmedAt ? new Date(confirmedAt).toLocaleDateString() : 'record'}</span>`;
+      provesList.appendChild(item);
+
+      // Update banner
+      banner.className = 'banner banner-confirmed';
+      banner.textContent = '✓ DELIVERY CONFIRMED AND SEALED — RECIPIENT CONFIRMED';
+    } else {
+      // Show confirm button if recipient email exists
+      const recipientEmail = rac.authorizedRecipient || data.recipient_email || '';
+      if (recipientEmail || confirmParam) {
+        const confirmSection = document.getElementById('confirmSection');
+        confirmSection.style.display = 'block';
+
+        if (confirmParam) {
+          confirmSection.classList.add('highlight-confirm');
+          document.getElementById('confirmHelper').textContent = 'You were sent this delivery. Click below to confirm receipt.';
+          setTimeout(() => {
+            confirmSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 500);
+        } else {
+          document.getElementById('confirmHelper').textContent = 'The recipient can confirm delivery by clicking the button below.';
+        }
+      }
+    }
+
+    // Auto-copy at 600ms
     setTimeout(() => {
-      copyLink();
+      const url = document.getElementById('verifyUrlDisplay').textContent;
+      if (url) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('Proof link copied — paste it with your delivery');
+        }).catch(() => {});
+      }
     }, 600);
+  }
 
-  } catch (e) {
-    document.getElementById('loadingState').style.display = 'none';
+  // ── CONFIRM RECEIPT ─────────────────────────────────────────────────────────
+  async function confirmReceipt() {
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = true;
+    btn.textContent = 'CONFIRMING...';
 
-    // If pending=true in URL, show pending state and poll
-    if (isPending) {
-      document.getElementById('proofContent').style.display = 'block';
-      document.getElementById('bannerSealed').style.display = 'none';
-      document.getElementById('bannerPending').style.display = 'flex';
-      document.getElementById('proofIdDisplay').textContent = proofId;
-      document.getElementById('statusBadge').className = 'status-badge badge-pending';
-      document.getElementById('statusBadge').textContent = 'Pending · Sealing in progress';
-      startPendingPoll(proofId);
+    const pid = proofId || (proofData && proofData.id);
+    if (!pid) {
+      showToast('Error: No proof ID found');
+      btn.disabled = false;
+      btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY';
       return;
     }
 
-    document.getElementById('errorState').style.display = 'block';
-    document.getElementById('errorMsg').textContent = e.message || 'Proof not found.';
-  }
-}
+    try {
+      const res = await fetch('/api/confirm-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proofId: pid })
+      });
+      const data = await res.json();
 
-// Start
-init();
+      if (data.confirmed || res.ok) {
+        const resultEl = document.getElementById('confirmResult');
+        resultEl.style.display = 'block';
+        resultEl.textContent = '✓ Delivery confirmed. Sender has been notified.';
+        btn.style.display = 'none';
+
+        if (data.confirmationHash) {
+          const hashEl = document.createElement('div');
+          hashEl.style.cssText = 'font-size:11px;color:#4a6a8a;margin-top:8px;word-break:break-all';
+          hashEl.textContent = `Confirmation hash: ${data.confirmationHash}`;
+          resultEl.parentNode.appendChild(hashEl);
+        }
+
+        showToast('Receipt confirmed. Sender notified.');
+
+        // Refresh proof data
+        setTimeout(() => loadProof(pid), 2000);
+      } else {
+        showToast(data.error || 'Confirmation failed. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY';
+      }
+    } catch (err) {
+      showToast('Network error. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'CONFIRM I RECEIVED THIS DELIVERY';
+    }
+  }
+
+  // ── LOAD PROOF ──────────────────────────────────────────────────────────────
+  async function loadProof(pid) {
+    try {
+      const res = await fetch(`/api/proof/${encodeURIComponent(pid)}`);
+      const data = await res.json();
+
+      if (res.ok && data && (data.isValid || data.is_valid)) {
+        proofData = data;
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        showSealed(data);
+        return true;
+      } else if (res.status === 404 || (data && data.error && data.error.includes('not found'))) {
+        // Proof doesn't exist yet — keep polling
+        return false;
+      } else if (data && (data.status === 'pending' || (!data.isValid && !data.is_valid))) {
+        // Exists but not yet sealed — keep polling
+        return false;
+      }
+      return false;
+    } catch (err) {
+      console.error('[receipt] loadProof error:', err.message);
+      return false;
+    }
+  }
+
+  // ── POLL ────────────────────────────────────────────────────────────────────
+  async function startPolling(pid) {
+    showPending('⏳ SEALING YOUR PROOF...');
+
+    // Try immediately
+    const found = await loadProof(pid);
+    if (found) return;
+
+    pollTimer = setInterval(async () => {
+      pollCount++;
+      if (pollCount >= MAX_POLLS) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        // Show timeout error
+        showError('Proof sealing is taking longer than expected. Please check back in a few minutes or contact support.');
+        return;
+      }
+
+      const found = await loadProof(pid);
+      if (found) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }, 1000);
+  }
+
+  // ── INIT ────────────────────────────────────────────────────────────────────
+  async function init() {
+    // If we have a proofId directly, start polling
+    if (proofId) {
+      await startPolling(proofId);
+      return;
+    }
+
+    // If we have a session_id but no proofId, try get-proof-by-session
+    if (sessionId) {
+      showPending('⏳ SEALING YOUR PROOF...');
+      try {
+        const res = await fetch(`/api/get-proof-by-session?session_id=${encodeURIComponent(sessionId)}`);
+        const data = await res.json();
+
+        if (res.ok && data && data.proofId) {
+          proofId = data.proofId;
+          // Update URL without reload
+          const newUrl = `/receipt?id=${proofId}&session_id=${sessionId}`;
+          window.history.replaceState({}, '', newUrl);
+          await startPolling(proofId);
+          return;
+        }
+      } catch (err) {
+        console.error('[receipt] get-proof-by-session error:', err.message);
+      }
+
+      // If session lookup failed, poll by session_id directly
+      // Try loading from session every 2 seconds for up to 30 seconds
+      let sessionPollCount = 0;
+      const sessionPollTimer = setInterval(async () => {
+        sessionPollCount++;
+        if (sessionPollCount >= 15) {
+          clearInterval(sessionPollTimer);
+          showError('Payment received but proof creation is taking longer than expected. Please contact support with your payment confirmation.');
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/get-proof-by-session?session_id=${encodeURIComponent(sessionId)}`);
+          const data = await res.json();
+
+          if (res.ok && data && data.proofId) {
+            clearInterval(sessionPollTimer);
+            proofId = data.proofId;
+            const newUrl = `/receipt?id=${proofId}&session_id=${sessionId}`;
+            window.history.replaceState({}, '', newUrl);
+            await startPolling(proofId);
+          }
+        } catch (err) {}
+      }, 2000);
+      return;
+    }
+
+    // No proofId and no sessionId
+    showError('No proof ID found. Please check your URL or contact support.');
+  }
+
+  // Start
+  init();
 </script>
+
 </body>
 </html>
