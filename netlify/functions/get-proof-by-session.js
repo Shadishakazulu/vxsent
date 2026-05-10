@@ -1,10 +1,27 @@
 // netlify/functions/get-proof-by-session.js
-// Looks up a proof by Stripe checkout session ID.
-// The webhook stores either session.payment_intent OR session.id in stripe_payment_id,
-// so we try both to ensure the lookup always works.
+// Looks up a proof by Stripe checkout session ID (fully self-contained).
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { getSupabase, ok, err, corsHeaders } = require('../../src/lib/index.js');
+const { createClient } = require('@supabase/supabase-js');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Content-Type': 'application/json'
+};
+
+function getSupabase() {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function ok(data) {
+  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
+}
+
+function err(message, statusCode) {
+  return { statusCode: statusCode || 400, headers: corsHeaders, body: JSON.stringify({ error: message }) };
+}
 
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -32,8 +49,7 @@ exports.handler = async (event, context) => {
       return ok(bySession);
     }
 
-    // Second try: retrieve the session from Stripe to get the payment_intent ID,
-    // then look up by that (pi_xxx stored as stripe_payment_id)
+    // Second try: retrieve the session from Stripe to get the payment_intent ID
     let paymentIntentId = null;
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -57,8 +73,8 @@ exports.handler = async (event, context) => {
     // Proof not found — webhook may not have fired yet, return 404 so client can retry
     return err('Proof not found yet', 404);
 
-  } catch (error) {
-    console.error('[get-proof-by-session] Error:', error.message);
-    return err('Failed to retrieve proof: ' + error.message);
+  } catch (e) {
+    console.error('[get-proof-by-session] Error:', e.message);
+    return err('Failed to retrieve proof: ' + e.message);
   }
 };
