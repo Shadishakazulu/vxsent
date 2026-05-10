@@ -377,6 +377,7 @@ async function initPayment(){
 
 async function submitPayment() {
   const email = document.getElementById('payEmail').value.trim();
+  const recipientEmail = document.getElementById('payRecipientEmail').value.trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     document.getElementById('payError').textContent = 'Please enter a valid email address.';
@@ -395,6 +396,7 @@ async function submitPayment() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email,
+        recipientEmail: recipientEmail,
         fileName: currentFile.name,
         fileHash: currentHash
       })
