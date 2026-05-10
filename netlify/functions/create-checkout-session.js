@@ -2,7 +2,7 @@
 
 exports.handler = async (event) => {
   // Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS' ) {
+  if (event.httpMethod === 'OPTIONS'  ) {
     return {
       statusCode: 200,
       headers: {
@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     };
   }
 
-  if (event.httpMethod !== 'POST' ) {
+  if (event.httpMethod !== 'POST'  ) {
     return {
       statusCode: 405,
       headers: {
@@ -57,7 +57,7 @@ exports.handler = async (event) => {
       };
     }
 
-    const { email, fileName, fileHash } = body;
+    const { email, recipientEmail, fileName, fileHash } = body;
 
     // Validation
     if (!email) {
@@ -68,6 +68,17 @@ exports.handler = async (event) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ error: 'Email is required' })
+      };
+    }
+
+    if (!recipientEmail) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ error: 'Recipient email is required' })
       };
     }
 
@@ -116,7 +127,7 @@ exports.handler = async (event) => {
     const origin = event.headers.origin || 'https://vxsent.com';
 
     // Create Stripe Checkout Session
-    console.log('[create-checkout-session] Creating checkout session for:', email, fileName );
+    console.log('[create-checkout-session] Creating checkout session for:', email, fileName  );
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -140,6 +151,8 @@ exports.handler = async (event) => {
       metadata: {
         file_hash: fileHash,
         file_name: fileName.substring(0, 100),
+        sender_email: email,
+        recipient_email: recipientEmail,
         user_email: email
       }
     });
