@@ -43,7 +43,10 @@ exports.handler = async (event) => {
   const sig = event.headers['stripe-signature'];
   let stripeEvent;
   try {
-    stripeEvent = stripe.webhooks.constructEvent(event.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const rawBody = event.isBase64Encoded
+      ? Buffer.from(event.body, 'base64').toString('utf8')
+      : event.body;
+    stripeEvent = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (e) {
     console.error('[SENT] Webhook sig failed:', e.message);
     return err('Signature failed: ' + e.message, 400);
@@ -69,55 +72,65 @@ exports.handler = async (event) => {
     return err('Missing sender email', 400);
   }
 
-  const sealedAt = new Date().toISOString();
-  const stripePaymentId = session.payment_intent || session.id;
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
   const proofId = crypto.randomUUID();
-  const racHash = crypto.createHash('sha256')
-    .update(JSON.stringify({ proofId, fileHash, senderEmail, recipientEmail: recipientEmail || '', sealedAt, stripePaymentId }))
-    .digest('hex');
 
-  console.log('[SENT] Creating proof:', proofId, 'sender:', senderEmail);
+  const chainData = proofId + ':' + fileHash + ':' + senderEmail + ':' + now;
+  const racChainHash = crypto.createHash('sha256').update(chainData).digest('hex');
 
-  try {
-    const supabase = getSupabase();
-    const { error: insertError } = await supabase.from('proofs').insert({
-      id: proofId,
-      sender_email: senderEmail,
-      recipient_email: recipientEmail,
-      file_name: fileName,
-      file_hash: fileHash,
-      file_size: fileSize,
-      project_name: projectName,
-      stripe_payment_id: stripePaymentId,
-      rac_hash: racHash,
-      sealed_at: sealedAt,
-      status: 'sealed',
-      recipient_confirmed: false
-    });
-    if (insertError) {
-      console.error('[SENT] DB insert error:', JSON.stringify(insertError));
-      return err('DB error: ' + insertError.message, 500);
-    }
-    console.log('[SENT] Proof saved:', proofId);
-  } catch (dbErr) {
-    console.error('[SENT] DB exception:', dbErr.message);
-    return err('DB exception: ' + dbErr.message, 500);
+  const proofRecord = {
+    proof_id:           proofId,
+    file_name:          fileName,
+    file_size:          fileSize,
+    file_hash:          fileHash,
+    sealed_at:          now,
+    stripe_payment_id:  session.payment_intent || session.id,
+    stripe_session_id:  session.id,
+    user_email:         senderEmail,
+    sender_email:       senderEmail,
+    recipient_email:    recipientEmail,
+    project_name:       projectName,
+    rac_chain_hash:     racChainHash,
+    rac_enabled:        true,
+    rac_version:        'v1',
+    status:             'sealed',
+    is_valid:           true,
+    amount_cents:       session.amount_total || 99,
+    timestamp:          now,
+    created_at:         now,
+    receipt_email_sent: false,
+  };
+
+  console.log('[SENT] Inserting proof:', proofId, 'for', senderEmail);
+
+  const { data: proof, error: dbError } = await supabase
+    .from('proofs')
+    .insert(proofRecord)
+    .select()
+    .single();
+
+  if (dbError) {
+    console.error('[SENT] DB error:', dbError.message);
+    return err('DB error: ' + dbError.message, 500);
   }
 
-  const base = process.env.URL || 'https://vxsent.com';
+  console.log('[SENT] Proof created:', proof.id, proof.proof_id);
 
-  try {
-    await sendEmail(senderEmail, 'Your proof is sealed — ' + fileName,
-      '<div style="font-family:sans-serif;padding:32px;max-width:560px"><h2>SENT.</h2><p>Your proof for <strong>' + fileName + '</strong> is sealed.</p><p>Proof ID: <code>' + proofId + '</code></p><p>Sealed: ' + new Date(sealedAt).toUTCString() + '</p><a href="' + base + '/receipt?id=' + proofId + '" style="background:#00b356;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:16px">VIEW RECEIPT</a></div>'
-    );
-    if (recipientEmail) {
-      await sendEmail(recipientEmail, 'You have a verified delivery — ' + fileName,
-        '<div style="font-family:sans-serif;padding:32px;max-width:560px"><h2>SENT.</h2><p><strong>' + senderEmail + '</strong> sent you a verified file: <strong>' + fileName + '</strong></p><p>Proof ID: <code>' + proofId + '</code></p><p>Sealed: ' + new Date(sealedAt).toUTCString() + '</p><a href="' + base + '/verify/' + proofId + '?confirm=true" style="background:#00b356;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:16px">CONFIRM RECEIPT</a></div>'
-      );
-    }
-  } catch (emailErr) {
-    console.error('[SENT] Email error (non-fatal):', emailErr.message);
+  const receiptUrl = 'https://vxsent.com/receipt?id=' + proof.proof_id;
+
+  await supabase
+    .from('proofs')
+    .update({ receipt_url: receiptUrl, receipt_email_sent: true })
+    .eq('id', proof.id);
+
+  const senderHtml = '<div style="font-family:monospace;background:#0a1628;color:#00ff88;padding:32px;max-width:600px;"><h1 style="color:#00ff88;font-size:24px;letter-spacing:4px;">SENT.</h1><p style="color:#8892a4;">YOUR PROOF HAS BEEN SEALED ON THE RAC CHAIN</p><hr style="border-color:#1a2a4a;"/><table style="width:100%;color:#cdd6f4;font-size:14px;"><tr><td style="padding:8px 0;color:#8892a4;">FILE</td><td>' + fileName + '</td></tr><tr><td style="padding:8px 0;color:#8892a4;">SEALED AT</td><td>' + new Date(now).toLocaleString() + '</td></tr><tr><td style="padding:8px 0;color:#8892a4;">PROOF ID</td><td style="color:#00ff88;font-size:12px;">' + proofId + '</td></tr><tr><td style="padding:8px 0;color:#8892a4;">RAC HASH</td><td style="font-size:11px;word-break:break-all;">' + racChainHash.substring(0,32) + '...</td></tr></table><hr style="border-color:#1a2a4a;"/><a href="' + receiptUrl + '" style="display:inline-block;background:#00ff88;color:#0a1628;padding:12px 24px;text-decoration:none;font-weight:bold;letter-spacing:2px;margin-top:16px;">VIEW RECEIPT</a><p style="color:#8892a4;font-size:12px;margin-top:24px;">This proof is permanently sealed and tamper-evident.</p></div>';
+  await sendEmail(senderEmail, 'SENT. — Your Proof Has Been Sealed', senderHtml);
+
+  if (recipientEmail) {
+    const recipientHtml = '<div style="font-family:monospace;background:#0a1628;color:#00ff88;padding:32px;max-width:600px;"><h1 style="color:#00ff88;font-size:24px;letter-spacing:4px;">SENT.</h1><p style="color:#8892a4;">YOU HAVE RECEIVED A VERIFIED DELIVERY PROOF</p><hr style="border-color:#1a2a4a;"/><p style="color:#cdd6f4;"><strong style="color:#00ff88;">' + senderEmail + '</strong> has sent you a cryptographically sealed proof of delivery.</p><table style="width:100%;color:#cdd6f4;font-size:14px;"><tr><td style="padding:8px 0;color:#8892a4;">FILE</td><td>' + fileName + '</td></tr>' + (projectName ? '<tr><td style="padding:8px 0;color:#8892a4;">PROJECT</td><td>' + projectName + '</td></tr>' : '') + '<tr><td style="padding:8px 0;color:#8892a4;">SEALED AT</td><td>' + new Date(now).toLocaleString() + '</td></tr></table><hr style="border-color:#1a2a4a;"/><a href="' + receiptUrl + '" style="display:inline-block;background:#00ff88;color:#0a1628;padding:12px 24px;text-decoration:none;font-weight:bold;letter-spacing:2px;margin-top:16px;">VIEW AND CONFIRM RECEIPT</a><p style="color:#8892a4;font-size:12px;margin-top:24px;">Click to view and confirm receipt. This creates an immutable record on the RAC chain.</p></div>';
+    await sendEmail(recipientEmail, 'SENT. — ' + senderEmail + ' has sent you a verified proof', recipientHtml);
   }
 
-  return ok({ received: true, proofId, racHash, sealedAt });
+  return ok({ success: true, proof_id: proofId, receipt_url: receiptUrl });
 };
