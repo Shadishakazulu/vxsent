@@ -45,16 +45,22 @@ exports.handler = async (event, context) => {
 
     console.log(`[webhook] Event type: ${stripeEvent.type}`);
 
-    // Handle checkout.session.completed (fired by Stripe Checkout Sessions)
-    if (stripeEvent.type !== 'checkout.session.completed') {
-      console.log('[webhook] Ignoring non-checkout event:', stripeEvent.type);
+    // Handle both checkout.session.completed AND payment_intent.succeeded
+    let metadata;
+    if (stripeEvent.type === 'checkout.session.completed') {
+      const session = stripeEvent.data.object;
+      metadata = session.metadata || {};
+      console.log('[webhook] Processing checkout.session.completed');
+    } else if (stripeEvent.type === 'payment_intent.succeeded') {
+      const paymentIntent = stripeEvent.data.object;
+      metadata = paymentIntent.metadata || {};
+      console.log('[webhook] Processing payment_intent.succeeded');
+    } else {
+      console.log('[webhook] Ignoring event:', stripeEvent.type);
       return ok({ received: true });
     }
 
-    const session = stripeEvent.data.object;
-    const metadata = session.metadata || {};
-
-    console.log('[webhook] Session metadata:', JSON.stringify(metadata));
+    console.log('[webhook] Metadata:', JSON.stringify(metadata));
 
     const recipientEmail = metadata.recipient_email;
     const senderEmail = metadata.sender_email;
