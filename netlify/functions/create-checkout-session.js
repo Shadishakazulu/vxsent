@@ -154,6 +154,15 @@ exports.handler = async (event) => {
         sender_email: email,
         recipient_email: recipientEmail,
         user_email: email
+      },
+      payment_intent_data: {
+        metadata: {
+          file_hash: fileHash,
+          file_name: fileName.substring(0, 100),
+          sender_email: email,
+          recipient_email: recipientEmail,
+          user_email: email
+        }
       }
     });
 
