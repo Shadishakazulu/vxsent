@@ -16,4 +16,5 @@
 /api/auth/verify                /.netlify/functions/auth-verify                 200
 /api/auth/session               /.netlify/functions/auth-session                200
 /api/auth/logout                /.netlify/functions/auth-logout                 200
+/api/confirm-receipt            /.netlify/functions/confirm-receipt             200
 /api/cancel-subscription        /.netlify/functions/cancel-subscription         200
