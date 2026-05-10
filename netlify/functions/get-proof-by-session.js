@@ -1,91 +1,113 @@
 // netlify/functions/get-proof-by-session.js
-// Looks up a proof by Stripe checkout session ID (fully self-contained).
+// SENT. Master Reference v1.0 — Section 3
+// Looks up a proof by Stripe session_id or payment_intent_id
+// Called by receipt.html when only session_id is in the URL
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require('@supabase/supabase-js');
+exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json'
+  };
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Content-Type': 'application/json'
-};
-
-function getSupabase() {
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-}
-
-function ok(data) {
-  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
-}
-
-function err(message, statusCode) {
-  return { statusCode: statusCode || 400, headers: corsHeaders, body: JSON.stringify({ error: message }) };
-}
-
-exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: corsHeaders };
+    return { statusCode: 200, headers: { ...headers, 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } };
   }
 
-  if (event.httpMethod !== 'GET') {
-    return err('Method not allowed', 405);
+  const sessionId = event.queryStringParameters?.session_id;
+  if (!sessionId) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'session_id required' }) };
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'DB not configured' }) };
   }
 
   try {
-    const sessionId = event.queryStringParameters && event.queryStringParameters.session_id;
-    if (!sessionId) return err('session_id is required');
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const supabase = getSupabase();
-
-    // First try: look up by stripe_session_id (cs_xxx stored directly)
-    const { data: bySessionId } = await supabase
+    // Strategy 1: Query by stripe_session_id directly
+    const { data: bySession } = await supabase
       .from('proofs')
-      .select('*')
+      .select('id, is_valid, status')
       .eq('stripe_session_id', sessionId)
-      .maybeSingle();
+      .single();
 
-    if (bySessionId) {
-      return ok(bySessionId);
+    if (bySession) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ proofId: bySession.id, isValid: bySession.is_valid })
+      };
     }
 
-    // Second try: look up by stripe_payment_id = cs_xxx (legacy)
-    const { data: byPaymentId } = await supabase
+    // Strategy 2: Query by stripe_payment_id = sessionId (fallback)
+    const { data: byPayment } = await supabase
       .from('proofs')
-      .select('*')
+      .select('id, is_valid, status')
       .eq('stripe_payment_id', sessionId)
-      .maybeSingle();
+      .single();
 
-    if (byPaymentId) {
-      return ok(byPaymentId);
+    if (byPayment) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ proofId: byPayment.id, isValid: byPayment.is_valid })
+      };
     }
 
-    // Third try: retrieve the session from Stripe to get the payment_intent ID
-    let paymentIntentId = null;
-    try {
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      paymentIntentId = session.payment_intent;
-    } catch (stripeErr) {
-      console.warn('[get-proof-by-session] Could not retrieve session from Stripe:', stripeErr.message);
-    }
+    // Strategy 3: Use Stripe API to get the PaymentIntent from the session
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (stripeKey && sessionId.startsWith('cs_')) {
+      try {
+        const stripe = require('stripe')(stripeKey);
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (paymentIntentId) {
-      const { data: byIntent } = await supabase
-        .from('proofs')
-        .select('*')
-        .eq('stripe_payment_id', paymentIntentId)
-        .maybeSingle();
+        // Check metadata for proof_id
+        if (session.metadata?.proof_id) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ proofId: session.metadata.proof_id, isValid: false })
+          };
+        }
 
-      if (byIntent) {
-        return ok(byIntent);
+        // Try to find by PaymentIntent ID
+        if (session.payment_intent) {
+          const { data: byPI } = await supabase
+            .from('proofs')
+            .select('id, is_valid')
+            .eq('stripe_payment_id', session.payment_intent)
+            .single();
+
+          if (byPI) {
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({ proofId: byPI.id, isValid: byPI.is_valid })
+            };
+          }
+        }
+      } catch (stripeErr) {
+        console.error('[get-proof-by-session] Stripe lookup error:', stripeErr.message);
       }
     }
 
-    // Proof not found — webhook may not have fired yet, return 404 so client can retry
-    return err('Proof not found yet', 404);
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: 'Proof not found yet' })
+    };
 
-  } catch (e) {
-    console.error('[get-proof-by-session] Error:', e.message);
-    return err('Failed to retrieve proof: ' + e.message);
+  } catch (err) {
+    console.error('[get-proof-by-session] Error:', err.message);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Server error' })
+    };
   }
 };
