@@ -1,361 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENT. — Cryptographic Proof Receipt</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #fafafa;
-            color: #111;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        .receipt-container {
-            max-width: 720px;
-            margin: 0 auto;
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .receipt-header {
-            padding: 40px 40px 32px;
-            border-bottom: 1px solid #f3f4f6;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .brand {
-            font-family: 'Bebas Neue', Impact, sans-serif;
-            font-size: 32px;
-            letter-spacing: 3px;
-            color: #111;
-        }
-        .brand-dot { color: #00b356; }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 2px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .status-sealed {
-            background: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-        .status-pending {
-            background: #fffbeb;
-            color: #d97706;
-            border: 1px solid #fde68a;
-        }
-        .status-invalid {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        .receipt-body { padding: 32px 40px; }
-        .section {
-            margin-bottom: 32px;
-        }
-        .section-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #6b7280;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .field {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #f9fafb;
-        }
-        .field:last-child { border-bottom: none; }
-        .field-label {
-            font-size: 11px;
-            font-weight: 500;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            min-width: 140px;
-            flex-shrink: 0;
-        }
-        .field-value {
-            font-size: 13px;
-            font-weight: 500;
-            color: #111;
-            text-align: right;
-            word-break: break-all;
-        }
-        .field-value.mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 400;
-        }
-        .field-value.hash {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 400;
-            line-height: 1.6;
-            max-width: 420px;
-        }
-        .field-value.green { color: #16a34a; }
-        .chain-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #2563eb;
-            text-decoration: none;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .chain-link:hover { text-decoration: underline; }
-        .verification-box {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 2px;
-            padding: 20px;
-            margin-top: 32px;
-        }
-        .verification-box h4 {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-        .verification-box code {
-            display: block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: #374151;
-            line-height: 1.8;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .receipt-footer {
-            padding: 24px 40px;
-            border-top: 1px solid #f3f4f6;
-            text-align: center;
-        }
-        .footer-text {
-            font-size: 11px;
-            color: #9ca3af;
-            line-height: 1.6;
-        }
-        .loading {
-            text-align: center;
-            padding: 80px 40px;
-            color: #6b7280;
-        }
-        .loading-spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid #e5e7eb;
-            border-top-color: #00b356;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes spin { to { transform: rotate(360deg ); } }
-        .error-state {
-            text-align: center;
-            padding: 80px 40px;
-            color: #dc2626;
-        }
-        @media (max-width: 640px) {
-            body { padding: 16px 12px; }
-            .receipt-header { padding: 24px 20px; flex-direction: column; gap: 12px; }
-            .receipt-body { padding: 24px 20px; }
-            .field { flex-direction: column; gap: 4px; }
-            .field-value { text-align: left; }
-            .receipt-footer { padding: 20px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipt — SENT. RAC v1</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a1628 0%, #1a2f4a 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(15, 25, 40, 0.95);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      padding-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      color: #00ff88;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+
+    .header p {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 12px;
+    }
+
+    .status-badge.pending {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      border: 1px solid #ffc107;
+    }
+
+    .status-badge.confirmed {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      border: 1px solid #00ff88;
+    }
+
+    .status-badge.sealed {
+      background: rgba(100, 150, 255, 0.2);
+      color: #6496ff;
+      border: 1px solid #6496ff;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      color: #00ff88;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      padding-bottom: 8px;
+    }
+
+    .field {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .field-label {
+      color: #888;
+      min-width: 200px;
+    }
+
+    .field-value {
+      color: #e0e0e0;
+      word-break: break-all;
+      text-align: right;
+      flex: 1;
+      margin-left: 20px;
+    }
+
+    .field-value.hash {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .confirmation-section {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 6px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .confirmation-section.sealed {
+      background: rgba(100, 150, 255, 0.05);
+      border: 1px solid rgba(100, 150, 255, 0.2);
+    }
+
+    .confirmation-title {
+      font-size: 13px;
+      color: #00ff88;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .confirmation-title.sealed {
+      color: #6496ff;
+    }
+
+    .confirmation-text {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 20px;
+      border: 1px solid rgba(0, 255, 136, 0.5);
+      background: transparent;
+      color: #00ff88;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: rgba(0, 255, 136, 0.1);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .error {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.5);
+      color: #ff4444;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.5);
+      color: #00ff88;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      border-top-color: #00ff88;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .chain-link {
+      font-size: 11px;
+      color: #666;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .field {
+        flex-direction: column;
+      }
+
+      .field-label {
+        margin-bottom: 4px;
+      }
+
+      .field-value {
+        text-align: left;
+        margin-left: 0;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      button {
+        min-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="receipt-container" id="receipt">
-        <div class="loading" id="loading-state">
-            <div class="loading-spinner"></div>
-            <p>Retrieving cryptographic proof...</p>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>RECEIPT</h1>
+      <p>SENT. RAC v1 — Proof of Delivery</p>
+      <div id="statusBadge" class="status-badge pending">Loading...</div>
     </div>
 
-    <script>
-        (async function() {
-            const container = document.getElementById('receipt');
-            const loadingState = document.getElementById('loading-state');
+    <div id="errorContainer"></div>
+    <div id="successContainer"></div>
 
-            // Get proof ID from URL
-            const params = new URLSearchParams(window.location.search);
-            const proofId = params.get('id');
+    <div id="proofContent" style="display: none;">
+      <!-- Proof Details Section -->
+      <div class="section">
+        <div class="section-title">Proof Details</div>
+        <div class="field">
+          <span class="field-label">Proof ID:</span>
+          <span class="field-value" id="proofId">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Status:</span>
+          <span class="field-value" id="proofStatus">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Created:</span>
+          <span class="field-value" id="createdAt">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Amount:</span>
+          <span class="field-value" id="amount">—</span>
+        </div>
+      </div>
 
-            if (!proofId) {
-                container.innerHTML = '<div class="error-state"><p>No proof ID provided.</p><p style="margin-top:8px;font-size:12px;color:#6b7280;">Usage: /receipt?id=SENT-YYYY-XXXXXXXX-XXXX-XXXX-XXXX</p></div>';
-                return;
-            }
+      <!-- Sender Information -->
+      <div class="section">
+        <div class="section-title">Sender</div>
+        <div class="field">
+          <span class="field-label">Email:</span>
+          <span class="field-value" id="senderEmail">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Timestamp:</span>
+          <span class="field-value" id="senderTimestamp">—</span>
+        </div>
+      </div>
 
-            try {
-                const response = await fetch(`/.netlify/functions/get-proof?id=${encodeURIComponent(proofId)}`);
-                
-                if (!response.ok) {
-                    const err = await response.json().catch(() => ({}));
-                    throw new Error(err.error || `Proof not found (${response.status})`);
-                }
+      <!-- Recipient Information -->
+      <div class="section">
+        <div class="section-title">Recipient</div>
+        <div class="field">
+          <span class="field-label">Email:</span>
+          <span class="field-value" id="recipientEmail">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Confirmation Status:</span>
+          <span class="field-value" id="recipientStatus">Not yet confirmed</span>
+        </div>
+      </div>
 
-                const proof = await response.json();
-                renderReceipt(proof);
-            } catch (error) {
-                container.innerHTML = `<div class="error-state"><p>${error.message}</p><p style="margin-top:8px;font-size:12px;color:#6b7280;">Proof ID: ${proofId}</p></div>`;
-            }
-        })();
+      <!-- Cryptographic Chain -->
+      <div class="section">
+        <div class="section-title">Cryptographic Chain</div>
+        <div class="field">
+          <span class="field-label">Signature (Ed25519):</span>
+          <span class="field-value hash" id="signature">—</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Chain Link (SHA-256):</span>
+          <span class="field-value hash" id="chainLink">—</span>
+        </div>
+      </div>
 
-        function renderReceipt(proof) {
-            const container = document.getElementById('receipt');
-            
-            // Determine status
-            let statusClass = 'status-pending';
-            let statusText = 'PENDING';
-            if (proof.status === 'sealed' && proof.isValid) {
-                statusClass = 'status-sealed';
-                statusText = '✓ SEALED & VERIFIED';
-            } else if (proof.status === 'refunded' || !proof.isValid) {
-                statusClass = 'status-invalid';
-                statusText = '✗ INVALIDATED';
-            }
+      <!-- Confirmation UI -->
+      <div id="confirmationUI"></div>
+    </div>
+  </div>
 
-            // Format date
-            const sealedDate = proof.sealedAt ? new Date(proof.sealedAt).toLocaleString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short'
-            }) : 'Pending...';
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const proofId = params.get('id');
+    const confirmParam = params.get('confirm');
 
-            // Build chain link
-            let chainLinkHtml = '<span style="color:#6b7280;font-size:11px;">Genesis (first proof in chain)</span>';
-            if (proof.previousProofId) {
-                chainLinkHtml = `<a class="chain-link" href="/receipt?id=${proof.previousProofId}">← ${proof.previousProofId}</a>`;
-            }
+    async function loadProof() {
+      if (!proofId) {
+        showError('No proof ID provided. Use ?id=YOUR_PROOF_ID');
+        return;
+      }
 
-            container.innerHTML = `
-                <div class="receipt-header">
-                    <div class="brand">● SENT<span class="brand-dot">.</span></div>
-                    <div class="status-badge ${statusClass}">${statusText}</div>
-                </div>
+      try {
+        const response = await fetch(`/.netlify/functions/get-proof?id=${proofId}`);
+        const result = await response.json();
 
-                <div class="receipt-body">
-                    <!-- Identity -->
-                    <div class="section">
-                        <div class="section-title">Proof Identity</div>
-                        <div class="field">
-                            <span class="field-label">Proof ID</span>
-                            <span class="field-value mono">${proof.proofId}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">RAC Version</span>
-                            <span class="field-value mono">${proof.racVersion}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">Sealed At</span>
-                            <span class="field-value green">${sealedDate}</span>
-                        </div>
-                    </div>
-
-                    <!-- File -->
-                    <div class="section">
-                        <div class="section-title">File Metadata</div>
-                        <div class="field">
-                            <span class="field-label">File Name</span>
-                            <span class="field-value">${proof.fileName}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">File Size</span>
-                            <span class="field-value">${proof.fileSize}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">SHA-256 Hash</span>
-                            <span class="field-value hash">${proof.fileHash || 'N/A'}</span>
-                        </div>
-                    </div>
-
-                    <!-- Cryptographic Proof -->
-                    <div class="section">
-                        <div class="section-title">Ed25519 Cryptographic Signature</div>
-                        <div class="field">
-                            <span class="field-label">Signature</span>
-                            <span class="field-value hash">${proof.ed25519Signature || 'Pending...'}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">Public Key</span>
-                            <span class="field-value hash">${proof.ed25519PublicKey || 'Pending...'}</span>
-                        </div>
-                    </div>
-
-                    <!-- Chain -->
-                    <div class="section">
-                        <div class="section-title">Receipt Authentication Chain</div>
-                        <div class="field">
-                            <span class="field-label">Chain Hash</span>
-                            <span class="field-value hash">${proof.chainHash || 'Pending...'}</span>
-                        </div>
-                        <div class="field">
-                            <span class="field-label">Previous Proof</span>
-                            <span class="field-value">${chainLinkHtml}</span>
-                        </div>
-                    </div>
-
-                    <!-- Parties -->
-                    ${proof.senderEmail || proof.recipientEmail || proof.projectName ? `
-                    <div class="section">
-                        <div class="section-title">Parties</div>
-                        ${proof.senderEmail ? `<div class="field"><span class="field-label">Sender</span><span class="field-value">${proof.senderEmail}</span></div>` : ''}
-                        ${proof.recipientEmail ? `<div class="field"><span class="field-label">Recipient</span><span class="field-value">${proof.recipientEmail}</span></div>` : ''}
-                        ${proof.projectName ? `<div class="field"><span class="field-label">Project</span><span class="field-value">${proof.projectName}</span></div>` : ''}
-                    </div>
-                    ` : ''}
-
-                    <!-- Verification -->
-                    <div class="verification-box">
-                        <h4>Independent Verification</h4>
-                        <code>Algorithm: Ed25519 (RFC 8032)
-Canonical Payload: ${proof.canonicalPayload || 'N/A'}
-Chain Method: SHA-256(previous_chain_hash + signature)
-
-To verify: reconstruct the canonical payload above,
-then verify the Ed25519 signature using the public key.
-No account or API access required.</code>
-                    </div>
-                </div>
-
-                <div class="receipt-footer">
-                    <p class="footer-text">
-                        This proof is cryptographically sealed and independently verifiable.  
-
-                        It cannot be altered, revoked, or disputed.  
-  
-
-                        <a href="https://vxsent.com" style="color:#00b356;text-decoration:none;">vxsent.com</a> — Proof of Delivery Infrastructure
-                    </p>
-                </div>
-            `;
-
-            // Update page title
-            document.title = `SENT. Proof — ${proof.proofId}`;
+        if (!response.ok) {
+          showError(result.error || 'Failed to load proof');
+          return;
         }
-    </script>
+
+        const proof = result.data;
+        displayProof(proof);
+
+        // If ?confirm=true, show confirmation UI
+        if (confirmParam === 'true') {
+          showConfirmationUI(proof);
+        }
+
+      } catch (error) {
+        showError(`Error loading proof: ${error.message}`);
+      }
+    }
+
+    function displayProof(proof) {
+      document.getElementById('proofContent').style.display = 'block';
+      document.getElementById('proofId').textContent = proof.proof_id;
+      document.getElementById('proofStatus').textContent = proof.status.toUpperCase();
+      document.getElementById('createdAt').textContent = new Date(proof.created_at).toLocaleString();
+      document.getElementById('amount').textContent = `$${(proof.amount / 100).toFixed(2)}`;
+      document.getElementById('senderEmail').textContent = proof.sender_email;
+      document.getElementById('senderTimestamp').textContent = new Date(proof.sender_timestamp).toLocaleString();
+      document.getElementById('recipientEmail').textContent = proof.recipient_email;
+      document.getElementById('signature').textContent = proof.signature || 'N/A';
+      document.getElementById('chainLink').textContent = proof.chain_link || 'N/A';
+
+      // Update status badge
+      const badge = document.getElementById('statusBadge');
+      badge.className = `status-badge ${proof.status}`;
+      badge.textContent = proof.status.toUpperCase();
+
+      // Update recipient confirmation status
+      if (proof.recipient_confirmed) {
+        document.getElementById('recipientStatus').textContent = `Confirmed on ${new Date(proof.recipient_confirmed_at).toLocaleString()}`;
+      }
+    }
+
+    function showConfirmationUI(proof) {
+      if (proof.recipient_confirmed) {
+        showSuccess('You have already confirmed receipt of this delivery.');
+        return;
+      }
+
+      if (proof.status !== 'sealed') {
+        showError('This proof is not ready for recipient confirmation. Status: ' + proof.status);
+        return;
+      }
+
+      const ui = document.getElementById('confirmationUI');
+      ui.innerHTML = `
+        <div class="confirmation-section sealed">
+          <div class="confirmation-title sealed">Awaiting Recipient Confirmation</div>
+          <div class="confirmation-text">
+            This delivery has been sealed by the sender. By confirming receipt below, you cryptographically prove that you received this file on this date and time. This confirmation will be recorded permanently in the proof chain.
+          </div>
+          <div class="button-group">
+            <button onclick="confirmReceipt('${proof.proof_id}')">Confirm I Received This</button>
+            <button onclick="window.location.href='/'">Cancel</button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function confirmReceipt(id) {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Confirming...';
+
+      try {
+        const response = await fetch('/.netlify/functions/confirm-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proofId: id })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Confirmation failed');
+        }
+
+        showSuccess('Receipt confirmed! Your confirmation has been recorded in the proof chain.');
+        setTimeout(() => loadProof(), 1000);
+
+      } catch (error) {
+        showError(`Confirmation failed: ${error.message}`);
+        btn.disabled = false;
+        btn.innerHTML = 'Confirm I Received This';
+      }
+    }
+
+    function showError(message) {
+      const container = document.getElementById('errorContainer');
+      container.innerHTML = `<div class="error">${message}</div>`;
+    }
+
+    function showSuccess(message) {
+      const container = document.getElementById('successContainer');
+      container.innerHTML = `<div class="success">${message}</div>`;
+    }
+
+    // Load proof on page load
+    loadProof();
+  </script>
 </body>
 </html>
