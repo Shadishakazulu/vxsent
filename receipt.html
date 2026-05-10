@@ -5,470 +5,214 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Receipt — SENT. RAC v1</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Courier New', monospace;
-      background: linear-gradient(135deg, #0a1628 0%, #1a2f4a 100%);
-      color: #e0e0e0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 800px;
-      width: 100%;
-      background: rgba(15, 25, 40, 0.95);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-      border-radius: 8px;
-      padding: 40px;
-      box-shadow: 0 0 40px rgba(0, 255, 136, 0.1);
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-      padding-bottom: 20px;
-    }
-
-    .header h1 {
-      font-size: 28px;
-      color: #00ff88;
-      margin-bottom: 8px;
-      letter-spacing: 2px;
-    }
-
-    .header p {
-      font-size: 12px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 12px;
-    }
-
-    .status-badge.pending {
-      background: rgba(255, 193, 7, 0.2);
-      color: #ffc107;
-      border: 1px solid #ffc107;
-    }
-
-    .status-badge.confirmed {
-      background: rgba(0, 255, 136, 0.2);
-      color: #00ff88;
-      border: 1px solid #00ff88;
-    }
-
-    .status-badge.sealed {
-      background: rgba(100, 150, 255, 0.2);
-      color: #6496ff;
-      border: 1px solid #6496ff;
-    }
-
-    .section {
-      margin-bottom: 30px;
-    }
-
-    .section-title {
-      font-size: 12px;
-      color: #00ff88;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-      padding-bottom: 8px;
-    }
-
-    .field {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .field-label {
-      color: #888;
-      min-width: 200px;
-    }
-
-    .field-value {
-      color: #e0e0e0;
-      word-break: break-all;
-      text-align: right;
-      flex: 1;
-      margin-left: 20px;
-    }
-
-    .field-value.hash {
-      font-family: 'Courier New', monospace;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-    }
-
-    .confirmation-section {
-      background: rgba(0, 255, 136, 0.05);
-      border: 1px solid rgba(0, 255, 136, 0.2);
-      border-radius: 6px;
-      padding: 20px;
-      margin-top: 20px;
-    }
-
-    .confirmation-section.sealed {
-      background: rgba(100, 150, 255, 0.05);
-      border: 1px solid rgba(100, 150, 255, 0.2);
-    }
-
-    .confirmation-title {
-      font-size: 13px;
-      color: #00ff88;
-      font-weight: bold;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .confirmation-title.sealed {
-      color: #6496ff;
-    }
-
-    .confirmation-text {
-      font-size: 12px;
-      color: #aaa;
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      flex: 1;
-      min-width: 150px;
-      padding: 12px 20px;
-      border: 1px solid rgba(0, 255, 136, 0.5);
-      background: transparent;
-      color: #00ff88;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: rgba(0, 255, 136, 0.1);
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .error {
-      background: rgba(255, 68, 68, 0.1);
-      border: 1px solid rgba(255, 68, 68, 0.5);
-      color: #ff4444;
-      padding: 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-bottom: 20px;
-    }
-
-    .success {
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid rgba(0, 255, 136, 0.5);
-      color: #00ff88;
-      padding: 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-bottom: 20px;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border: 2px solid rgba(0, 255, 136, 0.3);
-      border-top-color: #00ff88;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .chain-link {
-      font-size: 11px;
-      color: #666;
-      font-family: 'Courier New', monospace;
-      word-break: break-all;
-      margin-top: 8px;
-      padding: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 20px;
-      }
-
-      .header h1 {
-        font-size: 20px;
-      }
-
-      .field {
-        flex-direction: column;
-      }
-
-      .field-label {
-        margin-bottom: 4px;
-      }
-
-      .field-value {
-        text-align: left;
-        margin-left: 0;
-      }
-
-      .button-group {
-        flex-direction: column;
-      }
-
-      button {
-        min-width: 100%;
-      }
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Courier New',monospace;background:linear-gradient(135deg,#0a1628 0%,#1a2f4a 100%);color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .container{max-width:800px;width:100%;background:rgba(15,25,40,0.95);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:40px;box-shadow:0 0 40px rgba(0,255,136,0.1)}
+    .header{text-align:center;margin-bottom:40px;border-bottom:1px solid rgba(0,255,136,0.2);padding-bottom:20px}
+    .logo{font-size:2rem;font-weight:700;color:#00ff88;letter-spacing:0.2em;margin-bottom:8px}
+    .subtitle{font-size:0.75rem;color:#6b7c93;letter-spacing:0.15em}
+    .status-badge{display:inline-block;padding:4px 12px;border-radius:4px;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;margin-top:12px}
+    .status-badge.sealed{background:rgba(0,255,136,0.15);color:#00ff88;border:1px solid rgba(0,255,136,0.4)}
+    .status-badge.confirmed{background:rgba(0,180,255,0.15);color:#00b4ff;border:1px solid rgba(0,180,255,0.4)}
+    .status-badge.pending{background:rgba(255,200,0,0.15);color:#ffc800;border:1px solid rgba(255,200,0,0.4)}
+    .loading-state{text-align:center;padding:40px 20px}
+    .loading-spinner{width:48px;height:48px;border:3px solid rgba(0,255,136,0.2);border-top-color:#00ff88;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-title{font-size:1.1rem;color:#00ff88;letter-spacing:0.15em;margin-bottom:8px}
+    .loading-sub{font-size:0.75rem;color:#6b7c93;letter-spacing:0.1em}
+    .loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+    @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+    #proofContent{display:none}
+    .proof-section{margin-bottom:28px}
+    .proof-section-title{font-size:0.65rem;color:#6b7c93;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:6px}
+    .proof-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:16px}
+    .proof-label{font-size:0.7rem;color:#6b7c93;letter-spacing:0.1em;white-space:nowrap;flex-shrink:0}
+    .proof-value{font-size:0.75rem;color:#e0e0e0;text-align:right;word-break:break-all}
+    .proof-value.highlight{color:#00ff88;font-weight:700}
+    .proof-value.mono{font-family:'Courier New',monospace;font-size:0.65rem;color:#a0b4c8}
+    .sig-block{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-radius:6px;padding:16px;margin-top:8px}
+    .sig-label{font-size:0.65rem;color:#6b7c93;letter-spacing:0.15em;margin-bottom:8px}
+    .sig-value{font-size:0.6rem;color:#00ff88;word-break:break-all;line-height:1.6}
+    #confirmationUI{margin-top:24px}
+    .confirmation-section{border-radius:6px;padding:20px;margin-top:16px}
+    .confirmation-section.sealed{background:rgba(255,200,0,0.05);border:1px solid rgba(255,200,0,0.3)}
+    .confirmation-section.confirmed{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.3)}
+    .confirmation-title{font-size:0.75rem;font-weight:700;letter-spacing:0.15em;margin-bottom:10px}
+    .confirmation-title.sealed{color:#ffc800}
+    .confirmation-title.confirmed{color:#00ff88}
+    .confirmation-text{font-size:0.7rem;color:#a0b4c8;line-height:1.6;margin-bottom:16px}
+    .button-group{display:flex;gap:12px;flex-wrap:wrap}
+    button{padding:10px 20px;font-family:'Courier New',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;border:none;border-radius:4px;cursor:pointer;transition:opacity 0.2s}
+    button:disabled{opacity:0.5;cursor:not-allowed}
+    button.primary{background:#00ff88;color:#0a1628}
+    button.secondary{background:transparent;color:#6b7c93;border:1px solid rgba(255,255,255,0.1)}
+    button:not(:disabled):hover{opacity:0.85}
+    .success{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:6px;padding:16px;color:#00ff88;font-size:0.75rem;margin-top:16px}
+    .error{background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);border-radius:6px;padding:16px;color:#ff6b6b;font-size:0.75rem;margin-top:16px}
+    #errorContainer,#successContainer{margin-top:8px}
+    .footer{text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05)}
+    .footer a{color:#00ff88;text-decoration:none;font-size:0.7rem;letter-spacing:0.1em}
+    .footer a:hover{text-decoration:underline}
+    .footer-links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+    #retryStatus{font-size:0.65rem;color:#6b7c93;text-align:center;margin-top:12px;letter-spacing:0.1em}
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>RECEIPT</h1>
-      <p>SENT. RAC v1 — Proof of Delivery</p>
-      <div id="statusBadge" class="status-badge pending">Loading...</div>
+      <div class="logo">● SENT.</div>
+      <div class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY</div>
+      <div id="statusBadge" class="status-badge pending" style="display:none"></div>
     </div>
-
-    <div id="errorContainer"></div>
-    <div id="successContainer"></div>
-
-    <div id="proofContent" style="display: none;">
-      <!-- Proof Details Section -->
-      <div class="section">
-        <div class="section-title">Proof Details</div>
-        <div class="field">
-          <span class="field-label">Proof ID:</span>
-          <span class="field-value" id="proofId">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Status:</span>
-          <span class="field-value" id="proofStatus">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Created:</span>
-          <span class="field-value" id="createdAt">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Amount:</span>
-          <span class="field-value" id="amount">—</span>
-        </div>
+    <div id="loadingState" class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-title">SEALING YOUR PROOF<span class="loading-dots"></span></div>
+      <div class="loading-sub" id="loadingSub">Payment confirmed. Writing to RAC chain...</div>
+      <div id="retryStatus"></div>
+    </div>
+    <div id="proofContent">
+      <div class="proof-section">
+        <div class="proof-section-title">// Proof Identity</div>
+        <div class="proof-row"><span class="proof-label">PROOF ID</span><span class="proof-value highlight" id="proofId">—</span></div>
+        <div class="proof-row"><span class="proof-label">STATUS</span><span class="proof-value highlight" id="proofStatus">—</span></div>
+        <div class="proof-row"><span class="proof-label">SEALED AT</span><span class="proof-value" id="createdAt">—</span></div>
+        <div class="proof-row"><span class="proof-label">AMOUNT PAID</span><span class="proof-value" id="amount">—</span></div>
       </div>
-
-      <!-- Sender Information -->
-      <div class="section">
-        <div class="section-title">Sender</div>
-        <div class="field">
-          <span class="field-label">Email:</span>
-          <span class="field-value" id="senderEmail">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Timestamp:</span>
-          <span class="field-value" id="senderTimestamp">—</span>
-        </div>
+      <div class="proof-section">
+        <div class="proof-section-title">// Delivery Parties</div>
+        <div class="proof-row"><span class="proof-label">SENDER</span><span class="proof-value" id="senderEmail">—</span></div>
+        <div class="proof-row"><span class="proof-label">SENT AT</span><span class="proof-value" id="senderTimestamp">—</span></div>
+        <div class="proof-row"><span class="proof-label">RECIPIENT</span><span class="proof-value" id="recipientEmail">—</span></div>
+        <div class="proof-row"><span class="proof-label">RECIPIENT STATUS</span><span class="proof-value" id="recipientStatus">Awaiting confirmation</span></div>
       </div>
-
-      <!-- Recipient Information -->
-      <div class="section">
-        <div class="section-title">Recipient</div>
-        <div class="field">
-          <span class="field-label">Email:</span>
-          <span class="field-value" id="recipientEmail">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Confirmation Status:</span>
-          <span class="field-value" id="recipientStatus">Not yet confirmed</span>
-        </div>
+      <div class="proof-section">
+        <div class="proof-section-title">// File Proof</div>
+        <div class="proof-row"><span class="proof-label">FILE NAME</span><span class="proof-value" id="fileName">—</span></div>
+        <div class="proof-row"><span class="proof-label">SHA-256 HASH</span><span class="proof-value mono" id="fileHash">—</span></div>
       </div>
-
-      <!-- Cryptographic Chain -->
-      <div class="section">
-        <div class="section-title">Cryptographic Chain</div>
-        <div class="field">
-          <span class="field-label">Signature (Ed25519):</span>
-          <span class="field-value hash" id="signature">—</span>
-        </div>
-        <div class="field">
-          <span class="field-label">Chain Link (SHA-256):</span>
-          <span class="field-value hash" id="chainLink">—</span>
-        </div>
+      <div class="proof-section">
+        <div class="proof-section-title">// RAC Chain Seal</div>
+        <div class="sig-block"><div class="sig-label">ED25519 SIGNATURE</div><div class="sig-value" id="signature">—</div></div>
+        <div class="sig-block" style="margin-top:8px"><div class="sig-label">CHAIN HASH</div><div class="sig-value" id="chainLink">—</div></div>
       </div>
-
-      <!-- Confirmation UI -->
       <div id="confirmationUI"></div>
+      <div id="errorContainer"></div>
+      <div id="successContainer"></div>
+    </div>
+    <div class="footer">
+      <div class="footer-links">
+        <a href="/">← Create New Proof</a>
+        <a href="/dashboard">My Dashboard</a>
+      </div>
     </div>
   </div>
-
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const proofId = params.get('id');
-    const confirmParam = params.get('confirm');
+    var params = new URLSearchParams(window.location.search);
+    var proofId = params.get('id');
+    var sessionId = params.get('session_id');
+    var confirmParam = params.get('confirm');
+    var retryCount = 0;
+    var MAX_RETRIES = 15;
+    var RETRY_DELAY_MS = 2000;
 
-    async function loadProof() {
-      if (!proofId) {
-        showError('No proof ID provided. Use ?id=YOUR_PROOF_ID');
+    function loadProof() {
+      if (proofId) { fetchProofById(proofId); return; }
+      if (sessionId) {
+        document.getElementById('loadingSub').textContent = 'Payment confirmed. Sealing your proof on RAC chain...';
+        pollForProofBySession(sessionId);
         return;
       }
+      showError('No proof ID provided. Use ?id=YOUR_PROOF_ID');
+      document.getElementById('loadingState').style.display = 'none';
+    }
 
-      try {
-        const response = await fetch(`/.netlify/functions/get-proof?id=${proofId}`);
-        const result = await response.json();
+    function fetchProofById(id) {
+      fetch('/.netlify/functions/get-proof?id=' + encodeURIComponent(id))
+        .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,data:d}; }); })
+        .then(function(res){
+          document.getElementById('loadingState').style.display = 'none';
+          if (!res.ok) { showError(res.data.error || 'Failed to load proof'); return; }
+          displayProof(res.data);
+          if (confirmParam === 'true') showConfirmationUI(res.data);
+        })
+        .catch(function(e){ showError('Error: ' + e.message); document.getElementById('loadingState').style.display = 'none'; });
+    }
 
-        if (!response.ok) {
-          showError(result.error || 'Failed to load proof');
-          return;
-        }
-
-        const proof = result;
-        displayProof(proof);
-
-        // If ?confirm=true, show confirmation UI
-        if (confirmParam === 'true') {
-          showConfirmationUI(proof);
-        }
-
-      } catch (error) {
-        showError(`Error loading proof: ${error.message}`);
-      }
+    function pollForProofBySession(sid) {
+      retryCount++;
+      fetch('/.netlify/functions/get-proof-by-session?session_id=' + encodeURIComponent(sid))
+        .then(function(r){
+          if (r.status === 404) {
+            if (retryCount < MAX_RETRIES) {
+              document.getElementById('retryStatus').textContent = 'Waiting for RAC chain seal... (' + retryCount + '/' + MAX_RETRIES + ')';
+              setTimeout(function(){ pollForProofBySession(sid); }, RETRY_DELAY_MS);
+            } else {
+              document.getElementById('loadingState').style.display = 'none';
+              showError('Your payment was received but the proof is still being sealed. Please check your dashboard in a few minutes or contact support@vxsent.com.');
+            }
+            return null;
+          }
+          return r.json().then(function(d){ return {ok:r.ok,data:d}; });
+        })
+        .then(function(res){
+          if (!res) return;
+          document.getElementById('loadingState').style.display = 'none';
+          if (!res.ok) { showError(res.data.error || 'Failed to load proof'); return; }
+          displayProof(res.data);
+        })
+        .catch(function(e){
+          if (retryCount < MAX_RETRIES) { setTimeout(function(){ pollForProofBySession(sid); }, RETRY_DELAY_MS); }
+          else { document.getElementById('loadingState').style.display = 'none'; showError('Error: ' + e.message); }
+        });
     }
 
     function displayProof(proof) {
       document.getElementById('proofContent').style.display = 'block';
-      document.getElementById('proofId').textContent = proof.proof_id;
-      document.getElementById('proofStatus').textContent = proof.status.toUpperCase();
-      document.getElementById('createdAt').textContent = new Date(proof.sealed_at).toLocaleString();
-      document.getElementById('amount').textContent = `$${(proof.amount_cents / 100).toFixed(2)}`;
-      document.getElementById('senderEmail').textContent = proof.sender_email;
-      document.getElementById('senderTimestamp').textContent = new Date(proof.sealed_at).toLocaleString();
-      document.getElementById('recipientEmail').textContent = proof.recipient_email;
+      var badge = document.getElementById('statusBadge');
+      badge.style.display = 'inline-block';
+      badge.className = 'status-badge ' + (proof.status || 'sealed');
+      badge.textContent = (proof.status || 'SEALED').toUpperCase();
+      document.getElementById('proofId').textContent = proof.proof_id || proof.id || '—';
+      document.getElementById('proofStatus').textContent = (proof.status || 'sealed').toUpperCase();
+      document.getElementById('createdAt').textContent = proof.sealed_at ? new Date(proof.sealed_at).toLocaleString() : '—';
+      document.getElementById('amount').textContent = proof.amount_cents ? '$' + (proof.amount_cents/100).toFixed(2) : '$0.99';
+      document.getElementById('senderEmail').textContent = proof.sender_email || '—';
+      document.getElementById('senderTimestamp').textContent = proof.sealed_at ? new Date(proof.sealed_at).toLocaleString() : '—';
+      document.getElementById('recipientEmail').textContent = proof.recipient_email || '—';
+      document.getElementById('fileName').textContent = proof.file_name || '—';
+      document.getElementById('fileHash').textContent = proof.file_hash || '—';
       document.getElementById('signature').textContent = proof.ed25519_signature || 'N/A';
       document.getElementById('chainLink').textContent = proof.chain_hash || 'N/A';
-
-      // Update status badge
-      const badge = document.getElementById('statusBadge');
-      badge.className = `status-badge ${proof.status}`;
-      badge.textContent = proof.status.toUpperCase();
-
-      // Update recipient confirmation status
       if (proof.recipient_confirmed) {
-        document.getElementById('recipientStatus').textContent = `Confirmed on ${new Date(proof.recipient_confirmed_at).toLocaleString()}`;
+        document.getElementById('recipientStatus').textContent = '✓ Confirmed on ' + new Date(proof.recipient_confirmed_at).toLocaleString();
+        document.getElementById('recipientStatus').style.color = '#00ff88';
       }
     }
 
     function showConfirmationUI(proof) {
-      if (proof.recipient_confirmed) {
-        showSuccess('You have already confirmed receipt of this delivery.');
-        return;
-      }
-
-      if (proof.status !== 'sealed') {
-        showError('This proof is not ready for recipient confirmation. Status: ' + proof.status);
-        return;
-      }
-
-      const ui = document.getElementById('confirmationUI');
-      ui.innerHTML = `
-        <div class="confirmation-section sealed">
-          <div class="confirmation-title sealed">Awaiting Recipient Confirmation</div>
-          <div class="confirmation-text">
-            This delivery has been sealed by the sender. By confirming receipt below, you cryptographically prove that you received this file on this date and time. This confirmation will be recorded permanently in the proof chain.
-          </div>
-          <div class="button-group">
-            <button onclick="confirmReceipt('${proof.proof_id}')">Confirm I Received This</button>
-            <button onclick="window.location.href='/'">Cancel</button>
-          </div>
-        </div>
-      `;
+      if (proof.recipient_confirmed) { showSuccess('You have already confirmed receipt of this delivery.'); return; }
+      if (proof.status !== 'sealed') { showError('This proof is not ready for confirmation. Status: ' + proof.status); return; }
+      var id = proof.proof_id || proof.id;
+      document.getElementById('confirmationUI').innerHTML = '<div class="confirmation-section sealed"><div class="confirmation-title sealed">// Awaiting Recipient Confirmation</div><div class="confirmation-text">This delivery has been sealed by the sender. By confirming receipt below, you cryptographically prove that you received this file on this date and time.</div><div class="button-group"><button class="primary" onclick="confirmReceipt(\'' + id + '\')">Confirm I Received This</button><button class="secondary" onclick="window.location.href=\'/\'">Cancel</button></div></div>';
     }
 
-    async function confirmReceipt(id) {
-      const btn = event.target;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading"></span> Confirming...';
-
-      try {
-        const response = await fetch('/.netlify/functions/confirm-receipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ proofId: id })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Confirmation failed');
-        }
-
-        showSuccess('Receipt confirmed! Your confirmation has been recorded in the proof chain.');
-        setTimeout(() => loadProof(), 1000);
-
-      } catch (error) {
-        showError(`Confirmation failed: ${error.message}`);
-        btn.disabled = false;
-        btn.innerHTML = 'Confirm I Received This';
-      }
+    function confirmReceipt(id) {
+      var btn = event.target;
+      btn.disabled = true; btn.textContent = 'Confirming...';
+      fetch('/.netlify/functions/confirm-receipt', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proofId:id})})
+        .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,data:d}; }); })
+        .then(function(res){
+          if (!res.ok) throw new Error(res.data.error || 'Confirmation failed');
+          showSuccess('✓ Receipt confirmed! Your confirmation has been recorded in the RAC proof chain.');
+          document.getElementById('confirmationUI').innerHTML = '';
+          setTimeout(function(){ fetchProofById(id); }, 1500);
+        })
+        .catch(function(e){ showError('Confirmation failed: ' + e.message); btn.disabled=false; btn.textContent='Confirm I Received This'; });
     }
 
-    function showError(message) {
-      const container = document.getElementById('errorContainer');
-      container.innerHTML = `<div class="error">${message}</div>`;
-    }
+    function showError(msg) { document.getElementById('errorContainer').innerHTML = '<div class="error">' + msg + '</div>'; }
+    function showSuccess(msg) { document.getElementById('successContainer').innerHTML = '<div class="success">' + msg + '</div>'; }
 
-    function showSuccess(message) {
-      const container = document.getElementById('successContainer');
-      container.innerHTML = `<div class="success">${message}</div>`;
-    }
-
-    // Load proof on page load
     loadProof();
   </script>
 </body>
