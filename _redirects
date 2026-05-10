@@ -10,6 +10,7 @@
 # API routes → Netlify Functions
 /api/create-payment-intent      /.netlify/functions/create-payment-intent       200
 /api/checkout                   /.netlify/functions/create-checkout-session     200
+/api/create-checkout-session    /.netlify/functions/create-checkout-session     200
 /api/create-subscription        /.netlify/functions/create-subscription         200
 /api/stripe-webhook             /.netlify/functions/stripe-webhook              200
 /api/proof/:id                  /.netlify/functions/get-proof?id=:id            200
