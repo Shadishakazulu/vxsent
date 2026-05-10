@@ -1,5 +1,6 @@
 # SENT. — vxsent.com Netlify Redirects
 # Page routes — clean URLs → .html files
+/                       /index_updated.html     200!
 /dashboard              /dashboard.html         200!
 /receipt                /receipt.html           200!
 /pricing                /pricing.html           200!
@@ -8,6 +9,7 @@
 
 # API routes → Netlify Functions
 /api/create-payment-intent      /.netlify/functions/create-payment-intent       200
+/api/checkout                   /.netlify/functions/create-checkout-session     200
 /api/create-subscription        /.netlify/functions/create-subscription         200
 /api/stripe-webhook             /.netlify/functions/stripe-webhook              200
 /api/proof/:id                  /.netlify/functions/get-proof?id=:id            200
