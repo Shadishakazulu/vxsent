@@ -1,82 +1,58 @@
 // netlify/functions/confirm-receipt.js
+// RAC v1 — Recipient Confirmation Handler
+// Records when recipient confirms they received the delivery
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { getSupabase, ok, err, corsHeaders } = require('../../src/lib/index.js' );
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS' ) {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      }
-    };
+    return { statusCode: 204, headers: corsHeaders };
   }
 
   if (event.httpMethod !== 'POST' ) {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return err('Method not allowed', 405);
   }
 
   try {
-    let body;
-    try {
-      body = JSON.parse(event.body);
-    } catch {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Invalid request body' })
-      };
-    }
+    const body = JSON.parse(event.body);
+    const proofId = body.proofId;
 
-    const { paymentIntentId, proofId } = body;
+    if (!proofId) return err('Proof ID required');
 
-    if (!paymentIntentId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Payment Intent ID required' })
-      };
-    }
+    const supabase = getSupabase();
 
-    // Retrieve payment intent from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    // Get recipient IP and user-agent
+    const recipientIp = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'unknown';
+    const userAgent = event.headers['user-agent'] || 'unknown';
+    const confirmedAt = new Date().toISOString();
 
-    if (paymentIntent.status !== 'succeeded') {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Payment not completed' })
-      };
-    }
-
-    // Return receipt information
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: true,
-        paymentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-        status: paymentIntent.status,
-        created: paymentIntent.created,
-        metadata: paymentIntent.metadata
+    // Update proof with recipient confirmation
+    const { data, error } = await supabase
+      .from('proofs')
+      .update({
+        recipient_confirmed: true,
+        recipient_confirmed_at: confirmedAt,
+        recipient_confirmation_ip: recipientIp,
+        recipient_confirmation_user_agent: userAgent,
+        status: 'confirmed'
       })
-    };
+      .eq('proof_id', proofId)
+      .select();
+
+    if (error) return err(`Confirmation failed: ${error.message}`);
+    if (!data || data.length === 0) return err('Proof not found', 404);
+
+    console.log(`[confirm-receipt] Proof ${proofId} confirmed by recipient at ${recipientIp}`);
+
+    return ok({
+      success: true,
+      proofId,
+      confirmedAt,
+      recipientIp
+    });
+
   } catch (error) {
-    console.error('confirm-receipt error:', error);
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ error: 'Receipt confirmation failed' })
-    };
+    console.error('[confirm-receipt] Error:', error.message);
+    return err(`Failed to confirm receipt: ${error.message}`);
   }
 };
