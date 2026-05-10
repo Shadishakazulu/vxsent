@@ -322,6 +322,9 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Project name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
     <input id="payProject" type="text" placeholder="e.g. Brand Guidelines Q2" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
+    <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
+
     <div id="payError" style="font-size:12px;color:#dc2626;font-family:'JetBrains Mono',monospace;min-height:18px;margin-bottom:12px;letter-spacing:0.08em"></div>
 
     <button id="payBtn" onclick="submitPayment()" style="width:100%;padding:15px;background:#00b356;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s">PAY $0.99 — SEAL PROOF</button>
@@ -375,12 +378,49 @@ async function initPayment(){
   mountStripeCard();
 }
 
+// Stripe publishable key (public — safe to include in frontend)
+const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+let stripeInstance = null;
+let cardElement = null;
+let stripeInitialized = false;
+
+function mountStripeCard() {
+  if (stripeInitialized) return;
+  if (typeof Stripe === 'undefined') return;
+  stripeInstance = Stripe(STRIPE_PK);
+  const elements = stripeInstance.elements();
+  cardElement = elements.create('card', {
+    style: {
+      base: {
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '14px',
+        color: '#111318',
+        '::placeholder': { color: '#9ca3af' }
+      }
+    }
+  });
+  cardElement.mount('#card-element');
+  cardElement.on('change', e => {
+    document.getElementById('payError').textContent = e.error ? e.error.message : '';
+  });
+  stripeInitialized = true;
+}
+
 async function submitPayment() {
   const email = document.getElementById('payEmail').value.trim();
   const recipientEmail = document.getElementById('payRecipientEmail').value.trim();
+  const projectName = document.getElementById('payProject').value.trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     document.getElementById('payError').textContent = 'Please enter a valid email address.';
+    return;
+  }
+  if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+    document.getElementById('payError').textContent = 'Please enter a valid client email address.';
+    return;
+  }
+  if (!cardElement) {
+    document.getElementById('payError').textContent = 'Card element not loaded. Please refresh and try again.';
     return;
   }
 
@@ -390,26 +430,68 @@ async function submitPayment() {
   document.getElementById('payError').textContent = '';
 
   try {
-    // Create Stripe Checkout Session
-    const res = await fetch('/api/create-checkout-session', {
+    // Step 2: Call create-payment-intent per spec Section 2
+    const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: email,
-        recipientEmail: recipientEmail,
+        fileHash: currentHash,
         fileName: currentFile.name,
-        fileHash: currentHash
+        fileSize: fmt(currentFile.size),
+        timestamp: currentTimestamp,
+        email: email,
+        recipientEmail: recipientEmail || '',
+        projectName: projectName || ''
       })
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Server error');
+    if (!res.ok) throw new Error(data.error || 'Payment initialization failed. Please try again.');
 
-    const { url } = data;
-    if (!url) throw new Error('No checkout URL returned');
+    const { clientSecret, proofId } = data;
+    if (!clientSecret || !proofId) throw new Error('Payment initialization failed. Please try again.');
+    if (!cardElement) throw new Error('Card element not ready. Please refresh and try again.');
 
-    // Redirect to Stripe Checkout
-    window.location.href = url;
+    // Step 4: Confirm payment with Stripe
+    const { error: stripeError, paymentIntent } = await stripeInstance.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { email: email }
+      }
+    });
+
+    if (stripeError) {
+      throw new Error(stripeError.message);
+    }
+
+    // Step 5: Payment succeeded — show SEALING state
+    payBtn.textContent = 'SEALING...';
+    payBtn.disabled = true;
+
+    // Step 6: Poll GET /api/proof/:id every 1 second, timeout 15s
+    let attempts = 0;
+    const maxAttempts = 15;
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const pr = await fetch('/api/proof/' + proofId);
+        const pd = await pr.json();
+        if (pd && pd.isValid) {
+          clearInterval(poll);
+          // Step 9: Redirect to receipt page
+          window.location.href = '/receipt?id=' + proofId;
+        } else if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          // Timeout — redirect anyway with pending flag
+          window.location.href = '/receipt?id=' + proofId + '&pending=true';
+        }
+      } catch (e) {
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          window.location.href = '/receipt?id=' + proofId + '&pending=true';
+        }
+      }
+    }, 1000);
 
   } catch (error) {
     console.error('Payment error:', error);
@@ -423,12 +505,6 @@ function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
   cb.disabled = false;
   cb.textContent = 'GET YOUR SENT. RECEIPT — $0.99';
-}
-
-// Stripe Checkout - no card element mounting needed
-function mountStripeCard() {
-  // Stripe Checkout handles all card details securely
-  // Nothing to mount here
 }
 function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
 function fmt(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB'}
