@@ -47,13 +47,19 @@ exports.handler = async (event, context) => {
 
     // Handle both checkout.session.completed AND payment_intent.succeeded
     let metadata;
+    let stripePaymentId;
+    let amountCents;
     if (stripeEvent.type === 'checkout.session.completed') {
       const session = stripeEvent.data.object;
       metadata = session.metadata || {};
+      stripePaymentId = session.payment_intent || session.id;
+      amountCents = session.amount_total;
       console.log('[webhook] Processing checkout.session.completed');
     } else if (stripeEvent.type === 'payment_intent.succeeded') {
       const paymentIntent = stripeEvent.data.object;
       metadata = paymentIntent.metadata || {};
+      stripePaymentId = paymentIntent.id;
+      amountCents = paymentIntent.amount;
       console.log('[webhook] Processing payment_intent.succeeded');
     } else {
       console.log('[webhook] Ignoring event:', stripeEvent.type);
@@ -101,8 +107,8 @@ exports.handler = async (event, context) => {
         sealed_at: sealedAt,
         ed25519_signature: signature,
         chain_hash: chainHash,
-        stripe_payment_id: session.payment_intent || session.id,
-        amount_cents: session.amount_total,
+        stripe_payment_id: stripePaymentId,
+        amount_cents: amountCents,
         user_email: senderEmail,
         timestamp: sealedAt,
         rac_enabled: true,
