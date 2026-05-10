@@ -1,32 +1,47 @@
 // netlify/functions/confirm-receipt.js
-// RAC v1 — Recipient Confirmation Handler
-// Records when recipient confirms they received the delivery
+// RAC v1 — Recipient Confirmation Handler (fully self-contained)
 
-const { getSupabase, ok, err, corsHeaders } = require('../../src/lib/index.js' );
+const { createClient } = require('@supabase/supabase-js');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Content-Type': 'application/json'
+};
+
+function getSupabase() {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function ok(data) {
+  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
+}
+
+function err(message, statusCode) {
+  return { statusCode: statusCode || 400, headers: corsHeaders, body: JSON.stringify({ error: message }) };
+}
 
 exports.handler = async (event, context) => {
-  if (event.httpMethod === 'OPTIONS' ) {
+  if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: corsHeaders };
   }
 
-  if (event.httpMethod !== 'POST' ) {
+  if (event.httpMethod !== 'POST') {
     return err('Method not allowed', 405);
   }
 
   try {
     const body = JSON.parse(event.body);
     const proofId = body.proofId;
-
     if (!proofId) return err('Proof ID required');
 
     const supabase = getSupabase();
 
-    // Get recipient IP and user-agent
     const recipientIp = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'unknown';
     const userAgent = event.headers['user-agent'] || 'unknown';
     const confirmedAt = new Date().toISOString();
 
-    // Update proof with recipient confirmation
     const { data, error } = await supabase
       .from('proofs')
       .update({
@@ -36,13 +51,13 @@ exports.handler = async (event, context) => {
         recipient_confirmation_user_agent: userAgent,
         status: 'confirmed'
       })
-      .eq('proof_id', proofId)
+      .eq('id', proofId)
       .select();
 
-    if (error) return err(`Confirmation failed: ${error.message}`);
+    if (error) return err('Confirmation failed: ' + error.message);
     if (!data || data.length === 0) return err('Proof not found', 404);
 
-    console.log(`[confirm-receipt] Proof ${proofId} confirmed by recipient at ${recipientIp}`);
+    console.log('[confirm-receipt] Proof ' + proofId + ' confirmed by recipient at ' + recipientIp);
 
     return ok({
       success: true,
@@ -51,8 +66,8 @@ exports.handler = async (event, context) => {
       recipientIp
     });
 
-  } catch (error) {
-    console.error('[confirm-receipt] Error:', error.message);
-    return err(`Failed to confirm receipt: ${error.message}`);
+  } catch (e) {
+    console.error('[confirm-receipt] Error:', e.message);
+    return err('Failed to confirm receipt: ' + e.message);
   }
 };
