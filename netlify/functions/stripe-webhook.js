@@ -1,146 +1,123 @@
 // netlify/functions/stripe-webhook.js
-const crypto = require('crypto');
+// SENT. RAC v1 — Stripe Webhook Handler (fully self-contained, no relative imports)
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { getSupabase, ok, err, corsHeaders, sendRecipientNotification } = require('../../src/lib/index.js');
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
-const ED25519_PRIVATE_KEY = process.env.ED25519_PRIVATE_KEY;
+function getSupabase() {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
 
-function signWithEd25519(message) {
-  const key = crypto.createPrivateKey({
-    key: Buffer.from(ED25519_PRIVATE_KEY, 'base64'),
-    format: 'der',
-    type: 'pkcs8'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Content-Type': 'application/json'
+};
+
+function ok(data) {
+  return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(data) };
+}
+
+function err(message, statusCode) {
+  return { statusCode: statusCode || 400, headers: corsHeaders, body: JSON.stringify({ error: message }) };
+}
+
+async function sendEmail(to, subject, html) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) { console.log('[SENT] Email (dev):', to, subject); return; }
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: 'SENT. <receipts@vxsent.com>', to, subject, html })
   });
-  return crypto.sign('sha256', Buffer.from(message), key).toString('hex');
+  if (!res.ok) console.error('[SENT] Email failed:', to, await res.text());
+  else console.log('[SENT] Email sent:', to);
 }
 
-function computeChainHash(previousHash, signature) {
-  return crypto.createHash('sha256').update((previousHash || '0') + signature).digest('hex');
-}
+exports.handler = async (event) => {
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: corsHeaders, body: '' };
+  if (event.httpMethod !== 'POST') return err('Method not allowed', 405);
 
-exports.handler = async (event, context) => {
-  console.log('[webhook] Received request');
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: corsHeaders };
+  const sig = event.headers['stripe-signature'];
+  let stripeEvent;
+  try {
+    stripeEvent = stripe.webhooks.constructEvent(event.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (e) {
+    console.error('[SENT] Webhook sig failed:', e.message);
+    return err('Signature failed: ' + e.message, 400);
   }
 
-  if (event.httpMethod !== 'POST') {
-    return err('Method not allowed', 405);
+  console.log('[SENT] Event:', stripeEvent.type, stripeEvent.id);
+
+  if (stripeEvent.type !== 'checkout.session.completed') {
+    return ok({ received: true, type: stripeEvent.type });
   }
+
+  const session = stripeEvent.data.object;
+  const metadata = session.metadata || {};
+  const senderEmail = metadata.sender_email;
+  const recipientEmail = metadata.recipient_email || null;
+  const fileName = metadata.file_name || 'unknown';
+  const fileHash = metadata.file_hash || '';
+  const fileSize = metadata.file_size || '';
+  const projectName = metadata.project_name || '';
+
+  if (!senderEmail) {
+    console.error('[SENT] Missing sender_email. Metadata:', JSON.stringify(metadata));
+    return err('Missing sender email', 400);
+  }
+
+  const sealedAt = new Date().toISOString();
+  const stripePaymentId = session.payment_intent || session.id;
+  const proofId = crypto.randomUUID();
+  const racHash = crypto.createHash('sha256')
+    .update(JSON.stringify({ proofId, fileHash, senderEmail, recipientEmail: recipientEmail || '', sealedAt, stripePaymentId }))
+    .digest('hex');
+
+  console.log('[SENT] Creating proof:', proofId, 'sender:', senderEmail);
 
   try {
-    const sig = event.headers['stripe-signature'];
-    const body = event.body;
-
-    console.log('[webhook] Verifying signature');
-
-    let stripeEvent;
-    try {
-      stripeEvent = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } catch (e) {
-      console.error('[webhook] Signature error:', e.message);
-      return err(`Signature failed: ${e.message}`);
-    }
-
-    console.log(`[webhook] Event type: ${stripeEvent.type}`);
-
-    // Handle both checkout.session.completed AND payment_intent.succeeded
-    let metadata;
-    let stripePaymentId;
-    let amountCents;
-    if (stripeEvent.type === 'checkout.session.completed') {
-      const session = stripeEvent.data.object;
-      metadata = session.metadata || {};
-      stripePaymentId = session.payment_intent || session.id;
-      amountCents = session.amount_total;
-      console.log('[webhook] Processing checkout.session.completed');
-    } else if (stripeEvent.type === 'payment_intent.succeeded') {
-      const paymentIntent = stripeEvent.data.object;
-      metadata = paymentIntent.metadata || {};
-      stripePaymentId = paymentIntent.id;
-      amountCents = paymentIntent.amount;
-      console.log('[webhook] Processing payment_intent.succeeded');
-    } else {
-      console.log('[webhook] Ignoring event:', stripeEvent.type);
-      return ok({ received: true });
-    }
-
-    console.log('[webhook] Metadata:', JSON.stringify(metadata));
-
-    const recipientEmail = metadata.recipient_email;
-    const senderEmail = metadata.sender_email;
-    const fileName = metadata.file_name || 'Verified Delivery';
-    const fileHash = metadata.file_hash || '';
-
-    if (!recipientEmail || !senderEmail) {
-      console.error('[webhook] Missing emails:', { recipientEmail, senderEmail });
-      return err('Missing recipient or sender email');
-    }
-
-    console.log('[webhook] Creating proof');
-
-    const proofId = `proof_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const sealedAt = new Date().toISOString();
-    const messageToSign = `${proofId}|${senderEmail}|${recipientEmail}|${sealedAt}`;
-    const signature = signWithEd25519(messageToSign);
-    const chainHash = computeChainHash(null, signature);
-
-    console.log('[webhook] Proof ID:', proofId);
-    console.log('[webhook] Signature:', signature.substring(0, 20) + '...');
-
     const supabase = getSupabase();
-
-    console.log('[webhook] Inserting into Supabase');
-
-    const { data, error } = await supabase
-      .from('proofs')
-      .insert({
-        id: proofId,
-        proof_id: proofId,
-        file_name: fileName,
-        file_hash: fileHash,
-        sender_email: senderEmail,
-        recipient_email: recipientEmail,
-        status: 'sealed',
-        is_valid: true,
-        sealed_at: sealedAt,
-        ed25519_signature: signature,
-        chain_hash: chainHash,
-        stripe_payment_id: stripePaymentId,
-        amount_cents: amountCents,
-        user_email: senderEmail,
-        timestamp: sealedAt,
-        rac_enabled: true,
-        rac_version: '1.0'
-      })
-      .select();
-
-    if (error) {
-      console.error('[webhook] Supabase error:', error.message, error.details);
-      return err(`Supabase failed: ${error.message}`);
+    const { error: insertError } = await supabase.from('proofs').insert({
+      id: proofId,
+      sender_email: senderEmail,
+      recipient_email: recipientEmail,
+      file_name: fileName,
+      file_hash: fileHash,
+      file_size: fileSize,
+      project_name: projectName,
+      stripe_payment_id: stripePaymentId,
+      rac_hash: racHash,
+      sealed_at: sealedAt,
+      status: 'sealed',
+      recipient_confirmed: false
+    });
+    if (insertError) {
+      console.error('[SENT] DB insert error:', JSON.stringify(insertError));
+      return err('DB error: ' + insertError.message, 500);
     }
-
-    console.log('[webhook] Proof created:', proofId);
-
-    // Send emails
-    try {
-      await sendRecipientNotification({
-        recipientEmail,
-        senderEmail,
-        proofId,
-        fileName,
-        sealedAt
-      });
-      console.log('[webhook] Emails sent');
-    } catch (emailErr) {
-      console.error('[webhook] Email error:', emailErr.message);
-    }
-
-    return ok({ received: true, proofId });
-
-  } catch (error) {
-    console.error('[webhook] Fatal error:', error.message, error.stack);
-    return err(`Error: ${error.message}`);
+    console.log('[SENT] Proof saved:', proofId);
+  } catch (dbErr) {
+    console.error('[SENT] DB exception:', dbErr.message);
+    return err('DB exception: ' + dbErr.message, 500);
   }
+
+  const base = process.env.URL || 'https://vxsent.com';
+
+  try {
+    await sendEmail(senderEmail, 'Your proof is sealed — ' + fileName,
+      '<div style="font-family:sans-serif;padding:32px;max-width:560px"><h2>SENT.</h2><p>Your proof for <strong>' + fileName + '</strong> is sealed.</p><p>Proof ID: <code>' + proofId + '</code></p><p>Sealed: ' + new Date(sealedAt).toUTCString() + '</p><a href="' + base + '/receipt?id=' + proofId + '" style="background:#00b356;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:16px">VIEW RECEIPT</a></div>'
+    );
+    if (recipientEmail) {
+      await sendEmail(recipientEmail, 'You have a verified delivery — ' + fileName,
+        '<div style="font-family:sans-serif;padding:32px;max-width:560px"><h2>SENT.</h2><p><strong>' + senderEmail + '</strong> sent you a verified file: <strong>' + fileName + '</strong></p><p>Proof ID: <code>' + proofId + '</code></p><p>Sealed: ' + new Date(sealedAt).toUTCString() + '</p><a href="' + base + '/verify/' + proofId + '?confirm=true" style="background:#00b356;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin-top:16px">CONFIRM RECEIPT</a></div>'
+      );
+    }
+  } catch (emailErr) {
+    console.error('[SENT] Email error (non-fatal):', emailErr.message);
+  }
+
+  return ok({ received: true, proofId, racHash, sealedAt });
 };
