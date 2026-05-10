@@ -10,6 +10,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "stripe": "^14.0.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "stripe": "^14.0.0",
+    "node-fetch": "^2.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "cookie": "^0.6.0"
   }
 }
