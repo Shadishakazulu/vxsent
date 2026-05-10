@@ -1,9 +1,10 @@
 // netlify/functions/stripe-webhook.js
-// SENT. RAC v1 — Stripe Webhook Handler (PRODUCTION )
+// SENT. RAC v1 — Stripe Webhook Handler (PRODUCTION)
 // After payment succeeds: Ed25519 sign, chain link, finalize proof, send receipt emails
 // Also handles: payment_failed, charge.refunded
 
 const crypto = require('crypto');
+const { sendRecipientNotification } = require('../../src/lib/index.js');
 
 // ─── Ed25519 Signing ───────────────────────────────────────────────────────────
 
@@ -138,9 +139,7 @@ async function sendReceiptEmail(toEmail, proofData, isRecipient = false) {
       <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 24px;">
         <span style="color: #16a34a; font-weight: 700;">✓ DELIVERY VERIFIED</span>
       </div>
-
       <p style="color: #374151; line-height: 1.6;">${roleLine}</p>
-
       <table style="width: 100%; border-collapse: collapse; margin: 24px 0;">
         <tr style="border-bottom: 1px solid #e5e7eb;">
           <td style="padding: 12px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Proof ID</td>
@@ -164,24 +163,18 @@ async function sendReceiptEmail(toEmail, proofData, isRecipient = false) {
         </tr>
         <tr>
           <td style="padding: 12px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Signature</td>
-          <td style="padding: 12px 0; color: #111; font-family: monospace; font-size: 10px; word-break: break-all;">${(proofData.ed25519_signature || '' ).substring(0, 64)}...</td>
+          <td style="padding: 12px 0; color: #111; font-family: monospace; font-size: 10px; word-break: break-all;">${(proofData.ed25519_signature || '').substring(0, 64)}...</td>
         </tr>
       </table>
-
       <div style="text-align: center; margin: 32px 0;">
         <a href="${proofUrl}" style="display: inline-block; background: #00b356; color: #fff; padding: 14px 32px; border-radius: 4px; text-decoration: none; font-weight: 700; letter-spacing: 0.5px;">VIEW FULL PROOF</a>
       </div>
-
       <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px; margin-top: 24px;">
         <p style="color: #6b7280; font-size: 11px; margin: 0; text-align: center;">
           This proof is cryptographically sealed with Ed25519 and linked to the SENT. Receipt Authentication Chain (RAC v1).
           It cannot be altered, revoked, or disputed. Independently verifiable at any time.
         </p>
       </div>
-
-      <p style="color: #9ca3af; font-size: 11px; text-align: center; margin-top: 32px;">
-        <a href="https://vxsent.com" style="color: #00b356;">vxsent.com</a> — Proof of Delivery Infrastructure
-      </p>
     </div>
   `;
 
@@ -195,258 +188,210 @@ async function sendReceiptEmail(toEmail, proofData, isRecipient = false) {
       body: JSON.stringify({
         from: 'SENT. <noreply@vxsent.com>',
         to: toEmail,
-        subject: `SENT. Proof Sealed — ${proofData.file_name}`,
+        subject: isRecipient ? '✓ Delivery Proof Received' : '✓ Proof of Delivery Sealed',
         html: emailHtml
-      } )
+      })
     });
 
     if (!response.ok) {
-      const errBody = await response.text();
-      console.error(`[RAC] Failed to send email to ${toEmail}: ${response.status} ${errBody}`);
+      console.error('[sendReceiptEmail] Resend error:', response.status);
       return false;
     }
 
-    console.log(`[RAC] Receipt email sent to ${toEmail}`);
+    console.log(`[sendReceiptEmail] Email sent to ${toEmail}`);
     return true;
   } catch (error) {
-    console.error(`[RAC] Email error: ${error.message}`);
+    console.error('[sendReceiptEmail] Error:', error.message);
     return false;
   }
 }
 
 // ─── Main Webhook Handler ──────────────────────────────────────────────────────
 
-exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json' };
+exports.handler = async (event, context) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
 
-  if (event.httpMethod !== 'POST' ) {
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers };
+  }
+
+  if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   try {
-    // ─── Validate environment ───────────────────────────────────────────────
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const sig = event.headers['stripe-signature'];
+    const body = event.body;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    if (!stripeKey || !webhookSecret) {
-      console.error('[FATAL] Stripe credentials not configured');
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Webhook not configured' }) };
+    if (!webhookSecret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET not configured');
     }
 
-    const stripe = require('stripe')(stripeKey);
-
-    // ─── Verify Stripe webhook signature ────────────────────────────────────
-    const sig = event.headers['stripe-signature'];
-    if (!sig) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing stripe-signature header' }) };
-    }
-
-    let stripeEvent;
+    // Handle test events (for webhook verification)
+    let event_obj;
     try {
-      stripeEvent = stripe.webhooks.constructEvent(event.body, sig, webhookSecret);
+      event_obj = JSON.parse(body);
+      if (event_obj.id && event_obj.id.startsWith('evt_test_')) {
+        console.log('[webhook] Test event detected, returning verification response');
+        return { statusCode: 200, headers, body: JSON.stringify({ verified: true }) };
+      }
+    } catch (e) {
+      // Continue with signature verification
+    }
+
+    // Verify Stripe signature
+    const Stripe = require('stripe');
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    try {
+      event_obj = stripe.webhooks.constructEvent(body, sig, webhookSecret);
     } catch (err) {
-      console.error(`[RAC] Webhook signature verification failed: ${err.message}`);
-      return { statusCode: 400, headers, body: JSON.stringify({ error: `Signature verification failed: ${err.message}` }) };
+      console.error('[webhook] Signature verification failed:', err.message);
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid signature' }) };
     }
 
-    console.log(`[RAC] Webhook received: ${stripeEvent.type} | ${stripeEvent.id}`);
+    const eventType = event_obj.type;
+    const eventData = event_obj.data.object;
 
-    // ─── Handle test events ─────────────────────────────────────────────────
-    if (stripeEvent.id && stripeEvent.id.startsWith('evt_test_')) {
-      return { statusCode: 200, headers, body: JSON.stringify({ verified: true, test: true }) };
-    }
+    console.log(`[webhook] Processing event: ${eventType}`);
 
-    // ─── Route by event type ────────────────────────────────────────────────
-    switch (stripeEvent.type) {
+    // ─── payment_intent.succeeded ───────────────────────────────────────────────
 
-      // ═══════════════════════════════════════════════════════════════════════
-      // PAYMENT SUCCEEDED — Sign proof, chain link, finalize
-      // ═══════════════════════════════════════════════════════════════════════
-      case 'payment_intent.succeeded': {
-        const paymentIntent = stripeEvent.data.object;
-        const proofId = paymentIntent.metadata?.proof_id;
+    if (eventType === 'payment_intent.succeeded') {
+      const paymentIntentId = eventData.id;
+      const clientRefId = eventData.client_reference_id;
+      const metadata = eventData.metadata || {};
 
-        if (!proofId) {
-          console.warn('[RAC] payment_intent.succeeded without proof_id in metadata:', paymentIntent.id);
-          return { statusCode: 200, headers, body: JSON.stringify({ received: true, warning: 'No proof_id' }) };
-        }
+      const proofId = metadata.proof_id;
+      const senderEmail = metadata.sender_email;
+      const recipientEmail = metadata.recipient_email;
+      const fileName = metadata.file_name;
+      const fileSize = metadata.file_size;
+      const fileHash = metadata.file_hash;
 
-        console.log(`[RAC] Processing payment for proof: ${proofId}`);
+      if (!proofId) {
+        console.error('[webhook] No proof_id in metadata');
+        return { statusCode: 200, headers, body: JSON.stringify({ received: true, error: 'No proof_id' }) };
+      }
 
-        // ─── Retrieve pending proof from Supabase ─────────────────────────
-        const proofs = await supabaseQuery('proofs', {
-          proof_id: `eq.${proofId}`,
-          select: '*'
-        });
-
+      try {
+        // Fetch the proof from Supabase
+        const proofs = await supabaseQuery('proofs', { proof_id: `eq.${proofId}`, select: '*' });
         if (!proofs || proofs.length === 0) {
-          console.error(`[RAC] Proof not found in Supabase: ${proofId}`);
+          console.error(`[webhook] Proof ${proofId} not found`);
           return { statusCode: 200, headers, body: JSON.stringify({ received: true, error: 'Proof not found' }) };
         }
 
         const proof = proofs[0];
-
-        // Prevent double-processing
-        if (proof.status === 'sealed' || proof.status === 'verified') {
-          console.log(`[RAC] Proof already sealed, skipping: ${proofId}`);
-          return { statusCode: 200, headers, body: JSON.stringify({ received: true, already_sealed: true }) };
-        }
-
-        // ─── Ed25519 Signing ──────────────────────────────────────────────
         const sealedAt = new Date().toISOString();
 
-        let signatureHex, publicKeyHex;
-        try {
-          const signResult = signProof(
-            proof.proof_id,
-            proof.file_hash,
-            proof.file_name,
-            proof.file_size,
-            sealedAt
-          );
-          signatureHex = signResult.signature;
-          publicKeyHex = signResult.publicKey;
-          console.log(`[RAC] Proof signed: ${proofId} | sig: ${signatureHex.substring(0, 32)}...`);
-        } catch (signErr) {
-          console.error(`[RAC] Signing failed: ${signErr.message}`);
-          // Still mark as sealed but without crypto (graceful degradation)
-          signatureHex = null;
-          publicKeyHex = null;
-        }
+        // Sign the proof with Ed25519
+        const { signature, publicKey, canonicalPayload } = signProof(
+          proofId,
+          proof.file_hash,
+          proof.file_name,
+          proof.file_size,
+          sealedAt
+        );
 
-        // ─── Chain Linking ────────────────────────────────────────────────
-        let chainHash = null;
-        let previousProofId = null;
+        // Get the previous proof to chain-link
+        const previousProofs = await supabaseQuery('proofs', {
+          status: `eq.sealed`,
+          proof_id: `neq.${proofId}`,
+          select: 'chain_hash',
+          order: 'sealed_at.desc',
+          limit: '1'
+        });
 
-        if (signatureHex) {
-          try {
-            // Find the most recent sealed proof to chain from
-            const previousProofs = await supabaseQuery('proofs', {
-              status: 'eq.sealed',
-              order: 'sealed_at.desc',
-              limit: '1',
-              select: 'proof_id,chain_hash'
-            });
+        const previousChainHash = previousProofs && previousProofs.length > 0 ? previousProofs[0].chain_hash : null;
+        const chainHash = computeChainHash(previousChainHash, signature);
 
-            if (previousProofs && previousProofs.length > 0) {
-              previousProofId = previousProofs[0].proof_id;
-              chainHash = computeChainHash(previousProofs[0].chain_hash, signatureHex);
-            } else {
-              // Genesis proof
-              chainHash = computeChainHash(null, signatureHex);
-            }
-
-            console.log(`[RAC] Chain linked: ${proofId} → prev: ${previousProofId || 'GENESIS'} | chain: ${chainHash.substring(0, 32)}...`);
-          } catch (chainErr) {
-            console.error(`[RAC] Chain linking failed: ${chainErr.message}`);
-          }
-        }
-
-        // ─── Update proof in Supabase ─────────────────────────────────────
-        const updates = {
+        // Update proof in Supabase with all crypto fields
+        await supabaseUpdate('proofs', 'proof_id', proofId, {
           status: 'sealed',
           is_valid: true,
           sealed_at: sealedAt,
-          verified_at: sealedAt,
-          stripe_payment_id: paymentIntent.id,
-          updated_at: new Date().toISOString()
-        };
+          ed25519_signature: signature,
+          ed25519_public_key: publicKey,
+          chain_hash: chainHash,
+          canonical_payload: canonicalPayload,
+          stripe_payment_intent_id: paymentIntentId
+        });
 
-        // Only add crypto fields if signing succeeded
-        if (signatureHex) {
-          updates.ed25519_signature = signatureHex;
-          updates.ed25519_public_key = publicKeyHex;
-        }
-        if (chainHash) {
-          updates.chain_hash = chainHash;
-          updates.previous_proof_id = previousProofId;
-        }
+        console.log(`[webhook] Proof ${proofId} sealed with Ed25519 signature`);
 
-        await supabaseUpdate('proofs', 'proof_id', proofId, updates);
-        console.log(`[RAC] Proof finalized: ${proofId} | status: sealed | signed: ${!!signatureHex}`);
+        // Send receipt email to sender
+        await sendReceiptEmail(senderEmail, {
+          proof_id: proofId,
+          file_name: fileName,
+          file_size: fileSize,
+          file_hash: fileHash,
+          sealed_at: sealedAt,
+          ed25519_signature: signature
+        }, false);
 
-        // ─── Send receipt emails ──────────────────────────────────────────
-        const finalProof = { ...proof, ...updates };
+        // Send confirmation request email to recipient (RAC Level 3)
+        await sendRecipientNotification(recipientEmail, proofId, `https://vxsent.com/receipt?id=${proofId}`);
 
-        if (proof.user_email) {
-          await sendReceiptEmail(proof.user_email, finalProof, false);
-        }
-        if (proof.recipient_email && proof.recipient_email !== proof.user_email) {
-          await sendReceiptEmail(proof.recipient_email, finalProof, true);
-        }
+        return { statusCode: 200, headers, body: JSON.stringify({ received: true, proofId }) };
 
-        return {
-          statusCode: 200,
-          headers,
-          body: JSON.stringify({
-            received: true,
-            proof_id: proofId,
-            status: 'sealed',
-            signed: !!signatureHex,
-            chained: !!chainHash
-          })
-        };
+      } catch (error) {
+        console.error('[webhook] Error processing payment:', error.message);
+        return { statusCode: 200, headers, body: JSON.stringify({ received: true, error: error.message }) };
       }
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // PAYMENT FAILED — Mark proof as failed
-      // ═══════════════════════════════════════════════════════════════════════
-      case 'payment_intent.payment_failed': {
-        const failedIntent = stripeEvent.data.object;
-        const failedProofId = failedIntent.metadata?.proof_id;
-        console.log(`[RAC] Payment failed: ${failedIntent.id}, proof: ${failedProofId || 'N/A'}`);
-
-        if (failedProofId) {
-          await supabaseUpdate('proofs', 'proof_id', failedProofId, {
-            status: 'payment_failed',
-            updated_at: new Date().toISOString()
-          });
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
-      }
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // CHARGE REFUNDED — Invalidate proof
-      // ═══════════════════════════════════════════════════════════════════════
-      case 'charge.refunded': {
-        const charge = stripeEvent.data.object;
-        const refundedIntentId = charge.payment_intent;
-        console.log(`[RAC] Charge refunded: ${charge.id}, intent: ${refundedIntentId}`);
-
-        if (refundedIntentId) {
-          const refundedProofs = await supabaseQuery('proofs', {
-            stripe_payment_id: `eq.${refundedIntentId}`,
-            select: 'proof_id'
-          });
-
-          if (refundedProofs && refundedProofs.length > 0) {
-            const refundedProofId = refundedProofs[0].proof_id;
-            await supabaseUpdate('proofs', 'proof_id', refundedProofId, {
-              status: 'refunded',
-              is_valid: false,
-              updated_at: new Date().toISOString()
-            });
-            console.log(`[RAC] Proof invalidated due to refund: ${refundedProofId}`);
-          }
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
-      }
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // ALL OTHER EVENTS — Acknowledge without processing
-      // ═══════════════════════════════════════════════════════════════════════
-      default:
-        console.log(`[RAC] Unhandled event type: ${stripeEvent.type}`);
-        return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
     }
 
+    // ─── payment_intent.payment_failed ─────────────────────────────────────────
+
+    if (eventType === 'payment_intent.payment_failed') {
+      const metadata = eventData.metadata || {};
+      const proofId = metadata.proof_id;
+
+      if (proofId) {
+        try {
+          await supabaseUpdate('proofs', 'proof_id', proofId, { status: 'payment_failed' });
+          console.log(`[webhook] Proof ${proofId} marked as payment_failed`);
+        } catch (error) {
+          console.error('[webhook] Error updating payment_failed:', error.message);
+        }
+      }
+
+      return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
+    }
+
+    // ─── charge.refunded ───────────────────────────────────────────────────────
+
+    if (eventType === 'charge.refunded') {
+      const chargeId = eventData.id;
+      console.log(`[webhook] Refund detected for charge ${chargeId}`);
+
+      try {
+        // Find proof by stripe_charge_id and mark as refunded
+        const proofs = await supabaseQuery('proofs', { stripe_charge_id: `eq.${chargeId}`, select: 'proof_id' });
+        if (proofs && proofs.length > 0) {
+          const proofId = proofs[0].proof_id;
+          await supabaseUpdate('proofs', 'proof_id', proofId, { status: 'refunded' });
+          console.log(`[webhook] Proof ${proofId} marked as refunded`);
+        }
+      } catch (error) {
+        console.error('[webhook] Error processing refund:', error.message);
+      }
+
+      return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
+    }
+
+    // Unhandled event type
+    console.log(`[webhook] Unhandled event type: ${eventType}`);
+    return { statusCode: 200, headers, body: JSON.stringify({ received: true }) };
+
   } catch (error) {
-    console.error('[RAC] Webhook processing error:', error.message, error.stack);
-    // Return 200 to prevent Stripe retries on application errors
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ received: true, error: error.message })
-    };
+    console.error('[webhook] Unexpected error:', error.message);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
   }
 };
