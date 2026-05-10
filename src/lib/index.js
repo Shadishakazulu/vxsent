@@ -191,5 +191,6 @@ module.exports = {
   ok,
   err,
   cors,
+  corsHeaders,
   sendRecipientNotification
 };
