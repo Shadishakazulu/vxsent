@@ -337,7 +337,13 @@ exports.handler = async (event, context) => {
         }, false);
 
         // Send confirmation request email to recipient (RAC Level 3)
-        await sendRecipientNotification(recipientEmail, proofId, `https://vxsent.com/receipt?id=${proofId}` );
+       await sendRecipientNotification({
+  recipientEmail,
+  senderEmail,
+  proofId,
+  fileName: fileName || 'Verified Delivery',
+  sealedAt: new Date().toISOString()
+});
 
 
         return { statusCode: 200, headers, body: JSON.stringify({ received: true, proofId }) };
