@@ -320,7 +320,7 @@ exports.handler = async (event, context) => {
           ed25519_signature: signature,
           ed25519_public_key: publicKey,
           chain_hash: chainHash,
-          canonical_payload: canonicalPayload,
+          
           stripe_payment_intent_id: paymentIntentId
         });
 
