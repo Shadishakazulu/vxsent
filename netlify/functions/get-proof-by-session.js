@@ -38,18 +38,29 @@ exports.handler = async (event, context) => {
 
     const supabase = getSupabase();
 
-    // First try: look up by session ID directly (cs_xxx stored as stripe_payment_id)
-    const { data: bySession } = await supabase
+    // First try: look up by stripe_session_id (cs_xxx stored directly)
+    const { data: bySessionId } = await supabase
+      .from('proofs')
+      .select('*')
+      .eq('stripe_session_id', sessionId)
+      .maybeSingle();
+
+    if (bySessionId) {
+      return ok(bySessionId);
+    }
+
+    // Second try: look up by stripe_payment_id = cs_xxx (legacy)
+    const { data: byPaymentId } = await supabase
       .from('proofs')
       .select('*')
       .eq('stripe_payment_id', sessionId)
       .maybeSingle();
 
-    if (bySession) {
-      return ok(bySession);
+    if (byPaymentId) {
+      return ok(byPaymentId);
     }
 
-    // Second try: retrieve the session from Stripe to get the payment_intent ID
+    // Third try: retrieve the session from Stripe to get the payment_intent ID
     let paymentIntentId = null;
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
