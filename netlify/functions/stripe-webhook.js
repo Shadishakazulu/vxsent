@@ -422,7 +422,7 @@ exports.handler = async (event) => {
         const proofId = pi.metadata?.proof_id;
 
         if (proofId) {
-          await supabase.from('proofs').delete().eq('id', proofId).eq('is_valid', false);
+          await supabase.from('proofs').delete().eq('proof_id', proofId).eq('is_valid', false);
           await supabase.from('payments').update({ status: 'failed' }).eq('stripe_payment_id', pi.id);
           console.log('[webhook] Payment failed, pending proof deleted:', proofId);
         }
