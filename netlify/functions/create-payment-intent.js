@@ -1,7 +1,3 @@
-// netlify/functions/create-payment-intent.js
-// SENT. Master Reference v1.0 — Section 2 Steps 2-3
-// Creates PaymentIntent + inserts PENDING proof into Supabase using supabase-js client
-
 const crypto = require('crypto');
 
 function generateProofId() {
@@ -42,7 +38,11 @@ exports.handler = async (event) => {
     if (!fileName) return { statusCode: 400, headers, body: JSON.stringify({ error: 'File name required' }) };
     if (!fileSize) return { statusCode: 400, headers, body: JSON.stringify({ error: 'File size required' }) };
     if (!email || !isValidEmail(email)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid email address' }) };
-    if (recipientEmail && !isValidEmail(recipientEmail)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid recipient email address' }) };
+
+    // RAC Level 3: recipient email is required
+    if (!recipientEmail || !isValidEmail(recipientEmail)) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Client email is required for RAC Level 3 proof' }) };
+    }
 
     const proofId = generateProofId();
     const now = new Date().toISOString();
@@ -58,8 +58,10 @@ exports.handler = async (event) => {
         file_size: fileSize,
         timestamp: timestamp || now,
         user_email: email,
-        recipient_email: recipientEmail || '',
+        sender_email: email,
+        recipient_email: recipientEmail,
         project_name: projectName || '',
+        rac_level: '3',
         product: 'day_pass'
       }
     });
@@ -85,7 +87,8 @@ exports.handler = async (event) => {
           file_size: fileSize,
           timestamp: timestamp || now,
           sender_email: email,
-          recipient_email: recipientEmail || null,
+          recipient_email: recipientEmail,
+          rac_level: 3,
           rac_signature: null,
           status: 'pending'
         });
@@ -93,7 +96,7 @@ exports.handler = async (event) => {
       if (insertError) {
         console.error('[SENT] Proof insert failed:', insertError.message, insertError.details, insertError.hint);
       } else {
-        console.log('[SENT] Pending proof created:', proofId);
+        console.log('[SENT] Pending proof created (RAC Level 3):', proofId);
       }
     } catch (dbErr) {
       console.error('[SENT] DB error (non-fatal):', dbErr.message);
