@@ -123,7 +123,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
   // Idempotency check
   const { data: existing } = await supabase
     .from('proofs')
-    .select('id, is_valid')
+    .select('proof_id, is_valid')
     .eq('proof_id', proofId)
     .single();
 
