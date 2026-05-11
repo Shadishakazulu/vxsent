@@ -1,6 +1,6 @@
 // netlify/functions/create-payment-intent.js
 // SENT. Master Reference v1.0 — Section 2 Steps 2-3
-// Creates PaymentIntent + inserts PENDING proof into Supabase
+// Creates PaymentIntent + inserts PENDING proof into Supabase using supabase-js client
 
 const crypto = require('crypto');
 
@@ -14,28 +14,6 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function supabaseInsert(table, record) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured');
-  const response = await fetch(`${url}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(record)
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Supabase ${response.status}: ${errText}`);
-  }
-  const data = await response.json();
-  return data[0] || data;
-}
-
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -44,8 +22,11 @@ exports.handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  if (event.httpMethod === 'OPTIONS' ) {
+    return { statusCode: 200, headers };
+  }
+
+  if (event.httpMethod !== 'POST' ) return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -53,19 +34,20 @@ exports.handler = async (event) => {
     const stripe = require('stripe')(stripeKey);
 
     let body;
-    try { body = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) }; }
+    try { body = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
 
     const { fileHash, fileName, fileSize, timestamp, email, recipientEmail, projectName } = body;
 
-    if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid file hash' }) };
+    if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid file hash (must be 64-char SHA-256)' }) };
     if (!fileName) return { statusCode: 400, headers, body: JSON.stringify({ error: 'File name required' }) };
     if (!fileSize) return { statusCode: 400, headers, body: JSON.stringify({ error: 'File size required' }) };
-    if (!email || !isValidEmail(email)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid email' }) };
-    if (recipientEmail && !isValidEmail(recipientEmail)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid recipient email' }) };
+    if (!email || !isValidEmail(email)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid email address' }) };
+    if (recipientEmail && !isValidEmail(recipientEmail)) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid recipient email address' }) };
 
     const proofId = generateProofId();
     const now = new Date().toISOString();
 
+    // Step 1: Create Stripe PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 99,
       currency: 'usd',
@@ -82,41 +64,39 @@ exports.handler = async (event) => {
       }
     });
 
+    // Step 2: Insert PENDING proof into Supabase using supabase-js
     try {
-      await supabaseInsert('proofs', {
-        id: proofId,
-        file_name: fileName.substring(0, 255),
-        file_size: fileSize,
-        file_hash: fileHash,
-        sealed_at: timestamp || now,
-        stripe_payment_id: paymentIntent.id,
-        user_email: email,
-        user_id: null,
-        recipient_email: recipientEmail || null,
-        project_name: projectName || null,
-        is_valid: false,
-        rac_enabled: false,
-        created_at: now,
-        updated_at: now
-      });
-    } catch (dbErr) {
-      console.error('[SENT] Proof insert failed (non-fatal):', dbErr.message);
-    }
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-    try {
-      await supabaseInsert('payments', {
-        stripe_payment_id: paymentIntent.id,
-        user_id: null,
-        user_email: email,
-        amount: 99,
-        currency: 'usd',
-        payment_type: 'day_pass',
-        status: 'pending',
-        proof_id: proofId,
-        created_at: now
-      });
-    } catch (payErr) {
-      console.error('[SENT] Payment audit insert failed (non-fatal):', payErr.message);
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('SUPABASE_URL or SUPABASE_SERVICE_KEY not configured');
+      }
+
+      const { createClient } = require('@supabase/supabase-js');
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { error: insertError } = await supabase
+        .from('proofs')
+        .insert({
+          proof_id: proofId,
+          file_hash: fileHash,
+          file_name: fileName.substring(0, 255),
+          file_size: fileSize,
+          timestamp: timestamp || now,
+          sender_email: email,
+          recipient_email: recipientEmail || null,
+          rac_signature: null,
+          status: 'pending'
+        });
+
+      if (insertError) {
+        console.error('[SENT] Proof insert failed:', insertError.message, insertError.details, insertError.hint);
+      } else {
+        console.log('[SENT] Pending proof created:', proofId);
+      }
+    } catch (dbErr) {
+      console.error('[SENT] DB error (non-fatal):', dbErr.message);
     }
 
     return {
@@ -128,6 +108,7 @@ exports.handler = async (event) => {
         publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
       })
     };
+
   } catch (err) {
     console.error('[SENT] create-payment-intent error:', err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Payment initialization failed. Please try again.' }) };
