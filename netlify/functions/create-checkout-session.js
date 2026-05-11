@@ -1,6 +1,6 @@
 // netlify/functions/create-checkout-session.js
-// SENT. Master Reference v1.0 — Checkout Session with proofId in success_url
-// Creates pending DB record before redirecting to Stripe Checkout
+// SENT. — Stripe Checkout flow with proofId in success_url
+// Uses EXACT column names from live Supabase proofs table
 
 const crypto = require('crypto');
 
@@ -65,10 +65,9 @@ exports.handler = async (event) => {
 
     // Initialize Stripe
     const stripe = require('stripe')(stripeKey);
-
     const origin = event.headers.origin || 'https://vxsent.com';
 
-    // Create Stripe Checkout Session with proofId in success_url
+    // Create Stripe Checkout Session with proofId embedded in success_url
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -84,14 +83,14 @@ exports.handler = async (event) => {
       }],
       mode: 'payment',
       customer_email: email,
-      // proofId embedded in success_url so receipt page gets it immediately
+      allow_promotion_codes: true,
       success_url: `${origin}/receipt?id=${proofId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
       metadata: {
         proof_id: proofId,
         file_hash: fileHash,
         file_name: fileName.substring(0, 100),
-        file_size: fileSize || '',
+        file_size: String(fileSize || ''),
         sender_email: email,
         recipient_email: recipientEmail || '',
         user_email: email,
@@ -104,7 +103,7 @@ exports.handler = async (event) => {
           proof_id: proofId,
           file_hash: fileHash,
           file_name: fileName.substring(0, 100),
-          file_size: fileSize || '',
+          file_size: String(fileSize || ''),
           sender_email: email,
           recipient_email: recipientEmail || '',
           user_email: email,
@@ -117,39 +116,67 @@ exports.handler = async (event) => {
 
     console.log('[create-checkout-session] Session created:', session.id, 'proofId:', proofId);
 
-    // Create pending proof record in Supabase BEFORE redirecting
+    // Create PENDING proof record in Supabase using EXACT column names from live DB
     if (supabaseUrl && supabaseKey) {
       try {
         const { createClient } = require('@supabase/supabase-js');
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        // Use only columns that exist in the live proofs table
+        // Columns confirmed from user's DB: id, file_name, file_size, file_hash,
+        // veridex_proof_id, veridex_signature, sealed_at, stripe_payment_id,
+        // stripe_session_id, user_id, user_email, receipt_url, is_valid,
+        // created_at, recipient_email, project_name, rac_chain_hash, rac_enabled,
+        // proof_id, sender_email, timestamp, rac_signature, status, verified_at,
+        // updated_at, ed25519_signature, ed25519_public_key, chain_hash,
+        // previous_proof_id, rac_version, receipt_email_sent, dispute_status,
+        // amount_cents, user_agent, ip_address, recipient_confirmed,
+        // recipient_confirmed_at, recipient_confirmation_ip,
+        // recipient_confirmation_user_agent
+
         const { error: insertError } = await supabase.from('proofs').insert({
-          id: proofId,
+          proof_id: proofId,
           file_name: fileName,
-          file_size: fileSize || null,
+          file_size: String(fileSize || '0'),
           file_hash: fileHash,
           sealed_at: sealedAt,
-          stripe_payment_id: session.payment_intent || session.id,
           stripe_session_id: session.id,
+          stripe_payment_id: session.payment_intent || null,
           user_email: email,
+          sender_email: email,
           recipient_email: recipientEmail || null,
           project_name: projectName || null,
           is_valid: false,
           rac_enabled: false,
+          recipient_confirmed: false,
           status: 'pending',
-          created_at: new Date().toISOString()
+          amount_cents: 99,
+          timestamp: sealedAt,
+          rac_signature: '',
+          veridex_proof_id: null,
+          veridex_signature: null,
+          ed25519_signature: null,
+          ed25519_public_key: null,
+          chain_hash: null,
+          rac_chain_hash: null,
+          receipt_email_sent: false,
+          dispute_status: null,
+          receipt_url: null,
+          user_id: null,
+          user_agent: event.headers['user-agent'] || null,
+          ip_address: event.headers['x-forwarded-for'] || event.headers['client-ip'] || null
         });
 
         if (insertError) {
-          console.error('[create-checkout-session] DB insert error:', insertError.message);
-          // Don't fail — still redirect to Stripe, webhook will handle DB
+          console.error('[create-checkout-session] DB insert error:', JSON.stringify(insertError));
         } else {
           console.log('[create-checkout-session] Pending proof created:', proofId);
         }
       } catch (dbErr) {
         console.error('[create-checkout-session] DB error:', dbErr.message);
-        // Don't fail — webhook will create the record
       }
+    } else {
+      console.warn('[create-checkout-session] Supabase not configured — skipping DB insert');
     }
 
     return {
@@ -158,12 +185,12 @@ exports.handler = async (event) => {
       body: JSON.stringify({ url: session.url })
     };
 
-  } catch (error) {
-    console.error('[create-checkout-session] Error:', error.message);
+  } catch (err) {
+    console.error('[create-checkout-session] Error:', err.message);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: error.message || 'Checkout session creation failed' })
+      body: JSON.stringify({ error: 'Payment initialization failed. Please try again.' })
     };
   }
 };
