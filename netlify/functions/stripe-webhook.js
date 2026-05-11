@@ -120,7 +120,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     return;
   }
 
-  // Idempotency check
+    // Idempotency check
   const { data: existing } = await supabase
     .from('proofs')
     .select('proof_id, is_valid')
@@ -128,9 +128,30 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     .single();
 
   if (existing && existing.is_valid) {
-    console.log('[webhook] Proof already sealed, skipping:', proofId);
+    console.log('[webhook] Proof already sealed, sending emails only:', proofId);
+    const verifyUrl = `https://vxsent.com/receipt?id=${proofId}`;
+    const confirmUrl = `https://vxsent.com/verify/${proofId}?confirm=true`;
+    if (resend && senderAddr ) {
+      await sendEmail({
+        resend,
+        from: 'receipts@vxsent.com',
+        to: senderAddr,
+        subject: `Your SENT. receipt — ${fileName}`,
+        html: `<div style="font-family:monospace;background:#0a1628;color:#00ff88;padding:32px;max-width:600px"><h2 style="letter-spacing:3px">✓ PROOF SEALED</h2><p style="color:#8899aa;font-size:12px">PROOF ID: <span style="color:#00ff88">${proofId}</span></p><p style="color:#8899aa;font-size:12px">FILE: <span style="color:#e0e0e0">${fileName}</span></p><a href="${verifyUrl}" style="display:block;background:#00ff88;color:#0a1628;text-align:center;padding:14px;text-decoration:none;font-weight:bold;letter-spacing:2px;font-size:13px;margin-top:16px">VIEW RECEIPT →</a></div>`
+      });
+    }
+    if (resend && recipientEmail) {
+      await sendEmail({
+        resend,
+        from: 'receipts@vxsent.com',
+        to: recipientEmail,
+        subject: `You've been sent a verified file — ${fileName}`,
+        html: `<div style="font-family:monospace;background:#0a1628;color:#00ff88;padding:32px;max-width:600px"><h2 style="letter-spacing:3px">📦 FILE DELIVERY PROOF</h2><p style="color:#8899aa;font-size:12px">PROOF ID: <span style="color:#00ff88">${proofId}</span></p><p style="color:#8899aa;font-size:12px">FILE: <span style="color:#e0e0e0">${fileName}</span></p><a href="${confirmUrl}" style="display:block;background:#00ff88;color:#0a1628;text-align:center;padding:14px;text-decoration:none;font-weight:bold;letter-spacing:2px;font-size:13px;margin-top:16px">CONFIRM RECEIPT →</a></div>`
+      });
+    }
     return;
   }
+
 
   // Build RAC token
   const racToken = buildRacToken({
