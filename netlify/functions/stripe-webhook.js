@@ -124,7 +124,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
   const { data: existing } = await supabase
     .from('proofs')
     .select('id, is_valid')
-    .eq('id', proofId)
+    .eq('proof_id', proofId)
     .single();
 
   if (existing && existing.is_valid) {
@@ -167,7 +167,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
 
   // Upsert proof record (handles both pending-exists and new-insert cases)
   const proofData = {
-    id: proofId,
+    proof_id: proofId,
     file_name: fileName,
     file_size: fileSize || null,
     file_hash: fileHash,
