@@ -316,8 +316,8 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Your email (for receipt)</label>
     <input id="payEmail" type="email" placeholder="you@example.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
-    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Client email <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — strengthens proof)</span></label>
-    <input id="payRecipientEmail" type="email" placeholder="client@company.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Client email <span style="color:#dc2626;font-size:10px">*</span></label>
+    <input id="payRecipientEmail" type="email" placeholder="client@company.com" required style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Project name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
     <input id="payProject" type="text" placeholder="e.g. Brand Guidelines Q2" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
@@ -330,7 +330,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <button id="payBtn" onclick="submitPayment()" style="width:100%;padding:15px;background:#00b356;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s">PAY $0.99 — SEAL PROOF</button>
 
     <div style="margin-top:12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#9ca3af">
-      🔒 Secured by Stripe · RAC chain sealed on payment
+      🔒 Secured by Stripe · RAC Level 3 chain sealed on payment
     </div>
   </div>
 </div>
@@ -415,8 +415,8 @@ async function submitPayment() {
     document.getElementById('payError').textContent = 'Please enter a valid email address.';
     return;
   }
-  if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-    document.getElementById('payError').textContent = 'Please enter a valid client email address.';
+  if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+    document.getElementById('payError').textContent = 'Client email is required to seal your RAC Level 3 proof.';
     return;
   }
   if (!cardElement) {
@@ -440,8 +440,9 @@ async function submitPayment() {
         fileSize: fmt(currentFile.size),
         timestamp: currentTimestamp,
         email: email,
-        recipientEmail: recipientEmail || '',
-        projectName: projectName || ''
+        recipientEmail: recipientEmail,
+        projectName: projectName || '',
+        racLevel: 3
       })
     });
 
