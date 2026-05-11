@@ -38,29 +38,87 @@
       margin-bottom: 20px;
       display: flex;
       align-items: center;
+    }
+    .banner-green { background: #0d2a1a; border: 1px solid #00b356; color: #00ff9d; }
+    .banner-amber { background: #1a1a0d; border: 1px solid #b38600; color: #ffd700; }
+
+    /* Proof table */
+    .proof-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .proof-table td { padding: 8px 0; font-size: 12px; border-bottom: 1px solid #0f2a45; vertical-align: top; }
+    .proof-table td:first-child { color: #7a8fa6; letter-spacing: 2px; width: 120px; padding-right: 12px; }
+    .proof-table td:last-child { color: #e0e0e0; }
+    .proof-id { color: #00ff9d !important; font-size: 11px !important; word-break: break-all; }
+    .hash-val { font-size: 10px !important; word-break: break-all; color: #8899aa !important; }
+    .rac-level-val { color: #00ff9d !important; font-weight: bold; }
+
+    /* RAC chain layers */
+    .rac-chain {
+      background: #091525;
+      border: 1px solid #1a3a5c;
+      border-radius: 2px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .rac-chain-title {
+      color: #7a8fa6;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .rac-layer {
+      display: flex;
+      align-items: flex-start;
       gap: 10px;
+      margin-bottom: 10px;
+      font-size: 12px;
     }
-    .banner-green { background: rgba(0,255,157,0.1); border: 1px solid #00ff9d; color: #00ff9d; }
-    .banner-amber { background: rgba(255,193,7,0.1); border: 1px solid #ffc107; color: #ffc107; }
-    .banner-red { background: rgba(255,82,82,0.1); border: 1px solid #ff5252; color: #ff5252; }
-
-    /* Spinner */
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #1a3a5c;
-      border-top-color: #00ff9d;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 30px auto;
+    .rac-layer:last-child { margin-bottom: 0; }
+    .rac-layer-badge {
+      background: #0d2a1a;
+      border: 1px solid #00b356;
+      color: #00ff9d;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .rac-layer-badge.pending {
+      background: #1a1a0d;
+      border-color: #b38600;
+      color: #ffd700;
+    }
+    .rac-layer-text { color: #e0e0e0; line-height: 1.4; }
+    .rac-layer-label { color: #7a8fa6; font-size: 10px; letter-spacing: 1px; }
 
-    /* Proof data table */
-    .proof-table { width: 100%; font-size: 13px; }
-    .proof-table tr td:first-child { color: #7a8fa6; padding-right: 16px; padding-bottom: 10px; white-space: nowrap; font-size: 11px; letter-spacing: 1px; }
-    .proof-table tr td:last-child { color: #e0e0e0; word-break: break-all; padding-bottom: 10px; }
-    .proof-id { color: #00ff9d !important; font-size: 12px !important; }
-    .hash-val { font-size: 10px !important; color: #7a8fa6 !important; }
+    /* What this proves section */
+    .proof-points {
+      background: #091525;
+      border: 1px solid #1a3a5c;
+      border-radius: 2px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .proof-points-title {
+      color: #7a8fa6;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .proof-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #e0e0e0;
+      line-height: 1.4;
+    }
+    .proof-point:last-child { margin-bottom: 0; }
+    .proof-point-check { color: #00ff9d; flex-shrink: 0; }
 
     /* Buttons */
     .btn {
@@ -69,35 +127,62 @@
       font-family: 'Courier New', monospace;
       font-size: 12px;
       letter-spacing: 2px;
+      text-transform: uppercase;
       text-decoration: none;
-      cursor: pointer;
-      border: none;
       border-radius: 2px;
-      margin: 6px 4px 6px 0;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border: none;
     }
-    .btn-primary { background: #00ff9d; color: #0a1628; font-weight: bold; }
-    .btn-outline { background: transparent; color: #00ff9d; border: 1px solid #00ff9d; }
-    .btn-confirm { background: #00ff9d; color: #0a1628; font-weight: bold; width: 100%; text-align: center; margin: 16px 0 0; padding: 16px; font-size: 13px; }
-
-    .copy-feedback { font-size: 11px; color: #00ff9d; margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
-    .copy-feedback.show { opacity: 1; }
-
-    .nav-links { margin-top: 28px; display: flex; gap: 20px; flex-wrap: wrap; }
-    .nav-links a { color: #7a8fa6; text-decoration: none; font-size: 12px; letter-spacing: 1px; }
-    .nav-links a:hover { color: #00ff9d; }
+    .btn-primary { background: #00b356; color: #0a1628; font-weight: bold; }
+    .btn-outline { background: transparent; border: 1px solid #1a3a5c; color: #7a8fa6; }
+    .btn-confirm { background: #00ff9d; color: #0a1628; font-weight: bold; font-size: 13px; width: 100%; text-align: center; padding: 16px; margin-top: 4px; }
+    .copy-feedback { color: #00ff9d; font-size: 11px; letter-spacing: 2px; display: none; }
+    .copy-feedback.show { display: inline; }
 
     /* Confirm section */
-    .confirm-section { background: rgba(0,255,157,0.05); border: 1px solid #1a3a5c; border-radius: 2px; padding: 20px; margin-top: 20px; }
-    .confirm-section h3 { font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
-    .confirm-section p { color: #7a8fa6; font-size: 12px; line-height: 1.6; margin-bottom: 16px; }
+    .confirm-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #091525;
+      border: 1px solid #00b356;
+      border-radius: 2px;
+    }
+    .confirm-section h3 {
+      color: #00ff9d;
+      font-size: 13px;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    .confirm-section p {
+      color: #7a8fa6;
+      font-size: 12px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
 
     /* Pending state */
-    .pending-title { text-align: center; font-size: 18px; letter-spacing: 4px; margin-bottom: 8px; }
-    .pending-sub { text-align: center; color: #7a8fa6; font-size: 12px; letter-spacing: 1px; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid #1a3a5c;
+      border-top-color: #00ff9d;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .pending-title { text-align: center; font-size: 14px; letter-spacing: 3px; margin-bottom: 8px; }
+    .pending-sub { text-align: center; color: #7a8fa6; font-size: 12px; }
 
     /* Error state */
-    .error-title { font-size: 16px; letter-spacing: 3px; color: #ff5252; margin-bottom: 12px; }
-    .error-sub { color: #7a8fa6; font-size: 13px; line-height: 1.6; }
+    .error-title { color: #dc2626; font-size: 14px; letter-spacing: 3px; margin-bottom: 8px; }
+    .error-sub { color: #7a8fa6; font-size: 12px; }
+
+    /* Nav links */
+    .nav-links { margin-top: 24px; display: flex; gap: 16px; }
+    .nav-links a { color: #7a8fa6; font-size: 11px; letter-spacing: 2px; text-decoration: none; }
+    .nav-links a:hover { color: #00ff9d; }
   </style>
 </head>
 <body>
@@ -107,7 +192,7 @@
       <span style="color:#00ff9d;font-size:18px">●</span>
       <span class="logo">SENT.</span>
     </div>
-    <p class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY</p>
+    <p class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY — LEVEL 3</p>
     <hr class="divider">
 
     <!-- Dynamic content -->
@@ -115,7 +200,7 @@
       <!-- Pending state shown by default -->
       <div class="spinner"></div>
       <p class="pending-title">SEALING YOUR PROOF...</p>
-      <p class="pending-sub">Payment confirmed. Sealing your proof on RAC chain...</p>
+      <p class="pending-sub">Payment confirmed. Sealing your proof on RAC Level 3 chain...</p>
     </div>
 
     <!-- Nav links (always shown) -->
@@ -130,7 +215,7 @@
     const params = new URLSearchParams(window.location.search);
     const proofId = params.get('id');
     const sessionId = params.get('session_id');
-    const showConfirm = params.get('confirm') === '1';
+    const showConfirm = params.get('confirm') === 'true';
 
     let pollCount = 0;
     const MAX_POLLS = 40; // 40 × 3s = 2 minutes
@@ -141,7 +226,7 @@
       document.getElementById('receipt-content').innerHTML = `
         <div class="spinner"></div>
         <p class="pending-title">SEALING YOUR PROOF...</p>
-        <p class="pending-sub">Payment confirmed. Sealing your proof on RAC chain...</p>
+        <p class="pending-sub">Payment confirmed. Sealing your proof on RAC Level 3 chain...</p>
       `;
     }
 
@@ -160,23 +245,33 @@
       const chainHash = proof.rac_chain_hash || proof.chain_hash || proof.rac_signature || '';
       const verifyUrl = `https://vxsent.com/verify/${proof.proof_id}`;
       const receiptUrl = `https://vxsent.com/receipt?id=${proof.proof_id}`;
+      const senderEmail = proof.sender_email || proof.user_email || 'N/A';
+      const recipientEmail = proof.recipient_email || '';
 
       let statusBanner = '';
       if (isConfirmed) {
-        statusBanner = `<div class="banner banner-green">✓ DELIVERY CONFIRMED — LAYER 4 COMPLETE</div>`;
+        statusBanner = `<div class="banner banner-green">✓ DELIVERY CONFIRMED — RAC LEVEL 3 COMPLETE (ALL 4 LAYERS)</div>`;
       } else if (isValid) {
-        statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT CONFIRMATION</div>`;
+        statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT CONFIRMATION (LAYER 4)</div>`;
       } else {
         statusBanner = `<div class="banner banner-amber">⏳ SEALING IN PROGRESS...</div>`;
       }
 
-      const confirmSection = (!isConfirmed && proof.recipient_email && showConfirm) ? `
+      const confirmSection = (!isConfirmed && recipientEmail && showConfirm) ? `
         <div class="confirm-section">
           <h3>CONFIRM RECEIPT</h3>
-          <p>By confirming, you acknowledge receiving the file <strong>${proof.file_name}</strong> from <strong>${proof.sender_email || proof.user_email}</strong>. This action is permanent and cryptographically recorded.</p>
-          <button class="btn btn-confirm" onclick="confirmReceipt('${proof.proof_id}')">CONFIRM I RECEIVED THIS →</button>
+          <p>Confirming receipt seals Layer 4 (WHEN) of the RAC chain, making this proof fully verifiable and legally robust.</p>
+          <button class="btn btn-confirm" onclick="confirmReceipt('${proof.proof_id}')">CONFIRM RECEIPT — SEAL LAYER 4 →</button>
         </div>
       ` : '';
+
+      // Build RAC chain layers display
+      const layer4Badge = isConfirmed
+        ? `<span class="rac-layer-badge">✓ SEALED</span>`
+        : `<span class="rac-layer-badge pending">⏳ PENDING</span>`;
+      const layer4Text = isConfirmed
+        ? `<span class="rac-layer-text">Recipient confirmed at ${proof.recipient_confirmed_at ? new Date(proof.recipient_confirmed_at).toUTCString() : 'N/A'}</span>`
+        : `<span class="rac-layer-text">Awaiting recipient confirmation — <a href="${verifyUrl}?confirm=true" style="color:#00ff9d">confirm now</a></span>`;
 
       const html = `
         ${statusBanner}
@@ -185,13 +280,67 @@
           <tr><td>FILE</td><td>${proof.file_name || 'N/A'}</td></tr>
           <tr><td>SIZE</td><td>${proof.file_size || 'N/A'}</td></tr>
           <tr><td>SEALED</td><td>${displayDate}</td></tr>
-          <tr><td>FROM</td><td>${proof.sender_email || proof.user_email || 'N/A'}</td></tr>
-          ${proof.recipient_email ? `<tr><td>TO</td><td>${proof.recipient_email}</td></tr>` : ''}
+          <tr><td>FROM</td><td>${senderEmail}</td></tr>
+          <tr><td>TO</td><td>${recipientEmail || 'N/A'}</td></tr>
           ${proof.project_name ? `<tr><td>PROJECT</td><td>${proof.project_name}</td></tr>` : ''}
+          <tr><td>RAC LEVEL</td><td class="rac-level-val">3 — FULL CHAIN</td></tr>
           ${chainHash ? `<tr><td>RAC HASH</td><td class="hash-val">${chainHash}</td></tr>` : ''}
           ${proof.file_hash ? `<tr><td>FILE HASH</td><td class="hash-val">${proof.file_hash}</td></tr>` : ''}
           ${isConfirmed && proof.recipient_confirmed_at ? `<tr><td>CONFIRMED</td><td>${new Date(proof.recipient_confirmed_at).toUTCString()}</td></tr>` : ''}
         </table>
+
+        <div class="rac-chain">
+          <div class="rac-chain-title">RAC CHAIN — 4 LAYERS</div>
+          <div class="rac-layer">
+            <span class="rac-layer-badge">✓ L1 WHO</span>
+            <div>
+              <div class="rac-layer-label">IDENTITY</div>
+              <div class="rac-layer-text">${senderEmail}</div>
+            </div>
+          </div>
+          <div class="rac-layer">
+            <span class="rac-layer-badge">✓ L2 WHICH</span>
+            <div>
+              <div class="rac-layer-label">SCOPE</div>
+              <div class="rac-layer-text">${proof.file_name || 'N/A'} → ${recipientEmail}</div>
+            </div>
+          </div>
+          <div class="rac-layer">
+            <span class="rac-layer-badge">✓ L3 WHAT</span>
+            <div>
+              <div class="rac-layer-label">CONFIRMATION</div>
+              <div class="rac-layer-text">Stripe payment verified · Hash sealed</div>
+            </div>
+          </div>
+          <div class="rac-layer">
+            ${layer4Badge}
+            <div>
+              <div class="rac-layer-label">WHEN</div>
+              ${layer4Text}
+            </div>
+          </div>
+        </div>
+
+        <div class="proof-points">
+          <div class="proof-points-title">WHAT THIS RECEIPT PROVES</div>
+          <div class="proof-point">
+            <span class="proof-point-check">✓</span>
+            <span><strong>${senderEmail}</strong> delivered this exact file (SHA-256 hash sealed)</span>
+          </div>
+          <div class="proof-point">
+            <span class="proof-point-check">✓</span>
+            <span>Delivery was addressed to <strong>${recipientEmail}</strong> (recipient identity locked)</span>
+          </div>
+          <div class="proof-point">
+            <span class="proof-point-check">✓</span>
+            <span>Payment of $0.99 was made and verified by Stripe at the exact timestamp</span>
+          </div>
+          <div class="proof-point">
+            <span class="proof-point-check">${isConfirmed ? '✓' : '○'}</span>
+            <span>Recipient confirmed receipt${isConfirmed ? ' — Layer 4 complete' : ' — pending confirmation'}</span>
+          </div>
+        </div>
+
         <hr class="divider">
         <div>
           <a class="btn btn-primary" href="${receiptUrl}">VIEW RECEIPT</a>
