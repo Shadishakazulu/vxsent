@@ -187,7 +187,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
 
   const { error: upsertError } = await supabase
     .from('proofs')
-    .upsert(proofData, { onConflict: 'id' });
+    .upsert(proofData, { onConflict: 'proof_id' });
 
   if (upsertError) {
     console.error('[webhook] Proof upsert error:', upsertError.message);
