@@ -474,7 +474,7 @@ async function submitPayment() {
     const poll = setInterval(async () => {
       attempts++;
       try {
-        const pr = await fetch('/api/proof/' + proofId);
+        const pr = await fetch('/.netlify/functions/get-proof?id=' + proofId);
         const pd = await pr.json();
         if (pd && pd.proof && pd.proof.is_valid) {
           clearInterval(poll);
