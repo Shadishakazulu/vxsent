@@ -2,6 +2,7 @@
 // SENT. — Get proof by proof_id
 // Used by receipt page to poll for proof status
 
+
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -10,41 +11,51 @@ exports.handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
+
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers };
   }
 
+
   const proofId = event.queryStringParameters && event.queryStringParameters.id;
+
 
   if (!proofId) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Proof ID required' }) };
   }
 
+
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
 
   if (!supabaseUrl || !supabaseKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Database not configured' }) };
   }
 
+
   try {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+
     const { data: proof, error } = await supabase
       .from('proofs')
       .select('*')
-      .eq('proof_id', proofId)
+      .eq('id', proofId)
       .maybeSingle();
+
 
     if (error) {
       console.error('[get-proof] DB error:', JSON.stringify(error));
       return { statusCode: 500, headers, body: JSON.stringify({ error: 'Database error' }) };
     }
 
+
     if (!proof) {
       return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proof not found' }) };
     }
+
 
     // Log access event (best effort)
     try {
@@ -60,11 +71,13 @@ exports.handler = async (event) => {
       // Non-fatal — table may not exist
     }
 
+
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ proof })
     };
+
 
   } catch (err) {
     console.error('[get-proof] Error:', err.message);
