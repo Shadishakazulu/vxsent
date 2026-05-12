@@ -377,7 +377,7 @@
           body: JSON.stringify({ proofId: pid })
         });
         const data = await resp.json();
-        if (data.success) {
+        if (data.confirmed) {
           window.location.href = `/receipt?id=${pid}`;
         } else {
           alert(data.error || 'Confirmation failed. Please try again.');
