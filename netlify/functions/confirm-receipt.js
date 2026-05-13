@@ -1,7 +1,3 @@
-// netlify/functions/confirm-receipt.js
-// SENT. Master Reference v1.0 — Section 4 (Recipient Confirmation Flow)
-// POST /api/confirm-receipt — Adds Layer 4 to RAC chain
-
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
@@ -71,7 +67,7 @@ exports.handler = async (event) => {
     if (!proofId) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'proofId is required' }) };
 
     const supabase = getSupabase();
-    const { data: proof, error: fetchError } = await supabase.from('proofs').select('*').eq('id', proofId).maybeSingle();
+    const { data: proof, error: fetchError } = await supabase.from('proofs').select('*').eq('proof_id', proofId).maybeSingle();
     if (fetchError) return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'Failed to retrieve proof' }) };
     if (!proof) return { statusCode: 404, headers: corsHeaders, body: JSON.stringify({ error: 'Proof not found' }) };
     if (!proof.is_valid) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Proof is not yet sealed' }) };
@@ -87,7 +83,7 @@ exports.handler = async (event) => {
 
     const confirmationHash = crypto.createHash('sha256').update(`${proofId}:${recipientEmail}:${confirmedAt}:${ip}`).digest('hex');
 
-    const { error: updateError } = await supabase.from('proofs').update({ recipient_confirmed: true, recipient_confirmed_at: confirmedAt, recipient_confirmation_hash: confirmationHash, updated_at: confirmedAt }).eq('id', proofId);
+    const { error: updateError } = await supabase.from('proofs').update({ recipient_confirmed: true, recipient_confirmed_at: confirmedAt, recipient_confirmation_hash: confirmationHash, updated_at: confirmedAt }).eq('proof_id', proofId);
     if (updateError) return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'Failed to confirm receipt' }) };
 
     try { await supabase.from('proof_access_events').insert({ proof_id: proofId, accessed_at: confirmedAt, ip_address: ip, user_agent: userAgent.substring(0, 255), confirmed: true, confirmed_at: confirmedAt }); } catch (logErr) { console.warn('[SENT] Access log failed:', logErr.message); }
