@@ -42,7 +42,7 @@ exports.handler = async (event) => {
     const { data: proof, error } = await supabase
       .from('proofs')
       .select('*')
-      .eq('id', proofId)
+      .eq('proof_id', proofId)
       .maybeSingle();
 
 
