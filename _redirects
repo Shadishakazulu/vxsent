@@ -9,6 +9,7 @@
 
 # API routes → Netlify Functions
 /api/create-payment-intent      /.netlify/functions/create-payment-intent       200
+/api/create-proof-solo          /.netlify/functions/create-proof-solo            200
 /api/checkout                   /.netlify/functions/create-checkout-session     200
 /api/create-checkout-session    /.netlify/functions/create-checkout-session     200
 /api/create-subscription        /.netlify/functions/create-subscription         200
