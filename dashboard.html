@@ -116,7 +116,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .pi-btn:hover{border-color:var(--border-md);color:var(--ink)}
 .pi-btn.primary:hover{background:var(--green-bg)}
 
-
 /* HABIT REINFORCEMENT BANNER */
 .habit-reinforce{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .hr-left{display:flex;align-items:center;gap:12px}
@@ -129,6 +128,38 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 /* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;border-radius:4px;z-index:999;transform:translateY(70px);transition:transform 0.25s;pointer-events:none}
 .toast.show{transform:translateY(0)}
+
+/* PROOF MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:8px;padding:24px;width:90%;max-width:500px;box-shadow:0 10px 40px rgba(0,0,0,0.2);position:relative}
+.modal-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink-3)}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;margin-bottom:4px;color:var(--ink)}
+.modal-sub{font-size:12px;color:var(--ink-3);margin-bottom:16px}
+.modal-section{margin-bottom:16px}
+.modal-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;font-weight:500}
+.modal-drop{border:2px dashed var(--border-md);padding:20px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--panel);border-radius:4px}
+.modal-drop:hover{border-color:var(--green);background:var(--green-bg)}
+.modal-drop.active{border-color:var(--green);background:var(--green-bg)}
+.modal-drop-icon{font-size:24px;margin-bottom:8px}
+.modal-drop-text{font-size:13px;color:var(--ink-2)}
+.modal-hash{background:var(--panel);padding:12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);word-break:break-all;margin-bottom:12px;display:none}
+.modal-hash.show{display:block}
+.modal-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--surface)}
+.modal-input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+.modal-input::placeholder{color:var(--ink-4)}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.modal-btn{flex:1;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:0.08em;border:none;cursor:pointer;border-radius:3px;transition:background 0.15s}
+.modal-btn.primary{background:var(--green);color:#fff}
+.modal-btn.primary:hover{background:var(--green-dk)}
+.modal-btn.secondary{background:var(--panel);color:var(--ink);border:1.5px solid var(--border)}
+.modal-btn.secondary:hover{background:var(--panel-hi)}
+.modal-loading{display:none;text-align:center;padding:20px}
+.modal-loading.show{display:block}
+.modal-spinner{display:inline-block;width:20px;height:20px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-error{color:#d32f2f;font-size:12px;margin-top:8px;display:none}
+.modal-error.show{display:block}
 
 @media(max-width:900px){
   body{grid-template-columns:1fr;overflow:auto;height:auto}
@@ -159,6 +190,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   .pi-btn{font-size:8px;padding:4px 8px}
   .sec-hdr{flex-direction:column;align-items:flex-start}
   .filters{flex-wrap:wrap}
+  .modal{width:95%;padding:16px}
 }
 </style>
 </head>
@@ -169,7 +201,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   <div class="tb-right">
     <div class="tb-plan">Solo · $12.99/mo</div>
     <div class="tb-user">you@email.com</div>
-    <button class="tb-new" onclick="location.href='/'">Proof a file →</button>
+    <button class="tb-new" id="proofBtn" onclick="openProofModal()">Proof a file →</button>
     <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
   </div>
 </div>
@@ -211,7 +243,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 
   <!-- HABIT REINFORCEMENT -->
   <div class="habit-reinforce" id="habitReinforce" style="display:none"></div>
-  </div>
 
   <div class="qp">
     <div class="qp-head">
@@ -219,11 +250,11 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
       <div class="qp-plan">Unlimited · Solo plan</div>
     </div>
     <div class="qp-body">
-      <div class="qp-drop" onclick="location.href='/'">
+      <div class="qp-drop" onclick="openProofModal()">
         <div class="qp-di">📁</div>
         <div class="qp-dt"><strong>Proof your next file</strong> — drop it here before you send</div>
       </div>
-      <button class="qp-btn" onclick="location.href='/'">SEAL NOW</button>
+      <button class="qp-btn" onclick="openProofModal()">SEAL NOW</button>
     </div>
   </div>
 
@@ -250,9 +281,53 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   <div class="proof-list" id="proofList"></div>
 </main>
 
+<!-- PROOF MODAL -->
+<div class="modal-overlay" id="proofModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeProofModal()">✕</button>
+    <div class="modal-title">SEAL YOUR PROOF</div>
+    <div class="modal-sub">RAC Level 3 · Sealed instantly · No payment required</div>
+
+    <div class="modal-section">
+      <div class="modal-label">Drop file</div>
+      <div class="modal-drop" id="dropZone" ondrop="handleDrop(event)" ondragover="event.preventDefault();event.target.closest('.modal-drop').classList.add('active')" ondragleave="event.target.closest('.modal-drop').classList.remove('active')">
+        <div class="modal-drop-icon">📁</div>
+        <div class="modal-drop-text">Drop your file here or click to select</div>
+        <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(event)">
+      </div>
+      <div class="modal-hash" id="hashPreview"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-label">Client email *</div>
+      <input type="email" id="clientEmail" class="modal-input" placeholder="client@company.com" required>
+      <div class="modal-error" id="emailError"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-label">Project name (optional)</div>
+      <input type="text" id="projectName" class="modal-input" placeholder="e.g., Acme Corp Rebrand">
+    </div>
+
+    <div class="modal-loading" id="modalLoading">
+      <div class="modal-spinner"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--ink-3)">Sealing your proof...</div>
+    </div>
+
+    <div class="modal-actions" id="modalActions">
+      <button class="modal-btn secondary" onclick="closeProofModal()">Cancel</button>
+      <button class="modal-btn primary" id="sealBtn" onclick="sealProof()" disabled>SEAL NOW</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast">Link copied</div>
 
 <script>
+let currentFile = null;
+let currentFileHash = null;
+let currentUserPlan = null;
+
 const PROOFS=[
   {file:'brand-guidelines-final-v3.pdf',size:'4.2 MB',time:'2026-05-03 · 11:44 UTC',hash:'a3f9d2e8...d72c',project:'Acme Corp Rebrand',amount:'$3,200'},
   {file:'website-mockup-approved.fig',size:'18.7 MB',time:'2026-05-02 · 09:22 UTC',hash:'b7e1c4f9...a01b',project:'TechCo Website',amount:'$5,500'},
@@ -263,6 +338,7 @@ const PROOFS=[
   {file:'ui-components-handoff.zip',size:'8.4 MB',time:'2026-04-20 · 11:15 UTC',hash:'g5c2a8f1...e63d',project:'App Redesign',amount:'$2,800'},
   {file:'seo-audit-report.pdf',size:'2.3 MB',time:'2026-04-18 · 09:00 UTC',hash:'h8d4b7e2...f91c',project:'SEO Consultation',amount:'$650'}
 ];
+
 function render(list){
   const c=document.getElementById('proofList');c.innerHTML='';
   list.forEach(p=>{
@@ -286,6 +362,7 @@ function render(list){
     c.appendChild(el);
   });
 }
+
 function viewR(f,h,s){const p=new URLSearchParams({file:decodeURIComponent(f),hash:decodeURIComponent(h),size:decodeURIComponent(s),time:new Date().toISOString(),id:genId()});location.href='/receipt?'+p}
 function cpLink(){navigator.clipboard.writeText('https://vxsent.com/verify/'+genId()).then(()=>showToast('Link copied')).catch(()=>{})}
 function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
@@ -300,6 +377,7 @@ async function loadDashboard(){
     const sessRes=await fetch('/api/auth/session');
     if(sessRes.ok){
       const sess=await sessRes.json();
+      currentUserPlan = sess.plan;
       document.querySelector('.tb-user').textContent=sess.email;
       document.querySelector('.tb-plan').textContent=sess.plan==='solo'?'Solo · $12.99/mo':sess.plan==='none'?'Day Pass':sess.plan;
       const proofsRes=await fetch('/api/proofs');
@@ -307,18 +385,16 @@ async function loadDashboard(){
         const data=await proofsRes.json();
         const nums=document.querySelectorAll('.sc-num');
         if(nums[0])nums[0].textContent=data.stats.totalProofs;
-      showHabitReinforce(data.stats.totalProofs, sess.plan);
+        showHabitReinforce(data.stats.totalProofs, sess.plan);
         if(nums[1])nums[1].textContent=data.stats.monthProofs;
         if(data.proofs&&data.proofs.length>0)renderReal(data.proofs);
         else render(PROOFS);
       } else { render(PROOFS); }
     } else {
-      // Not authenticated — redirect to login
       window.location.href='/login';
       return;
     }
   }catch(e){
-    // Backend not yet connected — show demo data
     render(PROOFS);
   }
 }
@@ -341,8 +417,109 @@ function renderReal(proofs){
     c.appendChild(el);
   });
 }
+
 function cpD(url){navigator.clipboard.writeText(url).then(()=>showToast('Link copied')).catch(()=>{})}
 function logout(){window.location.href='/api/auth/logout'}
+
+function openProofModal(){
+  if(currentUserPlan === 'solo'){
+    document.getElementById('proofModal').classList.add('open');
+  } else {
+    location.href='/';
+  }
+}
+
+function closeProofModal(){
+  document.getElementById('proofModal').classList.remove('open');
+  currentFile = null;
+  currentFileHash = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('clientEmail').value = '';
+  document.getElementById('projectName').value = '';
+  document.getElementById('hashPreview').classList.remove('show');
+  document.getElementById('sealBtn').disabled = true;
+  document.getElementById('emailError').classList.remove('show');
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('dropZone').classList.remove('active');
+  const files = e.dataTransfer.files;
+  if(files.length > 0) processFile(files[0]);
+}
+
+function handleFileSelect(e){
+  if(e.target.files.length > 0) processFile(e.target.files[0]);
+}
+
+async function processFile(file){
+  currentFile = file;
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  currentFileHash = hashHex;
+  
+  document.getElementById('hashPreview').textContent = 'SHA-256: ' + hashHex;
+  document.getElementById('hashPreview').classList.add('show');
+  document.getElementById('sealBtn').disabled = false;
+}
+
+async function sealProof(){
+  const email = document.getElementById('clientEmail').value.trim();
+  const project = document.getElementById('projectName').value.trim();
+  const errorEl = document.getElementById('emailError');
+  
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    errorEl.textContent = 'Please enter a valid client email address.';
+    errorEl.classList.add('show');
+    return;
+  }
+  
+  errorEl.classList.remove('show');
+  
+  if(!currentFile || !currentFileHash){
+    showToast('Please select a file first');
+    return;
+  }
+  
+  document.getElementById('modalActions').style.display = 'none';
+  document.getElementById('modalLoading').classList.add('show');
+  
+  try {
+    const response = await fetch('/api/create-proof-solo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileHash: currentFileHash,
+        fileName: currentFile.name,
+        fileSize: currentFile.size,
+        timestamp: new Date().toISOString(),
+        recipientEmail: email,
+        projectName: project || null
+      })
+    });
+    
+    const data = await response.json();
+    
+    if(response.ok && data.success){
+      window.location.href = data.receiptUrl;
+    } else {
+      showToast('Error: ' + (data.message || 'Failed to seal proof'));
+      document.getElementById('modalActions').style.display = 'flex';
+      document.getElementById('modalLoading').classList.remove('show');
+    }
+  } catch(err){
+    showToast('Error: ' + err.message);
+    document.getElementById('modalActions').style.display = 'flex';
+    document.getElementById('modalLoading').classList.remove('show');
+  }
+}
+
+document.getElementById('dropZone').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
 
 loadDashboard();
 
@@ -350,7 +527,6 @@ function showHabitReinforce(totalProofs, plan){
   const el=document.getElementById('habitReinforce');
   if(!el)return;
 
-  // Subscription trigger after 2nd proof
   if(totalProofs>=2 && plan!=='solo'){
     el.style.display='flex';
     el.innerHTML=`
@@ -366,7 +542,6 @@ function showHabitReinforce(totalProofs, plan){
     return;
   }
 
-  // Habit reinforcement for solo users
   if(plan==='solo'){
     el.style.display='flex';
     const week=Math.min(totalProofs,7);
