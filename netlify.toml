@@ -2,91 +2,106 @@
   publish = "."
   functions = "netlify/functions"
 
-[build.environment]
-  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,_redirects,vxsent-production"
-
 [dev]
   port = 8888
 
 [[plugins]]
-package = "@netlify/plugin-functions-install-core"
+  package = "@netlify/plugin-functions-install-core"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
 [[redirects]]
-from = "/dashboard"
-to = "/dashboard.html"
-status = 200
-force = true
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+  force = true
 
 [[redirects]]
-from = "/pricing"
-to = "/pricing.html"
-status = 200
-force = true
+  from = "/pricing"
+  to = "/pricing.html"
+  status = 200
+  force = true
 
 [[redirects]]
-from = "/login"
-to = "/login.html"
-status = 200
-force = true
+  from = "/login"
+  to = "/login.html"
+  status = 200
+  force = true
 
 [[redirects]]
-from = "/receipt"
-to = "/receipt.html"
-status = 200
-force = true
+  from = "/receipt"
+  to = "/receipt.html"
+  status = 200
+  force = true
 
 [[redirects]]
-from = "/api/create-payment-intent"
-to = "/.netlify/functions/create-payment-intent"
-status = 200
+  from = "/verify/:id"
+  to = "/verify.html?id=:id"
+  status = 200
+  force = true
 
 [[redirects]]
-from = "/api/create-subscription"
-to = "/.netlify/functions/create-subscription"
-status = 200
+  from = "/api/create-payment-intent"
+  to = "/.netlify/functions/create-payment-intent"
+  status = 200
 
 [[redirects]]
-from = "/api/stripe-webhook"
-to = "/.netlify/functions/stripe-webhook"
-status = 200
+  from = "/api/create-checkout-session"
+  to = "/.netlify/functions/create-checkout-session"
+  status = 200
 
 [[redirects]]
-from = "/api/proof/:id"
-to = "/.netlify/functions/get-proof?id=:id"
-status = 200
+  from = "/api/create-subscription"
+  to = "/.netlify/functions/create-subscription"
+  status = 200
 
 [[redirects]]
-from = "/api/proofs"
-to = "/.netlify/functions/get-proofs"
-status = 200
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
 
 [[redirects]]
-from = "/api/auth/magic-link"
-to = "/.netlify/functions/auth-magic-link"
-status = 200
+  from = "/api/proof/:id"
+  to = "/.netlify/functions/get-proof?id=:id"
+  status = 200
 
 [[redirects]]
-from = "/api/auth/verify"
-to = "/.netlify/functions/auth-verify"
-status = 200
+  from = "/api/proofs"
+  to = "/.netlify/functions/get-proofs"
+  status = 200
 
 [[redirects]]
-from = "/api/auth/session"
-to = "/.netlify/functions/auth-session"
-status = 200
+  from = "/api/auth/magic-link"
+  to = "/.netlify/functions/auth-magic-link"
+  status = 200
 
 [[redirects]]
-from = "/api/auth/logout"
-to = "/.netlify/functions/auth-logout"
-status = 200
+  from = "/api/auth/verify"
+  to = "/.netlify/functions/auth-verify"
+  status = 200
 
 [[redirects]]
-from = "/api/cancel-subscription"
-to = "/.netlify/functions/cancel-subscription"
-status = 200
+  from = "/api/auth/session"
+  to = "/.netlify/functions/auth-session"
+  status = 200
 
 [[redirects]]
-from = "/api/confirm-receipt"
-to = "/.netlify/functions/confirm-receipt"
-status = 200
+  from = "/api/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
 
+[[redirects]]
+  from = "/api/cancel-subscription"
+  to = "/.netlify/functions/cancel-subscription"
+  status = 200
+
+[[redirects]]
+  from = "/api/confirm-receipt"
+  to = "/.netlify/functions/confirm-receipt"
+  status = 200

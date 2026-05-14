@@ -3,15 +3,23 @@
   "version": "1.0.0",
   "description": "SENT. RAC v1 - Proof of Delivery",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "netlify dev",
+    "test": "node --test",
+    "lint": "node scripts/validate-config.js",
+    "check": "npm run lint && npm test"
   },
-  "keywords": ["proof", "delivery", "rac"],
-  "author": "",
+  "keywords": ["proof", "delivery", "rac", "veridex"],
+  "author": "MegaGamer Inc.",
   "license": "MIT",
   "dependencies": {
+    "@netlify/plugin-functions-install-core": "^1.0.0",
     "@supabase/supabase-js": "^2.38.0",
     "resend": "^1.0.0",
     "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.1"
   }
 }

@@ -1,78 +1,110 @@
--- SENT. Platform - Supabase PostgreSQL Schema
--- Complete database setup for proof storage and verification
+-- SENT. hardened Supabase schema
+-- Apply in Supabase SQL editor.
 
--- Create proofs table
-CREATE TABLE IF NOT EXISTS proofs (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  proof_id TEXT UNIQUE NOT NULL,
-  file_hash TEXT NOT NULL,
-  timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  rac_signature TEXT NOT NULL,
-  sender_email TEXT NOT NULL,
-  recipient_email TEXT NOT NULL,
-  file_name TEXT NOT NULL,
-  file_size TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'verified',
-  verified_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+create extension if not exists pgcrypto;
+
+create table if not exists public.proofs (
+  id bigint primary key generated always as identity,
+  proof_id text unique not null,
+  file_hash text not null check (file_hash ~ '^[a-fA-F0-9]{64}$'),
+  timestamp timestamptz not null default now(),
+  rac_signature text,
+  sender_email text not null,
+  recipient_email text,
+  file_name text not null,
+  file_size text,
+  status text not null default 'pending' check (status in ('pending', 'sealed', 'verified', 'failed', 'revoked')),
+  verified_at timestamptz,
+  sealed_at timestamptz,
+  stripe_payment_id text,
+  user_email text,
+  project_name text,
+  veridex_proof_id text,
+  veridex_signature text,
+  rac_chain_hash text,
+  rac_level integer default 3,
+  rac_enabled boolean default true,
+  is_valid boolean default false,
+  recipient_confirmed boolean default false,
+  recipient_confirmed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
--- Create indexes for faster queries
-CREATE INDEX IF NOT EXISTS idx_proofs_proof_id ON proofs(proof_id);
-CREATE INDEX IF NOT EXISTS idx_proofs_sender_email ON proofs(sender_email);
-CREATE INDEX IF NOT EXISTS idx_proofs_recipient_email ON proofs(recipient_email);
-CREATE INDEX IF NOT EXISTS idx_proofs_created_at ON proofs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_proofs_status ON proofs(status);
+create table if not exists public.payments (
+  id bigint primary key generated always as identity,
+  stripe_payment_id text unique not null,
+  proof_id text references public.proofs(proof_id) on delete set null,
+  status text not null default 'pending',
+  amount integer,
+  currency text default 'usd',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 
--- Enable Row Level Security
-ALTER TABLE proofs ENABLE ROW LEVEL SECURITY;
+create table if not exists public.proof_access_events (
+  id bigint primary key generated always as identity,
+  proof_id text not null references public.proofs(proof_id) on delete cascade,
+  accessed_at timestamptz not null default now(),
+  ip_address text,
+  user_agent text,
+  referrer text,
+  confirmed boolean default false
+);
 
--- Create policy for public read access (anyone can verify)
-CREATE POLICY "Public can read proofs" ON proofs
-  FOR SELECT USING (true);
+create index if not exists idx_proofs_proof_id on public.proofs(proof_id);
+create index if not exists idx_proofs_sender_email on public.proofs(sender_email);
+create index if not exists idx_proofs_recipient_email on public.proofs(recipient_email);
+create index if not exists idx_proofs_created_at on public.proofs(created_at desc);
+create index if not exists idx_proofs_status on public.proofs(status);
+create index if not exists idx_proof_access_events_proof_id on public.proof_access_events(proof_id);
 
--- Create policy for authenticated insert (only from webhook)
-CREATE POLICY "Service role can insert proofs" ON proofs
-  FOR INSERT WITH CHECK (true);
+alter table public.proofs enable row level security;
+alter table public.payments enable row level security;
+alter table public.proof_access_events enable row level security;
 
--- Create policy for authenticated update
-CREATE POLICY "Service role can update proofs" ON proofs
-  FOR UPDATE USING (true);
+drop policy if exists "Public can read sealed proofs" on public.proofs;
+drop policy if exists "No anon proof inserts" on public.proofs;
+drop policy if exists "No anon proof updates" on public.proofs;
+drop policy if exists "No anon proof deletes" on public.proofs;
 
--- Create policy for authenticated delete
-CREATE POLICY "Service role can delete proofs" ON proofs
-  FOR DELETE USING (true);
+create policy "Public can read sealed proofs"
+on public.proofs
+for select
+to anon
+using (is_valid = true and status in ('sealed', 'verified'));
 
--- Grant permissions
-GRANT SELECT ON proofs TO anon;
-GRANT SELECT, INSERT, UPDATE, DELETE ON proofs TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON proofs TO service_role;
+-- All writes must use the Supabase service role from trusted Netlify Functions.
+-- Do not grant insert/update/delete to anon or authenticated client sessions.
 
--- Create function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+revoke insert, update, delete on public.proofs from anon;
+revoke insert, update, delete on public.proofs from authenticated;
+grant select on public.proofs to anon;
+grant select on public.proofs to authenticated;
+grant all on public.proofs to service_role;
 
--- Create trigger for updated_at
-CREATE TRIGGER update_proofs_updated_at BEFORE UPDATE ON proofs
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+revoke all on public.payments from anon;
+revoke all on public.payments from authenticated;
+grant all on public.payments to service_role;
 
--- Insert sample data for testing
-INSERT INTO proofs (proof_id, file_hash, timestamp, rac_signature, sender_email, recipient_email, file_name, file_size, status, verified_at)
-VALUES (
-  'PROOF-1234567890ABCDEF',
-  'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-  NOW(),
-  '5E884898DA28047151D0E56F8DC62927592A2537D361D91D8F3FE3496DD9A7D1',
-  'sender@example.com',
-  'recipient@example.com',
-  'document.pdf',
-  '2.5 MB',
-  'verified',
-  NOW()
-) ON CONFLICT (proof_id) DO NOTHING;
+revoke all on public.proof_access_events from anon;
+revoke all on public.proof_access_events from authenticated;
+grant all on public.proof_access_events to service_role;
+
+create or replace function public.update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists update_proofs_updated_at on public.proofs;
+create trigger update_proofs_updated_at
+before update on public.proofs
+for each row execute function public.update_updated_at_column();
+
+drop trigger if exists update_payments_updated_at on public.payments;
+create trigger update_payments_updated_at
+before update on public.payments
+for each row execute function public.update_updated_at_column();
