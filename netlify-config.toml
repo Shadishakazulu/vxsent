@@ -8,11 +8,3 @@
   to = "/.netlify/functions/stripe-webhook"
   status = 200
   force = true
-
-[env]
-  [env.production]
-    [env.production.context.production.environment]
-      STRIPE_SECRET_KEY = ""
-      STRIPE_WEBHOOK_SECRET = ""
-      SUPABASE_URL = "https://fjowiopznwafjqhdbrsv.supabase.co"
-      SUPABASE_SERVICE_KEY = ""

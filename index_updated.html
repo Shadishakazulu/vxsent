@@ -371,22 +371,30 @@ async function handleFile(file){
 }
 async function initPayment(){
   if(!currentFile||!currentHash)return;
-  // Show file info in modal
   const info=document.getElementById('payFileInfo');
   if(info)info.textContent=currentFile.name+' · '+fmt(currentFile.size);
   document.getElementById('payModal').style.display='flex';
+  await loadStripeConfig();
   mountStripeCard();
 }
 
-// Stripe publishable key (public — safe to include in frontend)
-const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+let STRIPE_PK = null;
 let stripeInstance = null;
 let cardElement = null;
 let stripeInitialized = false;
 
+async function loadStripeConfig() {
+  if (STRIPE_PK) return;
+  try {
+    const res = await fetch('/.netlify/functions/get-config');
+    const data = await res.json();
+    STRIPE_PK = data.stripePublishableKey;
+  } catch(e) { console.error('Failed to load Stripe config:', e); }
+}
+
 function mountStripeCard() {
   if (stripeInitialized) return;
-  if (typeof Stripe === 'undefined') return;
+  if (!STRIPE_PK || typeof Stripe === 'undefined') return;
   stripeInstance = Stripe(STRIPE_PK);
   const elements = stripeInstance.elements();
   cardElement = elements.create('card', {
