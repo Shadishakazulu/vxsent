@@ -378,32 +378,41 @@ async function initPayment(){
   mountStripeCard();
 }
 
-// Stripe publishable key (public — safe to include in frontend)
-const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
 let stripeInstance = null;
 let cardElement = null;
 let stripeInitialized = false;
 
-function mountStripeCard() {
+async function mountStripeCard() {
   if (stripeInitialized) return;
   if (typeof Stripe === 'undefined') return;
-  stripeInstance = Stripe(STRIPE_PK);
-  const elements = stripeInstance.elements();
-  cardElement = elements.create('card', {
-    style: {
-      base: {
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '14px',
-        color: '#111318',
-        '::placeholder': { color: '#9ca3af' }
+  try {
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({_getKey:true, fileHash:'a'.repeat(64), fileName:'test', fileSize:'0', timestamp: new Date().toISOString()})
+    });
+    const { publishableKey } = await res.json();
+    if (!publishableKey) return;
+    stripeInstance = Stripe(publishableKey);
+    const elements = stripeInstance.elements();
+    cardElement = elements.create('card', {
+      style: {
+        base: {
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '14px',
+          color: '#111318',
+          '::placeholder': { color: '#9ca3af' }
+        }
       }
-    }
-  });
-  cardElement.mount('#card-element');
-  cardElement.on('change', e => {
-    document.getElementById('payError').textContent = e.error ? e.error.message : '';
-  });
-  stripeInitialized = true;
+    });
+    cardElement.mount('#card-element');
+    cardElement.on('change', e => {
+      document.getElementById('payError').textContent = e.error ? e.error.message : '';
+    });
+    stripeInitialized = true;
+  } catch (e) {
+    console.error('Failed to initialize Stripe:', e.message);
+  }
 }
 
 async function submitPayment() {
