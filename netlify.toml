@@ -3,7 +3,8 @@
   functions = "netlify/functions"
 
 [build.environment]
-  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,_redirects,vxsent-production"
+  SECRETS_SCAN_OMIT_KEYS = "VITE_APP_TITLE,STRIPE_PUBLISHABLE_KEY"
+  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,_redirects"
 
 [dev]
   port = 8888
