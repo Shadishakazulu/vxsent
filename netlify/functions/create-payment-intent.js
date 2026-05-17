@@ -85,17 +85,24 @@ exports.handler = async (event) => {
     try {
       await supabaseInsert('proofs', {
         id: proofId,
+        proof_id: proofId,
         file_name: fileName.substring(0, 255),
-        file_size: fileSize,
+        file_size: String(fileSize),
         file_hash: fileHash,
         sealed_at: timestamp || now,
+        timestamp: timestamp || now,
         stripe_payment_id: paymentIntent.id,
         user_email: email,
+        sender_email: email,
         user_id: null,
         recipient_email: recipientEmail || null,
         project_name: projectName || null,
         is_valid: false,
         rac_enabled: false,
+        status: 'pending',
+        amount_cents: 99,
+        recipient_confirmed: false,
+        receipt_email_sent: false,
         created_at: now,
         updated_at: now
       });

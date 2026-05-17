@@ -31,11 +31,34 @@ exports.handler = async (event) => {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: proof, error } = await supabase
+    // Try primary key `id` first (used by create-payment-intent flow),
+    // then fall back to `proof_id` column (used by create-checkout-session flow)
+    let proof = null;
+    let error = null;
+
+    const { data: byId, error: errById } = await supabase
       .from('proofs')
       .select('*')
-      .eq('proof_id', proofId)
+      .eq('id', proofId)
       .maybeSingle();
+
+    if (errById) {
+      error = errById;
+    } else if (byId) {
+      proof = byId;
+    } else {
+      const { data: byProofId, error: errByProofId } = await supabase
+        .from('proofs')
+        .select('*')
+        .eq('proof_id', proofId)
+        .maybeSingle();
+
+      if (errByProofId) {
+        error = errByProofId;
+      } else {
+        proof = byProofId;
+      }
+    }
 
     if (error) {
       console.error('[get-proof] DB error:', JSON.stringify(error));

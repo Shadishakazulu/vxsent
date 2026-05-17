@@ -158,8 +158,9 @@
       const sealedAt = proof.sealed_at || proof.timestamp || proof.created_at;
       const displayDate = sealedAt ? new Date(sealedAt).toUTCString() : 'N/A';
       const chainHash = proof.rac_chain_hash || proof.chain_hash || proof.rac_signature || '';
-      const verifyUrl = `https://vxsent.com/verify/${proof.proof_id}`;
-      const receiptUrl = `https://vxsent.com/receipt?id=${proof.proof_id}`;
+      const pid = proof.proof_id || proof.id;
+      const verifyUrl = `https://vxsent.com/verify/${pid}`;
+      const receiptUrl = `https://vxsent.com/receipt?id=${pid}`;
 
       let statusBanner = '';
       if (isConfirmed) {
@@ -174,14 +175,14 @@
         <div class="confirm-section">
           <h3>CONFIRM RECEIPT</h3>
           <p>By confirming, you acknowledge receiving the file <strong>${proof.file_name}</strong> from <strong>${proof.sender_email || proof.user_email}</strong>. This action is permanent and cryptographically recorded.</p>
-          <button class="btn btn-confirm" onclick="confirmReceipt('${proof.proof_id}')">CONFIRM I RECEIVED THIS →</button>
+          <button class="btn btn-confirm" onclick="confirmReceipt('${pid}')">CONFIRM I RECEIVED THIS →</button>
         </div>
       ` : '';
 
       const html = `
         ${statusBanner}
         <table class="proof-table">
-          <tr><td>PROOF ID</td><td class="proof-id">${proof.proof_id}</td></tr>
+          <tr><td>PROOF ID</td><td class="proof-id">${pid}</td></tr>
           <tr><td>FILE</td><td>${proof.file_name || 'N/A'}</td></tr>
           <tr><td>SIZE</td><td>${proof.file_size || 'N/A'}</td></tr>
           <tr><td>SEALED</td><td>${displayDate}</td></tr>

@@ -168,6 +168,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
   // Upsert proof record (handles both pending-exists and new-insert cases)
   const proofData = {
     id: proofId,
+    proof_id: proofId,
     file_name: fileName,
     file_size: fileSize || null,
     file_hash: fileHash,
