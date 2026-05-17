@@ -31,11 +31,34 @@ exports.handler = async (event) => {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: proof, error } = await supabase
+    // Query by proof_id first (set by both PaymentIntent and Checkout flows),
+    // then fall back to id column for backwards compatibility
+    let proof = null;
+    let error = null;
+
+    const { data: byProofId, error: errByProofId } = await supabase
       .from('proofs')
       .select('*')
       .eq('proof_id', proofId)
       .maybeSingle();
+
+    if (errByProofId) {
+      error = errByProofId;
+    } else if (byProofId) {
+      proof = byProofId;
+    } else {
+      const { data: byId, error: errById } = await supabase
+        .from('proofs')
+        .select('*')
+        .eq('id', proofId)
+        .maybeSingle();
+
+      if (errById) {
+        error = errById;
+      } else {
+        proof = byId;
+      }
+    }
 
     if (error) {
       console.error('[get-proof] DB error:', JSON.stringify(error));

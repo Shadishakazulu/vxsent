@@ -120,12 +120,12 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     return;
   }
 
-  // Idempotency check
+  // Idempotency check — use proof_id (not id, which is auto-generated)
   const { data: existing } = await supabase
     .from('proofs')
-    .select('id, is_valid')
-    .eq('id', proofId)
-    .single();
+    .select('proof_id, is_valid')
+    .eq('proof_id', proofId)
+    .maybeSingle();
 
   if (existing && existing.is_valid) {
     console.log('[webhook] Proof already sealed, skipping:', proofId);
@@ -167,13 +167,14 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
 
   // Upsert proof record (handles both pending-exists and new-insert cases)
   const proofData = {
-    id: proofId,
+    proof_id: proofId,
     file_name: fileName,
     file_size: fileSize || null,
     file_hash: fileHash,
     sealed_at: sealedAt,
     stripe_payment_id: paymentIntentId,
     user_email: senderAddr,
+    sender_email: senderAddr,
     recipient_email: recipientEmail || null,
     project_name: projectName || null,
     veridex_proof_id: veridexResult.proof_id || proofId,
@@ -187,7 +188,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
 
   const { error: upsertError } = await supabase
     .from('proofs')
-    .upsert(proofData, { onConflict: 'id' });
+    .upsert(proofData, { onConflict: 'proof_id' });
 
   if (upsertError) {
     console.error('[webhook] Proof upsert error:', upsertError.message);
