@@ -379,7 +379,7 @@ async function initPayment(){
 }
 
 // Stripe publishable key (public — safe to include in frontend)
-const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+const STRIPE_PK = window.__STRIPE_PK || '';
 let stripeInstance = null;
 let cardElement = null;
 let stripeInitialized = false;
