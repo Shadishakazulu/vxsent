@@ -1,6 +1,6 @@
 # SENT. — vxsent.com Netlify Redirects
 # Page routes — clean URLs → .html files
-/                       /index_updated.html     200!
+/                       /index.html             200!
 /dashboard              /dashboard.html         200!
 /receipt                /receipt.html           200!
 /pricing                /pricing.html           200!
