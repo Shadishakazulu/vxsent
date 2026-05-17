@@ -31,32 +31,32 @@ exports.handler = async (event) => {
     const { createClient } = require('@supabase/supabase-js');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Try primary key `id` first (used by create-payment-intent flow),
-    // then fall back to `proof_id` column (used by create-checkout-session flow)
+    // Query by proof_id first (set by both PaymentIntent and Checkout flows),
+    // then fall back to id column for backwards compatibility
     let proof = null;
     let error = null;
 
-    const { data: byId, error: errById } = await supabase
+    const { data: byProofId, error: errByProofId } = await supabase
       .from('proofs')
       .select('*')
-      .eq('id', proofId)
+      .eq('proof_id', proofId)
       .maybeSingle();
 
-    if (errById) {
-      error = errById;
-    } else if (byId) {
-      proof = byId;
+    if (errByProofId) {
+      error = errByProofId;
+    } else if (byProofId) {
+      proof = byProofId;
     } else {
-      const { data: byProofId, error: errByProofId } = await supabase
+      const { data: byId, error: errById } = await supabase
         .from('proofs')
         .select('*')
-        .eq('proof_id', proofId)
+        .eq('id', proofId)
         .maybeSingle();
 
-      if (errByProofId) {
-        error = errByProofId;
+      if (errById) {
+        error = errById;
       } else {
-        proof = byProofId;
+        proof = byId;
       }
     }
 

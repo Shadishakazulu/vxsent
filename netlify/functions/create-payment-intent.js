@@ -14,28 +14,6 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function supabaseInsert(table, record) {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured');
-  const response = await fetch(`${url}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(record)
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Supabase ${response.status}: ${errText}`);
-  }
-  const data = await response.json();
-  return data[0] || data;
-}
-
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -82,48 +60,62 @@ exports.handler = async (event) => {
       }
     });
 
-    try {
-      await supabaseInsert('proofs', {
-        id: proofId,
-        proof_id: proofId,
-        file_name: fileName.substring(0, 255),
-        file_size: String(fileSize),
-        file_hash: fileHash,
-        sealed_at: timestamp || now,
-        timestamp: timestamp || now,
-        stripe_payment_id: paymentIntent.id,
-        user_email: email,
-        sender_email: email,
-        user_id: null,
-        recipient_email: recipientEmail || null,
-        project_name: projectName || null,
-        is_valid: false,
-        rac_enabled: false,
-        status: 'pending',
-        amount_cents: 99,
-        recipient_confirmed: false,
-        receipt_email_sent: false,
-        created_at: now,
-        updated_at: now
-      });
-    } catch (dbErr) {
-      console.error('[SENT] Proof insert failed (non-fatal):', dbErr.message);
-    }
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-    try {
-      await supabaseInsert('payments', {
-        stripe_payment_id: paymentIntent.id,
-        user_id: null,
-        user_email: email,
-        amount: 99,
-        currency: 'usd',
-        payment_type: 'day_pass',
-        status: 'pending',
-        proof_id: proofId,
-        created_at: now
-      });
-    } catch (payErr) {
-      console.error('[SENT] Payment audit insert failed (non-fatal):', payErr.message);
+    if (supabaseUrl && supabaseKey) {
+      const { createClient } = require('@supabase/supabase-js');
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      try {
+        const { error: insertError } = await supabase.from('proofs').insert({
+          proof_id: proofId,
+          file_name: fileName.substring(0, 255),
+          file_size: String(fileSize),
+          file_hash: fileHash,
+          sealed_at: timestamp || now,
+          timestamp: timestamp || now,
+          stripe_payment_id: paymentIntent.id,
+          user_email: email,
+          sender_email: email,
+          user_id: null,
+          recipient_email: recipientEmail || null,
+          project_name: projectName || null,
+          is_valid: false,
+          rac_enabled: false,
+          status: 'pending',
+          amount_cents: 99,
+          recipient_confirmed: false,
+          receipt_email_sent: false
+        });
+        if (insertError) {
+          console.error('[SENT] Proof insert error:', JSON.stringify(insertError));
+        } else {
+          console.log('[SENT] Pending proof created:', proofId);
+        }
+      } catch (dbErr) {
+        console.error('[SENT] Proof insert failed (non-fatal):', dbErr.message);
+      }
+
+      try {
+        const { error: payError } = await supabase.from('payments').insert({
+          stripe_payment_id: paymentIntent.id,
+          user_id: null,
+          user_email: email,
+          amount: 99,
+          currency: 'usd',
+          payment_type: 'day_pass',
+          status: 'pending',
+          proof_id: proofId
+        });
+        if (payError) {
+          console.error('[SENT] Payment audit insert error:', JSON.stringify(payError));
+        }
+      } catch (payErr) {
+        console.error('[SENT] Payment audit insert failed (non-fatal):', payErr.message);
+      }
+    } else {
+      console.warn('[SENT] Supabase not configured — skipping DB inserts');
     }
 
     return {
