@@ -128,9 +128,10 @@ exports.handler = async function(event) {
       console.warn('[create-payment-intent] Supabase not configured — skipping DB insert');
     }
 
-    // Return clientSecret, proofId, and publishableKey to the frontend
-    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || 
-      'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'STRIPE_PUBLISHABLE_KEY not configured' }) };
+    }
 
     return {
       statusCode: 200,
