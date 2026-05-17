@@ -129,8 +129,7 @@ exports.handler = async function(event) {
     }
 
     // Return clientSecret, proofId, and publishableKey to the frontend
-    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || 
-      'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
 
     return {
       statusCode: 200,
