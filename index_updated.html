@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. — Prove You Delivered It | vxsent.com</title>
+<meta name="description" content="Clients lie about delivery. Timestamps don't. SENT. creates a permanent, cryptographic proof of every file you deliver. $0.99 per receipt. If a client disputes it — show them the link. The argument ends.">
+<meta property="og:title" content="SENT. — Prove You Delivered It">
+<meta property="og:description" content="Clients lie about delivery. Timestamps don't. $0.99 creates a permanent, cryptographic proof of every file you deliver.">
+<meta property="og:url" content="https://vxsent.com">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://vxsent.com">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/" async></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;
+  --surface:#ffffff;
+  --panel:#f0f2f5;
+  --panel-hi:#e4e7ec;
+  --ink:#111318;
+  --ink-2:#374151;
+  --ink-3:#6b7280;
+  --ink-4:#9ca3af;
+  --green:#00b356;
+  --green-dk:#009347;
+  --green-lt:#e6f7ee;
+  --green-bg:rgba(0,179,86,0.07);
+  --green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;
+  --red-bg:rgba(220,38,38,0.06);
+  --red-bd:rgba(220,38,38,0.18);
+  --border:#e1e4e8;
+  --border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);
+  --shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:58px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.15em;color:var(--ink);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2.5s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,179,86,0.4)}60%{box-shadow:0 0 0 6px rgba(0,179,86,0)}}
+.hdr-nav{display:flex;align-items:center;gap:20px}
+.hdr-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;transition:color 0.15s;font-weight:400}
+.hdr-link:hover{color:var(--ink)}
+.hdr-signin{color:var(--green-dk);border:1.5px solid var(--green-bd);padding:6px 14px;border-radius:4px;transition:all 0.15s}
+.hdr-signin:hover{background:var(--green-bg);border-color:var(--green)}
+
+/* HERO */
+.hero{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:80px 48px 60px;max-width:1320px;margin:0 auto}
+
+.hero-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:20px;opacity:0;animation:fu 0.5s 0.1s forwards;display:flex;align-items:center;gap:10px;font-weight:500}
+.hero-kicker::before{content:'';width:18px;height:2px;background:var(--green);flex-shrink:0;border-radius:1px}
+
+.hero-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7.5vw,98px);line-height:0.9;letter-spacing:0.02em;margin-bottom:22px;opacity:0;animation:fu 0.5s 0.22s forwards}
+.hero-h1 .l1,.hero-h1 .l2{display:block;color:var(--ink)}
+.hero-h1 .l3{display:block;color:var(--green)}
+
+.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:36px;max-width:440px;opacity:0;animation:fu 0.5s 0.36s forwards}
+.hero-sub strong{color:var(--ink);font-weight:700}
+
+.stat-row{display:flex;gap:36px;opacity:0;animation:fu 0.5s 0.48s forwards}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);line-height:1}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+
+/* PROOF BOX */
+.proof-box{background:var(--surface);border:1.5px solid var(--border-md);box-shadow:var(--shadow-md);position:relative;overflow:hidden;opacity:0;animation:fu 0.5s 0.3s forwards;border-radius:8px}
+.proof-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.pbx-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
+.pbx-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3)}
+.pbx-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green-dk);letter-spacing:0.06em}
+
+.dropzone{margin:18px;border:2px dashed var(--border-md);padding:38px 20px;text-align:center;position:relative;transition:all 0.22s;cursor:pointer;background:var(--panel);border-radius:6px}
+.dropzone:hover,.dropzone.dragover{border-color:var(--green);background:var(--green-lt)}
+.dropzone.has-file{border-color:var(--green);background:var(--green-lt);border-style:solid}
+.drop-icon{font-size:28px;margin-bottom:10px}
+.drop-main{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:5px}
+.drop-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+.hash-preview{margin:0 18px;padding:14px 16px;background:#1a1f2e;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.9;display:none}
+.hash-preview.visible{display:block;animation:fu 0.3s forwards}
+.hp-row{display:flex;gap:10px;word-break:break-all}
+.hp-key{color:rgba(255,255,255,0.38);width:80px;flex-shrink:0}
+.hp-val{color:#4ade80}
+.hp-val.dim{color:rgba(255,255,255,0.72)}
+
+.proof-error{margin:0 18px;padding:10px 14px;background:var(--red-bg);border:1px solid var(--red-bd);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:0.1em;border-radius:4px;display:none}
+.proof-error.visible{display:block}
+
+.proof-cta{margin:14px 18px 0;width:calc(100% - 36px);padding:16px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;cursor:pointer;transition:all 0.2s;border-radius:4px;font-weight:400}
+.proof-cta:hover:not(:disabled){background:var(--green-dk);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,179,86,0.35)}
+.proof-cta:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed;transform:none;box-shadow:none}
+.proof-cta-sub{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:10px 18px 18px}
+
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* HOW IT WORKS */
+.how{border-top:1px solid var(--border);padding:80px 48px;max-width:1320px;margin:0 auto}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:32px;font-weight:500}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.how-step{background:var(--surface);border:1px solid var(--border);padding:30px 26px;border-radius:8px;box-shadow:var(--shadow-sm)}
+.how-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--green);opacity:0.3;line-height:1;margin-bottom:14px}
+.how-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.how-body{font-size:14px;color:var(--ink-2);line-height:1.68}
+
+/* DISPUTE */
+.dispute{border-top:1px solid var(--border);background:var(--surface);padding:64px 48px;max-width:1320px;margin:0 auto}
+.dispute-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.dispute-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,5vw,58px);line-height:0.92;letter-spacing:0.02em}
+.dispute-hl .red{color:var(--red)}
+.dispute-hl .green{color:var(--green-dk)}
+.dispute-hl .dim{color:var(--ink-4)}
+.dblock{padding:18px 20px;margin-bottom:12px;border-radius:6px}
+.dblock:last-child{margin-bottom:0}
+.dblock-without{background:var(--red-bg);border:1.5px solid var(--red-bd)}
+.dblock-with{background:var(--green-bg);border:1.5px solid var(--green-bd)}
+.dblock-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:8px;font-weight:500}
+.dblock-without .dblock-label{color:var(--red)}
+.dblock-with .dblock-label{color:var(--green-dk)}
+.dblock-text{font-size:14px;color:var(--ink-2);line-height:1.65}
+.dblock-text strong{color:var(--ink);font-weight:700}
+
+/* TESTIMONIALS */
+.testi{border-top:1px solid var(--border);background:var(--panel);padding:80px 48px;max-width:1320px;margin:0 auto}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.testi-card{background:var(--surface);border:1px solid var(--border);padding:26px;border-radius:8px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.testi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green);border-radius:8px 8px 0 0}
+.testi-quote{font-size:14px;color:var(--ink-2);line-height:1.72;margin-bottom:18px;font-style:italic}
+.testi-quote strong{color:var(--ink);font-style:normal;font-weight:700}
+.testi-author{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.testi-amount{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green-dk);margin-top:6px}
+
+/* FINAL CTA */
+.final{border-top:1px solid var(--border);padding:100px 48px;text-align:center;max-width:1320px;margin:0 auto}
+.final-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,84px);line-height:0.9;letter-spacing:0.02em;margin-bottom:20px}
+.final-hl .green{color:var(--green-dk)}
+.final-hl .dim{color:var(--ink-4)}
+.final-sub{font-size:16px;color:var(--ink-2);margin-bottom:10px;line-height:1.6}
+.final-powered{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-4);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:36px}
+.final-btn{display:inline-block;padding:17px 52px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;border:none;cursor:pointer;transition:all 0.2s;border-radius:4px;box-shadow:0 4px 14px rgba(0,179,86,0.3)}
+.final-btn:hover{background:var(--green-dk);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,179,86,0.35)}
+.final-note{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.ft-l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.ft-l a{color:var(--ink-3);text-decoration:none}
+.ft-l a:hover{color:var(--ink)}
+.ft-r{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3)}
+.ft-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+@media(max-width:960px){
+  header{padding:0 20px}
+  .hdr-nav .hdr-link:not(.hdr-signin){display:none}
+  .hero{grid-template-columns:1fr;gap:36px;padding:80px 20px 48px}
+  .how,.dispute,.testi,.final{padding-left:20px;padding-right:20px}
+  .how-grid,.testi-grid{grid-template-columns:1fr;gap:10px}
+  .dispute-inner{grid-template-columns:1fr;gap:28px}
+  footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><div class="logo-dot"></div>SENT.</a>
+  <nav class="hdr-nav">
+    <a href="/pricing" class="hdr-link">Pricing</a>
+    <a href="/dashboard" class="hdr-link">Dashboard</a>
+    <a href="https://eyespai.com" class="hdr-link" target="_blank" rel="noopener">EYEspAI</a>
+    <a href="/dashboard" class="hdr-link hdr-signin">Sign in →</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="hero-kicker">Proof of delivery for freelancers</div>
+    <h1 class="hero-h1">
+      <span class="l1">CLIENTS LIE</span>
+      <span class="l2">ABOUT DELIVERY.</span>
+      <span class="l3">TIMESTAMPS DON'T.</span>
+    </h1>
+    <p class="hero-sub">SENT. creates a <strong>permanent, verifiable proof</strong> of every file you deliver. If a client ever disputes it — show them the link. <strong>The argument ends.</strong></p>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">$0.99</div><div class="stat-label">Per proof</div></div>
+      <div class="stat"><div class="stat-num">60s</div><div class="stat-label">To generate</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Stays valid</div></div>
+    </div>
+  </div>
+
+  <div class="proof-box" id="proofBox">
+    <div class="pbx-head">
+      <div class="pbx-title">// Generate your SENT. receipt</div>
+      <div class="pbx-price">$0.99</div>
+    </div>
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" aria-label="Select file to seal">
+      <div class="drop-icon" id="dropIcon">📁</div>
+      <div class="drop-main" id="dropMain">Drop your deliverable here</div>
+      <div class="drop-sub" id="dropSub">or click to browse · any file type · any size</div>
+    </div>
+    <div class="hash-preview" id="hashPreview">
+      <div class="hp-row"><span class="hp-key">file</span><span class="hp-val dim" id="hpFile">—</span></div>
+      <div class="hp-row"><span class="hp-key">hash</span><span class="hp-val" id="hpHash">—</span></div>
+      <div class="hp-row"><span class="hp-key">timestamp</span><span class="hp-val dim" id="hpTime">—</span></div>
+      <div class="hp-row"><span class="hp-key">status</span><span class="hp-val" id="hpStatus">computing...</span></div>
+    </div>
+    <div class="proof-error" id="proofError">Unable to process file. Please try again.</div>
+    <button class="proof-cta" id="ctaBtn" disabled onclick="initPayment()">GET YOUR SENT. RECEIPT — $0.99</button>
+    <div class="proof-cta-sub">Timestamped · SHA-256 sealed · Permanently verifiable</div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="section-label">// How it works — three steps</div>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-title">Upload your deliverable</div>
+      <div class="how-body">Drop any file — design, document, code, video. SENT. generates a cryptographic fingerprint of your exact file at that exact moment. Nothing leaves your hands unproven.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-title">Get your receipt</div>
+      <div class="how-body">A permanent SENT. receipt is generated — containing your file hash, timestamp, and cryptographic signature. You get a shareable link that works forever. No account required to verify.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-title">Share it. Win disputes.</div>
+      <div class="how-body">Send the receipt link with every deliverable. If a client claims you didn't deliver — show them the link. The timestamp is permanent. The proof is independent. The argument ends.</div>
+    </div>
+  </div>
+</section>
+
+<section class="dispute">
+  <div class="dispute-inner">
+    <div class="dispute-hl">
+      <span class="red">WITHOUT SENT.</span><br>
+      <span class="dim">YOUR WORD</span><br>
+      <span class="green">AGAINST THEIRS.</span>
+    </div>
+    <div>
+      <div class="dblock dblock-without">
+        <div class="dblock-label">Without SENT.</div>
+        <div class="dblock-text">You delivered the final files. The client claims they never arrived. You have an email thread. They have a lawyer. <strong>You lose $4,000 and three weeks of your life.</strong></div>
+      </div>
+      <div class="dblock dblock-with">
+        <div class="dblock-label">With SENT.</div>
+        <div class="dblock-text">You delivered the final files with a SENT. receipt attached. Client disputes delivery. You send the link. The timestamp shows exactly when the files existed. <strong>The dispute ends in 60 seconds.</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testi">
+  <div class="section-label">// What happens when proof exists</div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-quote">"Client claimed I never sent the brand guidelines. I had the SENT. receipt. Showed them the link. They paid within the hour. <strong>$3,200 I almost lost.</strong>"</div>
+      <div class="testi-author">Brand designer · 6 years freelancing</div>
+      <div class="testi-amount">$3,200 recovered</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-quote">"I started using SENT. for every deliverable after a client disputed scope. Now I send the receipt link in every project email. <strong>Not a single dispute since.</strong>"</div>
+      <div class="testi-author">Web developer · Upwork Top Rated</div>
+      <div class="testi-amount">Zero disputes in 8 months</div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-quote">"Used SENT. to prove the contract terms at project start. Client tried to add three rounds of revisions for free. <strong>The timestamp killed the argument instantly.</strong>"</div>
+      <div class="testi-author">Copywriter · 200+ completed projects</div>
+      <div class="testi-amount">$1,800 scope protected</div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="final-hl">
+    <span class="dim">THE PROOF</span><br>
+    COSTS <span class="green">$0.99.</span><br>
+    <span class="dim">THE DISPUTE</span><br>
+    COSTS EVERYTHING ELSE.
+  </div>
+  <p class="final-sub">Every deliverable you send without a SENT. receipt is evidence you don't have.</p>
+  <p class="final-powered">Powered by Veridex cryptographic infrastructure · EYEspAI</p>
+  <button class="final-btn" onclick="scrollToProof()">SEND YOUR FIRST PROOF — $0.99</button>
+  <div class="final-note">No account required · Receipt is permanent · Verify from any device</div>
+</section>
+
+<footer>
+  <div class="ft-l">SENT. — Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-r"><div class="ft-dot"></div>Veridex infrastructure active</div>
+</footer>
+
+<!-- PAYMENT MODAL -->
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(17,19,24,0.7);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:8px;padding:36px;max-width:440px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <button onclick="closePayModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:#6b7280;line-height:1">×</button>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;color:#111318;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+      <div style="width:7px;height:7px;background:#00b356;border-radius:50%"></div>
+      SENT.
+    </div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:24px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase">Seal your delivery proof — $0.99</div>
+
+    <div id="payFileInfo" style="background:#f0f2f5;border-radius:4px;padding:12px 14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#374151;letter-spacing:0.1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Your email (for receipt)</label>
+    <input id="payEmail" type="email" placeholder="you@example.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Client email <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — strengthens proof)</span></label>
+    <input id="payRecipientEmail" type="email" placeholder="client@company.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Project name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
+    <input id="payProject" type="text" placeholder="e.g. Brand Guidelines Q2" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
+    <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
+
+    <div id="payError" style="font-size:12px;color:#dc2626;font-family:'JetBrains Mono',monospace;min-height:18px;margin-bottom:12px;letter-spacing:0.08em"></div>
+
+    <button id="payBtn" onclick="submitPayment()" style="width:100%;padding:15px;background:#00b356;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s">PAY $0.99 — SEAL PROOF</button>
+
+    <div style="margin-top:12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#9ca3af">
+      🔒 Secured by Stripe · RAC chain sealed on payment
+    </div>
+  </div>
+</div>
+
+<script>
+let currentFile=null,currentHash=null,currentTimestamp=null;
+const dz=document.getElementById('dropzone'),fi=document.getElementById('fileInput'),di=document.getElementById('dropIcon'),dm=document.getElementById('dropMain'),ds=document.getElementById('dropSub'),hp=document.getElementById('hashPreview'),pe=document.getElementById('proofError'),cb=document.getElementById('ctaBtn');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
+dz.addEventListener('dragleave',e=>{if(!dz.contains(e.relatedTarget))dz.classList.remove('dragover')});
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',()=>{if(fi.files.length)handleFile(fi.files[0])});
+async function handleFile(file){
+  currentFile=file;pe.classList.remove('visible');dz.classList.add('has-file');
+  di.textContent='⏳';dm.textContent=file.name;ds.textContent=fmt(file.size)+' · computing hash...';
+  hp.classList.add('visible');
+  document.getElementById('hpFile').textContent=trunc(file.name,40);
+  document.getElementById('hpHash').textContent='computing...';
+  currentTimestamp=new Date().toISOString();
+  document.getElementById('hpTime').textContent=currentTimestamp;
+  document.getElementById('hpStatus').textContent='computing...';
+  cb.disabled=true;cb.textContent='COMPUTING HASH...';
+  try{
+    const buf=await file.arrayBuffer();
+    const hb=await crypto.subtle.digest('SHA-256',buf);
+    const ha=Array.from(new Uint8Array(hb));
+    currentHash=ha.map(b=>b.toString(16).padStart(2,'0')).join('');
+    document.getElementById('hpHash').textContent=currentHash.substring(0,32)+'...';
+    document.getElementById('hpStatus').textContent='READY TO SEAL ✓';
+    di.textContent='✓';ds.textContent=fmt(file.size)+' · ready to seal';
+    cb.disabled=false;cb.textContent='GET YOUR SENT. RECEIPT — $0.99';
+    // Pre-mount Stripe card element for faster checkout
+    setTimeout(mountStripeCard, 500);
+  }catch(e){
+    pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your deliverable here';
+    ds.textContent='or click to browse · any file type · any size';
+    dz.classList.remove('has-file');hp.classList.remove('visible');currentFile=null;currentHash=null;
+  }
+}
+async function initPayment(){
+  if(!currentFile||!currentHash)return;
+  // Show file info in modal
+  const info=document.getElementById('payFileInfo');
+  if(info)info.textContent=currentFile.name+' · '+fmt(currentFile.size);
+  document.getElementById('payModal').style.display='flex';
+  mountStripeCard();
+}
+
+// Stripe publishable key (public — safe to include in frontend)
+const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+let stripeInstance = null;
+let cardElement = null;
+let stripeInitialized = false;
+
+function mountStripeCard() {
+  if (stripeInitialized) return;
+  if (typeof Stripe === 'undefined') return;
+  stripeInstance = Stripe(STRIPE_PK);
+  const elements = stripeInstance.elements();
+  cardElement = elements.create('card', {
+    style: {
+      base: {
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '14px',
+        color: '#111318',
+        '::placeholder': { color: '#9ca3af' }
+      }
+    }
+  });
+  cardElement.mount('#card-element');
+  cardElement.on('change', e => {
+    document.getElementById('payError').textContent = e.error ? e.error.message : '';
+  });
+  stripeInitialized = true;
+}
+
+async function submitPayment() {
+  const email = document.getElementById('payEmail').value.trim();
+  const recipientEmail = document.getElementById('payRecipientEmail').value.trim();
+  const projectName = document.getElementById('payProject').value.trim();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('payError').textContent = 'Please enter a valid email address.';
+    return;
+  }
+  if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+    document.getElementById('payError').textContent = 'Please enter a valid client email address.';
+    return;
+  }
+  if (!cardElement) {
+    document.getElementById('payError').textContent = 'Card element not loaded. Please refresh and try again.';
+    return;
+  }
+
+  const payBtn = document.getElementById('payBtn');
+  payBtn.textContent = 'Processing...';
+  payBtn.disabled = true;
+  document.getElementById('payError').textContent = '';
+
+  try {
+    // Step 2: Call create-payment-intent per spec Section 2
+    const res = await fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileHash: currentHash,
+        fileName: currentFile.name,
+        fileSize: fmt(currentFile.size),
+        timestamp: currentTimestamp,
+        email: email,
+        recipientEmail: recipientEmail || '',
+        projectName: projectName || ''
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Payment initialization failed. Please try again.');
+
+    const { clientSecret, proofId } = data;
+    if (!clientSecret || !proofId) throw new Error('Payment initialization failed. Please try again.');
+    if (!cardElement) throw new Error('Card element not ready. Please refresh and try again.');
+
+    // Step 4: Confirm payment with Stripe
+    const { error: stripeError, paymentIntent } = await stripeInstance.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { email: email }
+      }
+    });
+
+    if (stripeError) {
+      throw new Error(stripeError.message);
+    }
+
+    // Step 5: Payment succeeded — show SEALING state
+    payBtn.textContent = 'SEALING...';
+    payBtn.disabled = true;
+
+    // Step 6: Poll GET /api/proof/:id every 1 second, timeout 15s
+    let attempts = 0;
+    const maxAttempts = 15;
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const pr = await fetch('/api/proof/' + proofId);
+        const pd = await pr.json();
+        if (pd && pd.proof && pd.proof.is_valid) {
+          clearInterval(poll);
+          // Step 9: Redirect to receipt page
+          window.location.href = '/receipt?id=' + proofId;
+        } else if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          // Timeout — redirect anyway with pending flag
+          window.location.href = '/receipt?id=' + proofId + '&pending=true';
+        }
+      } catch (e) {
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          window.location.href = '/receipt?id=' + proofId + '&pending=true';
+        }
+      }
+    }, 1000);
+
+  } catch (error) {
+    console.error('Payment error:', error);
+    document.getElementById('payError').textContent = error.message || 'Payment failed. Please try again.';
+    payBtn.textContent = 'PAY $0.99 — SEAL PROOF';
+    payBtn.disabled = false;
+  }
+}
+
+function closePayModal() {
+  document.getElementById('payModal').style.display = 'none';
+  cb.disabled = false;
+  cb.textContent = 'GET YOUR SENT. RECEIPT — $0.99';
+}
+function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
+function fmt(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB'}
+function trunc(s,n){return s.length>n?s.substring(0,n)+'...':s}
+function scrollToProof(){document.getElementById('proofBox').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>fi.click(),600)}
+</script>
+</body>
+</html>
