@@ -87,8 +87,8 @@ Once the project is created:
    SUPABASE_URL = https://abc123.supabase.co
    SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    SUPABASE_SERVICE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   STRIPE_SECRET_KEY = sk_live_xxxxx (already set)
-   STRIPE_WEBHOOK_SECRET = whsec_xxxxx (already set)
+   STRIPE_SECRET_KEY = (set via Netlify env vars)
+   STRIPE_WEBHOOK_SECRET = (set via Netlify env vars)
    ```
 3. Click "Save"
 
@@ -156,8 +156,8 @@ Once the project is created:
 1. In Netlify, go to **Environment Variables**
 2. Update:
    ```
-   STRIPE_SECRET_KEY = sk_live_xxxxx (your live key)
-   STRIPE_WEBHOOK_SECRET = whsec_xxxxx (your live webhook secret)
+   STRIPE_SECRET_KEY = (your live key, set via Netlify env vars)
+   STRIPE_WEBHOOK_SECRET = (your live webhook secret, set via Netlify env vars)
    ```
 3. Save and redeploy
 

@@ -39,7 +39,7 @@ git push origin main
 4. Add the following environment variables:
    - `STRIPE_SECRET_KEY` - Your live Stripe secret key
    - `STRIPE_WEBHOOK_SECRET` - Your Stripe webhook signing secret
-   - `SUPABASE_URL` - `https://fjowiopznwafjqhdbrsv.supabase.co`
+   - `SUPABASE_URL` - Your Supabase project URL
    - `SUPABASE_SERVICE_KEY` - Your Supabase service role key
 
 ## Step 3: Deploy

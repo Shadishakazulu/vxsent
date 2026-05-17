@@ -389,10 +389,20 @@
 
   <script>
     // ============================================
-    // PRODUCTION CREDENTIALS
+    // PRODUCTION CREDENTIALS - loaded from server
     // ============================================
-    const SUPABASE_URL = 'https://fjowiopznwafjqhdbrsv.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqb3dpb3B6bndhZmpxaGRicnN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NDk3MDUsImV4cCI6MjA5MzQyNTcwNX0.sZGqyswWD3DZW7pygWkdbWw2h149X1FnW_Iz3aajUAs';
+    let SUPABASE_URL = '';
+    let SUPABASE_ANON_KEY = '';
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/.netlify/functions/get-config');
+        const data = await res.json();
+        SUPABASE_URL = data.supabaseUrl;
+        SUPABASE_ANON_KEY = data.supabaseAnonKey;
+      } catch(e) { console.error('Failed to load config:', e); }
+    }
+
     const PRICE_PER_PROOF = 0.99;
 
     let currentPage = 1;
@@ -404,6 +414,7 @@
      * Load all proofs from Supabase
      */
     async function loadProofs() {
+      await loadConfig();
       document.getElementById('loading').style.display = 'block';
       document.getElementById('proofsTable').style.display = 'none';
       document.getElementById('emptyState').style.display = 'none';
