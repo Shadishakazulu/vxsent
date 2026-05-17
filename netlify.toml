@@ -4,7 +4,7 @@
 
 
 [build.environment]
-  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,_redirects,vxsent-production"
+  SECRETS_SCAN_OMIT_PATHS = "*.html,netlify/functions/*.js,netlify/functions/package.json,vxsent-production"
 
 
 [dev]
@@ -117,6 +117,30 @@ status = 200
 
 
 [[redirects]]
+from = "/verify/:id"
+to = "/receipt?id=:id"
+status = 301
+
+
+[[redirects]]
+from = "/api/checkout"
+to = "/.netlify/functions/create-checkout-session"
+status = 200
+
+
+[[redirects]]
+from = "/api/create-checkout-session"
+to = "/.netlify/functions/create-checkout-session"
+status = 200
+
+
+[[redirects]]
 from = "/api/confirm-receipt"
 to = "/.netlify/functions/confirm-receipt"
+status = 200
+
+
+[[redirects]]
+from = "/api/get-proof-by-session"
+to = "/.netlify/functions/get-proof-by-session"
 status = 200
