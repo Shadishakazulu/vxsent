@@ -25,11 +25,8 @@
       max-width: 560px;
     }
     .logo { font-size: 28px; letter-spacing: 6px; font-weight: bold; }
-    .logo-dot { color: #00ff9d; margin-right: 8px; }
     .subtitle { color: #7a8fa6; font-size: 11px; letter-spacing: 3px; margin-top: 4px; }
     .divider { border: none; border-top: 1px solid #1a3a5c; margin: 24px 0; }
-
-    /* Status banners */
     .banner {
       padding: 12px 16px;
       border-radius: 2px;
@@ -43,8 +40,6 @@
     .banner-green { background: rgba(0,255,157,0.1); border: 1px solid #00ff9d; color: #00ff9d; }
     .banner-amber { background: rgba(255,193,7,0.1); border: 1px solid #ffc107; color: #ffc107; }
     .banner-red { background: rgba(255,82,82,0.1); border: 1px solid #ff5252; color: #ff5252; }
-
-    /* Spinner */
     .spinner {
       width: 40px; height: 40px;
       border: 3px solid #1a3a5c;
@@ -54,15 +49,11 @@
       margin: 30px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Proof data table */
     .proof-table { width: 100%; font-size: 13px; }
     .proof-table tr td:first-child { color: #7a8fa6; padding-right: 16px; padding-bottom: 10px; white-space: nowrap; font-size: 11px; letter-spacing: 1px; }
     .proof-table tr td:last-child { color: #e0e0e0; word-break: break-all; padding-bottom: 10px; }
     .proof-id { color: #00ff9d !important; font-size: 12px !important; }
     .hash-val { font-size: 10px !important; color: #7a8fa6 !important; }
-
-    /* Buttons */
     .btn {
       display: inline-block;
       padding: 12px 20px;
@@ -78,47 +69,33 @@
     .btn-primary { background: #00ff9d; color: #0a1628; font-weight: bold; }
     .btn-outline { background: transparent; color: #00ff9d; border: 1px solid #00ff9d; }
     .btn-confirm { background: #00ff9d; color: #0a1628; font-weight: bold; width: 100%; text-align: center; margin: 16px 0 0; padding: 16px; font-size: 13px; }
-
     .copy-feedback { font-size: 11px; color: #00ff9d; margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
     .copy-feedback.show { opacity: 1; }
-
     .nav-links { margin-top: 28px; display: flex; gap: 20px; flex-wrap: wrap; }
     .nav-links a { color: #7a8fa6; text-decoration: none; font-size: 12px; letter-spacing: 1px; }
     .nav-links a:hover { color: #00ff9d; }
-
-    /* Confirm section */
     .confirm-section { background: rgba(0,255,157,0.05); border: 1px solid #1a3a5c; border-radius: 2px; padding: 20px; margin-top: 20px; }
     .confirm-section h3 { font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
     .confirm-section p { color: #7a8fa6; font-size: 12px; line-height: 1.6; margin-bottom: 16px; }
-
-    /* Pending state */
     .pending-title { text-align: center; font-size: 18px; letter-spacing: 4px; margin-bottom: 8px; }
     .pending-sub { text-align: center; color: #7a8fa6; font-size: 12px; letter-spacing: 1px; }
-
-    /* Error state */
     .error-title { font-size: 16px; letter-spacing: 3px; color: #ff5252; margin-bottom: 12px; }
     .error-sub { color: #7a8fa6; font-size: 13px; line-height: 1.6; }
   </style>
 </head>
 <body>
   <div class="card">
-    <!-- Header (always shown) -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
       <span style="color:#00ff9d;font-size:18px">●</span>
       <span class="logo">SENT.</span>
     </div>
     <p class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY</p>
     <hr class="divider">
-
-    <!-- Dynamic content -->
     <div id="receipt-content">
-      <!-- Pending state shown by default -->
       <div class="spinner"></div>
       <p class="pending-title">SEALING YOUR PROOF...</p>
       <p class="pending-sub">Payment confirmed. Sealing your proof on RAC chain...</p>
     </div>
-
-    <!-- Nav links (always shown) -->
     <div class="nav-links">
       <a href="/">← Create New Proof</a>
       <a href="/dashboard">My Dashboard</a>
@@ -126,17 +103,15 @@
   </div>
 
   <script>
-    // ── URL param parsing ──────────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const proofId = params.get('id');
     const sessionId = params.get('session_id');
     const showConfirm = params.get('confirm') === '1';
 
     let pollCount = 0;
-    const MAX_POLLS = 40; // 40 × 3s = 2 minutes
+    const MAX_POLLS = 40;
     let pollTimer = null;
 
-    // ── Render functions ───────────────────────────────────────────────────
     function renderPending() {
       document.getElementById('receipt-content').innerHTML = `
         <div class="spinner"></div>
@@ -153,43 +128,48 @@
     }
 
     function renderProof(proof) {
-      const isValid = proof.is_valid || proof.status === 'verified';
-      const isConfirmed = proof.recipient_confirmed;
-      const sealedAt = proof.sealed_at || proof.timestamp || proof.created_at;
+      // Normalize field names — handle both API response formats
+      const id = proof.proof_id || proof.id || proofId;
+      const fileName = proof.file_name || proof.fileName || 'N/A';
+      const fileSize = proof.file_size || proof.fileSize || 'N/A';
+      const fileHash = proof.file_hash || proof.fileHash || '';
+      const sealedAt = proof.sealed_at || proof.sealedAt || proof.timestamp || proof.created_at;
       const displayDate = sealedAt ? new Date(sealedAt).toUTCString() : 'N/A';
       const chainHash = proof.rac_chain_hash || proof.chain_hash || proof.rac_signature || '';
-      const verifyUrl = `https://vxsent.com/verify/${proof.proof_id}`;
-      const receiptUrl = `https://vxsent.com/receipt?id=${proof.proof_id}`;
+      const recipientEmail = proof.recipient_email || proof.recipientEmail || '';
+      const projectName = proof.project_name || proof.projectName || '';
+      const senderEmail = proof.sender_email || proof.user_email || proof.userEmail || '';
+      const isConfirmed = proof.recipient_confirmed || proof.recipientConfirmed || false;
+      const verifyUrl = `https://vxsent.com/verify/${id}`;
+      const receiptUrl = `https://vxsent.com/receipt?id=${id}`;
 
       let statusBanner = '';
       if (isConfirmed) {
         statusBanner = `<div class="banner banner-green">✓ DELIVERY CONFIRMED — LAYER 4 COMPLETE</div>`;
-      } else if (isValid) {
-        statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT CONFIRMATION</div>`;
       } else {
-        statusBanner = `<div class="banner banner-amber">⏳ SEALING IN PROGRESS...</div>`;
+        statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT CONFIRMATION</div>`;
       }
 
-      const confirmSection = (!isConfirmed && proof.recipient_email && showConfirm) ? `
+      const confirmSection = (!isConfirmed && recipientEmail && showConfirm) ? `
         <div class="confirm-section">
           <h3>CONFIRM RECEIPT</h3>
-          <p>By confirming, you acknowledge receiving the file <strong>${proof.file_name}</strong> from <strong>${proof.sender_email || proof.user_email}</strong>. This action is permanent and cryptographically recorded.</p>
-          <button class="btn btn-confirm" onclick="confirmReceipt('${proof.proof_id}')">CONFIRM I RECEIVED THIS →</button>
+          <p>By confirming, you acknowledge receiving the file <strong>${fileName}</strong> from <strong>${senderEmail}</strong>. This action is permanent and cryptographically recorded.</p>
+          <button class="btn btn-confirm" onclick="confirmReceipt('${id}')">CONFIRM I RECEIVED THIS →</button>
         </div>
       ` : '';
 
-      const html = `
+      document.getElementById('receipt-content').innerHTML = `
         ${statusBanner}
         <table class="proof-table">
-          <tr><td>PROOF ID</td><td class="proof-id">${proof.proof_id}</td></tr>
-          <tr><td>FILE</td><td>${proof.file_name || 'N/A'}</td></tr>
-          <tr><td>SIZE</td><td>${proof.file_size || 'N/A'}</td></tr>
+          <tr><td>PROOF ID</td><td class="proof-id">${id}</td></tr>
+          <tr><td>FILE</td><td>${fileName}</td></tr>
+          <tr><td>SIZE</td><td>${fileSize}</td></tr>
           <tr><td>SEALED</td><td>${displayDate}</td></tr>
-          <tr><td>FROM</td><td>${proof.sender_email || proof.user_email || 'N/A'}</td></tr>
-          ${proof.recipient_email ? `<tr><td>TO</td><td>${proof.recipient_email}</td></tr>` : ''}
-          ${proof.project_name ? `<tr><td>PROJECT</td><td>${proof.project_name}</td></tr>` : ''}
+          ${senderEmail ? `<tr><td>FROM</td><td>${senderEmail}</td></tr>` : ''}
+          ${recipientEmail ? `<tr><td>TO</td><td>${recipientEmail}</td></tr>` : ''}
+          ${projectName ? `<tr><td>PROJECT</td><td>${projectName}</td></tr>` : ''}
           ${chainHash ? `<tr><td>RAC HASH</td><td class="hash-val">${chainHash}</td></tr>` : ''}
-          ${proof.file_hash ? `<tr><td>FILE HASH</td><td class="hash-val">${proof.file_hash}</td></tr>` : ''}
+          ${fileHash ? `<tr><td>FILE HASH</td><td class="hash-val">${fileHash}</td></tr>` : ''}
           ${isConfirmed && proof.recipient_confirmed_at ? `<tr><td>CONFIRMED</td><td>${new Date(proof.recipient_confirmed_at).toUTCString()}</td></tr>` : ''}
         </table>
         <hr class="divider">
@@ -201,9 +181,6 @@
         ${confirmSection}
       `;
 
-      document.getElementById('receipt-content').innerHTML = html;
-
-      // Auto-copy verify link at 600ms (spec requirement)
       setTimeout(() => {
         if (navigator.clipboard && verifyUrl) {
           navigator.clipboard.writeText(verifyUrl).catch(() => {});
@@ -228,7 +205,7 @@
           body: JSON.stringify({ proofId: pid })
         });
         const data = await resp.json();
-        if (data.success) {
+        if (data.success || data.confirmed) {
           window.location.href = `/receipt?id=${pid}`;
         } else {
           alert(data.error || 'Confirmation failed. Please try again.');
@@ -238,13 +215,13 @@
       }
     }
 
-    // ── Polling logic ──────────────────────────────────────────────────────
     async function fetchProofById(pid) {
       const resp = await fetch(`/api/proof/${pid}`);
       if (resp.status === 404) return null;
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
-      return data.proof || null;
+      // Handle both { proof: {...} } and flat response formats
+      return data.proof || data || null;
     }
 
     async function fetchProofBySession(sid) {
@@ -252,7 +229,7 @@
       if (resp.status === 404) return null;
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
-      return data.proof || null;
+      return data.proof || data || null;
     }
 
     async function poll() {
@@ -265,25 +242,24 @@
       try {
         let proof = null;
 
-        // If we have a proofId in the URL, use it directly
         if (proofId) {
           proof = await fetchProofById(proofId);
         }
 
-        // If no proof yet and we have a session_id, try that
         if (!proof && sessionId) {
           proof = await fetchProofBySession(sessionId);
         }
 
         if (!proof) {
-          // Still pending — keep polling
           renderPending();
           pollTimer = setTimeout(poll, 3000);
           return;
         }
 
-        // Got proof — check if it's sealed yet
-        if (!proof.is_valid && proof.status === 'pending') {
+        // Check if sealed — handle both is_valid and status fields
+        const isValid = proof.is_valid || proof.isValid || proof.status === 'verified';
+
+        if (!isValid) {
           // Still sealing — keep polling
           pollTimer = setTimeout(poll, 3000);
           return;
@@ -294,16 +270,13 @@
 
       } catch (err) {
         console.error('[receipt] Poll error:', err.message);
-        // Don't stop polling on transient errors
         pollTimer = setTimeout(poll, 3000);
       }
     }
 
-    // ── Start ──────────────────────────────────────────────────────────────
     if (!proofId && !sessionId) {
       renderError('No proof ID found in URL. Please check the link and try again.');
     } else {
-      // Start polling immediately
       poll();
     }
   </script>
