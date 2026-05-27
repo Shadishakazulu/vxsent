@@ -1,7 +1,4 @@
 // netlify/functions/get-proof.js
-// SENT. — Get proof by proof_id
-// Used by receipt page to poll for proof status
-
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -10,18 +7,23 @@ exports.handler = async (event) => {
     'Content-Type': 'application/json'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers };
-  }
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers };
 
-  const proofId = event.queryStringParameters && event.queryStringParameters.id;
+  // Read ID from query param OR from path
+  let proofId = (event.queryStringParameters && event.queryStringParameters.id)
+    || event.path.split('/').pop();
 
-  if (!proofId) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Proof ID required' }) };
+  // Clean up the ID
+  if (proofId) proofId = decodeURIComponent(proofId).trim();
+
+  console.log('[get-proof] proofId:', proofId, '| path:', event.path, '| qs:', JSON.stringify(event.queryStringParameters));
+
+  if (!proofId || !proofId.startsWith('SENT-')) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Valid Proof ID required', received: proofId }) };
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Database not configured' }) };
@@ -34,7 +36,7 @@ exports.handler = async (event) => {
     const { data: proof, error } = await supabase
       .from('proofs')
       .select('*')
-      .eq('proof_id', proofId)
+      .eq('id', proofId)
       .maybeSingle();
 
     if (error) {
@@ -43,22 +45,24 @@ exports.handler = async (event) => {
     }
 
     if (!proof) {
+      console.log('[get-proof] Not found:', proofId);
       return { statusCode: 404, headers, body: JSON.stringify({ error: 'Proof not found' }) };
     }
+
+    // Normalize proof_id field
+    proof.proof_id = proof.id;
 
     // Log access event (best effort)
     try {
       await supabase.from('proof_access_events').insert({
         proof_id: proofId,
         accessed_at: new Date().toISOString(),
-        ip_address: event.headers['x-forwarded-for'] || event.headers['client-ip'] || null,
+        ip_address: event.headers['x-forwarded-for'] || null,
         user_agent: event.headers['user-agent'] || null,
         referrer: event.headers['referer'] || null,
         confirmed: false
       });
-    } catch (logErr) {
-      // Non-fatal — table may not exist
-    }
+    } catch (logErr) {}
 
     return {
       statusCode: 200,
