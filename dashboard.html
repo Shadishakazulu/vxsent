@@ -97,8 +97,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .hr-btn:hover{background:var(--green-bg)}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;border-radius:4px;z-index:999;transform:translateY(70px);transition:transform 0.25s;pointer-events:none}
 .toast.show{transform:translateY(0)}
-
-/* ── SOLO PROOF MODAL ── */
 .solo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.7);z-index:500;align-items:center;justify-content:center;padding:20px}
 .solo-modal-overlay.open{display:flex}
 .solo-modal{background:var(--surface);border-radius:8px;padding:32px;max-width:480px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
@@ -126,7 +124,6 @@ label.solo-label{display:block;font-family:'JetBrains Mono',monospace;font-size:
 .solo-seal-btn:hover:not(:disabled){background:var(--green-dk)}
 .solo-seal-btn:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
 .solo-seal-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:8px 0 0}
-
 @media(max-width:900px){
   body{grid-template-columns:1fr;overflow:auto;height:auto}
   .sidebar{display:none;position:fixed;top:58px;left:0;bottom:0;width:240px;z-index:200;box-shadow:4px 0 16px rgba(0,0,0,0.1)}
@@ -274,28 +271,23 @@ label.solo-label{display:block;font-family:'JetBrains Mono',monospace;font-size:
 <div class="toast" id="toast">Link copied</div>
 
 <script>
-// ── STATE ──
 let currentUserPlan = null;
 let currentUserEmail = null;
 let soloFile = null;
 let soloHash = null;
 let soloTimestamp = null;
 
-// ── LOAD DASHBOARD ──
 async function loadDashboard() {
   try {
     const sessRes = await fetch('/api/auth/session');
     if (!sessRes.ok) { window.location.href = '/login'; return; }
     const sess = await sessRes.json();
-
     currentUserPlan = sess.plan;
     currentUserEmail = sess.email;
-
     document.getElementById('tbUser').textContent = sess.email;
     document.getElementById('tbPlan').textContent =
       sess.plan === 'solo' ? 'Solo · $12.99/mo' :
       sess.plan === 'none' ? 'Day Pass' : sess.plan;
-
     const proofsRes = await fetch('/api/proofs');
     if (proofsRes.ok) {
       const data = await proofsRes.json();
@@ -306,9 +298,7 @@ async function loadDashboard() {
       showHabitReinforce(data.stats.totalProofs, sess.plan);
       if (data.proofs && data.proofs.length > 0) renderReal(data.proofs);
       else renderEmpty();
-    } else {
-      renderEmpty();
-    }
+    } else { renderEmpty(); }
   } catch(e) {
     console.error('Dashboard load error:', e);
     window.location.href = '/login';
@@ -331,23 +321,22 @@ function renderReal(proofs) {
     el.innerHTML = `<div class="pi-inner">
       <div class="pi-dot"></div>
       <div>
-        <div class="pi-file">${p.fileName}</div>
+        <div class="pi-file">${p.fileName || p.file_name || 'Unknown file'}</div>
         <div class="pi-meta">
-          <span>📅 ${new Date(p.sealedAt).toLocaleDateString()}</span>
-          <span>📦 ${p.fileSize}</span>
+          <span>📅 ${new Date(p.sealedAt || p.sealed_at).toLocaleDateString()}</span>
+          <span>📦 ${p.fileSize || p.file_size || ''}</span>
         </div>
       </div>
-      <div class="pi-hash">${p.fileHash}</div>
+      <div class="pi-hash">${(p.fileHash || p.file_hash || '').substring(0,16)}...</div>
       <div class="pi-actions">
-        <button class="pi-btn primary" onclick="event.stopPropagation();window.location.href='${p.receiptUrl}'">View receipt</button>
-        <button class="pi-btn" onclick="event.stopPropagation();cpD('${p.verifyUrl}')">Copy link</button>
+        <button class="pi-btn primary" onclick="event.stopPropagation();window.location.href='/receipt?id=${p.id || p.proof_id}'">View receipt</button>
+        <button class="pi-btn" onclick="event.stopPropagation();cpD('https://vxsent.com/verify/${p.id || p.proof_id}')">Copy link</button>
       </div>
     </div>`;
     c.appendChild(el);
   });
 }
 
-// ── SOLO PROOF MODAL ──
 function openProofModal() {
   document.getElementById('soloModal').classList.add('open');
   resetSoloModal();
@@ -372,12 +361,10 @@ function resetSoloModal() {
   document.getElementById('soloSealBtn').textContent = 'SEAL NOW';
 }
 
-// Close on overlay click
 document.getElementById('soloModal').addEventListener('click', function(e) {
   if (e.target === this) closeProofModal();
 });
 
-// ── FILE HANDLING ──
 const soloDropzone = document.getElementById('soloDropzone');
 const soloFileInput = document.getElementById('soloFileInput');
 
@@ -393,7 +380,6 @@ async function handleSoloFile(file) {
   document.getElementById('soloDropIcon').textContent = '⏳';
   document.getElementById('soloDropMain').textContent = file.name;
   document.getElementById('soloDropSub').textContent = fmtSize(file.size) + ' · computing hash...';
-
   const preview = document.getElementById('soloHashPreview');
   preview.classList.add('visible');
   document.getElementById('shFile').textContent = file.name.length > 38 ? file.name.substring(0, 38) + '...' : file.name;
@@ -402,7 +388,6 @@ async function handleSoloFile(file) {
   document.getElementById('shTime').textContent = soloTimestamp;
   document.getElementById('shStatus').textContent = 'computing...';
   document.getElementById('soloSealBtn').disabled = true;
-
   try {
     const buf = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest('SHA-256', buf);
@@ -423,24 +408,19 @@ async function handleSoloFile(file) {
   }
 }
 
-// ── SUBMIT SOLO PROOF ──
 async function submitSoloProof() {
   if (!soloFile || !soloHash) return;
-
   const recipientEmail = document.getElementById('soloRecipient').value.trim();
   const projectName = document.getElementById('soloProject').value.trim();
   const btn = document.getElementById('soloSealBtn');
   const errEl = document.getElementById('soloError');
-
   if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
     errEl.textContent = 'Valid client email required.';
     return;
   }
-
   btn.textContent = 'SEALING...';
   btn.disabled = true;
   errEl.textContent = '';
-
   try {
     const res = await fetch('/api/create-proof-solo', {
       method: 'POST',
@@ -455,21 +435,25 @@ async function submitSoloProof() {
         projectName: projectName || ''
       })
     });
-
     const data = await res.json();
-
     if (!res.ok) {
       errEl.textContent = data.error || 'Failed to create proof. Please try again.';
       btn.textContent = 'SEAL NOW';
       btn.disabled = false;
       return;
     }
-
-    // Success — redirect to receipt
+    // Debug: show exactly what came back
+    console.log('API response:', JSON.stringify(data));
+    // Try every possible field name
+    const pid = data.proofId || data.proof_id || data.id || data.receiptUrl?.split('id=')[1];
     closeProofModal();
-    const pid = data.proofId || data.proof_id || data.id;
-    window.location.href = `/receipt?id=${pid}`;
-
+    if (pid) {
+      window.location.href = '/receipt?id=' + pid;
+    } else {
+      // Fallback: go to dashboard and show success message
+      showToast('Proof sealed! Check your email for the receipt link.');
+      loadDashboard();
+    }
   } catch(e) {
     errEl.textContent = 'Network error. Please try again.';
     btn.textContent = 'SEAL NOW';
@@ -477,7 +461,6 @@ async function submitSoloProof() {
   }
 }
 
-// ── HELPERS ──
 function fmtSize(b) {
   if (b < 1024) return b + 'B';
   if (b < 1048576) return (b / 1024).toFixed(1) + 'KB';
