@@ -467,7 +467,7 @@ async function submitSoloProof() {
 
     // Success — redirect to receipt
     closeProofModal();
-    window.location.href = data.receiptUrl || `/receipt?id=${data.proofId}`;
+    window.location.href = `/receipt?id=${data.proofId}`;
 
   } catch(e) {
     errEl.textContent = 'Network error. Please try again.';
