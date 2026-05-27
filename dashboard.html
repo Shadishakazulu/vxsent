@@ -444,6 +444,7 @@ async function submitSoloProof() {
   try {
     const res = await fetch('/api/create-proof-solo', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fileHash: soloHash,
