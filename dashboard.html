@@ -12,27 +12,14 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f6f8;
-  --surface:#ffffff;
-  --panel:#f0f2f5;
-  --panel-hi:#e8eaed;
-  --ink:#111318;
-  --ink-2:#374151;
-  --ink-3:#6b7280;
-  --ink-4:#9ca3af;
-  --green:#00b356;
-  --green-dk:#009347;
-  --green-bg:rgba(0,179,86,0.07);
-  --green-bd:rgba(0,179,86,0.2);
-  --border:#e1e4e8;
-  --border-md:#c8cdd6;
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
-  --shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+  --bg:#f5f6f8;--surface:#ffffff;--panel:#f0f2f5;--panel-hi:#e8eaed;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.2);
+  --red:#dc2626;--border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
 }
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;display:grid;grid-template-columns:240px 1fr;grid-template-rows:58px 1fr;overflow:hidden}
-
-/* TOPBAR */
 .topbar{grid-column:1/-1;grid-row:1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
 .tb-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
 .tb-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
@@ -42,8 +29,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .tb-new{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:3px;transition:background 0.15s}
 .tb-new:hover{background:var(--green-dk)}
 .tb-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);font-size:20px;padding:4px 8px}
-
-/* SIDEBAR */
 .sidebar{grid-column:1;grid-row:2;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;overflow-y:auto}
 .sb-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-4);padding:0 18px 7px;font-weight:500}
 .sb-item{display:flex;align-items:center;gap:9px;padding:9px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;border:none;background:none;width:100%;text-align:left}
@@ -56,19 +41,13 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .sb-up-text{font-size:12px;color:var(--ink-2);margin-bottom:10px;line-height:1.5}
 .sb-up-btn{width:100%;padding:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;background:var(--green);color:#fff;border:none;cursor:pointer;border-radius:3px;transition:background 0.15s}
 .sb-up-btn:hover{background:var(--green-dk)}
-
-/* MAIN */
 .main{grid-column:2;grid-row:2;padding:24px;overflow-y:auto}
-
-/* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .sc{background:var(--surface);border:1px solid var(--border);padding:18px 20px;border-radius:6px;box-shadow:var(--shadow-sm)}
 .sc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
 .sc-num{font-family:'Bebas Neue',sans-serif;font-size:32px;line-height:1;color:var(--ink)}
 .sc-num.green{color:var(--green-dk)}
 .sc-sub{font-size:12px;color:var(--ink-3);margin-top:3px}
-
-/* QUICK PROOF */
 .qp{background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .qp-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
 .qp-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3)}
@@ -81,8 +60,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .qp-dt strong{color:var(--ink);font-weight:600}
 .qp-btn{padding:11px 20px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;border:none;cursor:pointer;white-space:nowrap;border-radius:3px;transition:background 0.15s}
 .qp-btn:hover{background:var(--green-dk)}
-
-/* DISPUTE BANNER */
 .db-banner{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .db-l{display:flex;align-items:center;gap:10px}
 .db-icon{font-size:20px;flex-shrink:0}
@@ -90,16 +67,12 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .db-sub{font-size:12px;color:var(--ink-2)}
 .db-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:7px 13px;border:1.5px solid var(--green-bd);color:var(--green-dk);background:var(--surface);cursor:pointer;white-space:nowrap;border-radius:3px;transition:all 0.15s;flex-shrink:0}
 .db-btn:hover{background:var(--green-bg)}
-
-/* SECTION HEADER */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .sec-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3)}
 .filters{display:flex;gap:6px}
 .filter{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink-3);cursor:pointer;border-radius:3px;transition:all 0.15s}
 .filter.active{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
 .filter:hover:not(.active){color:var(--ink);border-color:var(--border-md)}
-
-/* PROOF LIST */
 .proof-list{display:flex;flex-direction:column;gap:8px}
 .pi{background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all 0.15s;box-shadow:var(--shadow-sm)}
 .pi:hover{border-color:var(--border-md);box-shadow:var(--shadow)}
@@ -115,9 +88,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .pi-btn.primary{border-color:var(--green-bd);color:var(--green-dk)}
 .pi-btn:hover{border-color:var(--border-md);color:var(--ink)}
 .pi-btn.primary:hover{background:var(--green-bg)}
-
-
-/* HABIT REINFORCEMENT BANNER */
 .habit-reinforce{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .hr-left{display:flex;align-items:center;gap:12px}
 .hr-icon{font-size:20px;flex-shrink:0}
@@ -125,10 +95,37 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .hr-sub{font-size:12px;color:var(--ink-2)}
 .hr-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--green-bd);color:var(--green-dk);background:var(--surface);cursor:pointer;border-radius:3px;white-space:nowrap;flex-shrink:0;transition:all 0.15s}
 .hr-btn:hover{background:var(--green-bg)}
-
-/* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;border-radius:4px;z-index:999;transform:translateY(70px);transition:transform 0.25s;pointer-events:none}
 .toast.show{transform:translateY(0)}
+
+/* ── SOLO PROOF MODAL ── */
+.solo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.7);z-index:500;align-items:center;justify-content:center;padding:20px}
+.solo-modal-overlay.open{display:flex}
+.solo-modal{background:var(--surface);border-radius:8px;padding:32px;max-width:480px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
+.solo-modal-close{position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink-3);line-height:1}
+.solo-modal-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.solo-modal-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);margin-bottom:20px}
+.solo-dropzone{border:2px dashed var(--border-md);padding:28px 20px;text-align:center;position:relative;transition:all 0.2s;cursor:pointer;background:var(--panel);border-radius:6px;margin-bottom:16px}
+.solo-dropzone:hover,.solo-dropzone.dragover{border-color:var(--green);background:var(--green-bg)}
+.solo-dropzone.has-file{border-color:var(--green);background:var(--green-bg);border-style:solid}
+.solo-drop-icon{font-size:24px;margin-bottom:8px}
+.solo-drop-main{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.solo-drop-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.solo-file-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.solo-hash-preview{margin-bottom:14px;padding:12px 16px;background:#1a1f2e;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.85;display:none}
+.solo-hash-preview.visible{display:block}
+.solo-hash-row{display:flex;gap:8px;word-break:break-all}
+.solo-hash-key{color:rgba(255,255,255,0.38);width:76px;flex-shrink:0}
+.solo-hash-val{color:#4ade80}
+.solo-hash-val.dim{color:rgba(255,255,255,0.7)}
+label.solo-label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.solo-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box;transition:border-color 0.15s}
+.solo-input:focus{border-color:var(--green)}
+.solo-error{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;min-height:16px;margin-bottom:10px;letter-spacing:0.08em}
+.solo-seal-btn{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s}
+.solo-seal-btn:hover:not(:disabled){background:var(--green-dk)}
+.solo-seal-btn:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
+.solo-seal-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:8px 0 0}
 
 @media(max-width:900px){
   body{grid-template-columns:1fr;overflow:auto;height:auto}
@@ -142,8 +139,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   .pi-hash{display:none}
   .pi-actions{grid-column:2;padding-left:20px;margin-top:2px}
   .qp-body{flex-wrap:wrap}
-  .db-banner{flex-direction:column;align-items:flex-start;gap:10px}
-  .habit-reinforce{flex-direction:column;align-items:flex-start;gap:10px}
 }
 @media(max-width:480px){
   .topbar{padding:0 12px}
@@ -152,13 +147,6 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   .stats{grid-template-columns:1fr 1fr;gap:6px}
   .sc{padding:12px 14px}
   .sc-num{font-size:26px}
-  .qp-body{padding:12px}
-  .qp-drop{padding:12px 14px}
-  .pi-inner{padding:10px 12px}
-  .pi-file{font-size:13px}
-  .pi-btn{font-size:8px;padding:4px 8px}
-  .sec-hdr{flex-direction:column;align-items:flex-start}
-  .filters{flex-wrap:wrap}
 }
 </style>
 </head>
@@ -167,9 +155,9 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 <div class="topbar">
   <a href="/" class="tb-logo"><div class="tb-dot"></div>SENT.</a>
   <div class="tb-right">
-    <div class="tb-plan">Solo · $12.99/mo</div>
-    <div class="tb-user">you@email.com</div>
-    <button class="tb-new" onclick="location.href='/'">Proof a file →</button>
+    <div class="tb-plan" id="tbPlan">Solo · $12.99/mo</div>
+    <div class="tb-user" id="tbUser">you@email.com</div>
+    <button class="tb-new" id="proofBtn" onclick="openProofModal()">Proof a file →</button>
     <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
   </div>
 </div>
@@ -193,6 +181,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
     <div class="sb-label">Account</div>
     <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">⚙️</span>Settings</button>
     <button class="sb-item" onclick="setSb(this)"><span class="sb-icon">💳</span>Billing</button>
+    <button class="sb-item" onclick="window.location.href='/api/auth/logout'"><span class="sb-icon">🚪</span>Sign out</button>
   </div>
   <div class="sb-upgrade">
     <div class="sb-up-label">Upgrade to Professional</div>
@@ -203,15 +192,13 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 
 <main class="main">
   <div class="stats">
-    <div class="sc"><div class="sc-label">Total proofs</div><div class="sc-num green">47</div><div class="sc-sub">Since joining</div></div>
-    <div class="sc"><div class="sc-label">This month</div><div class="sc-num">12</div><div class="sc-sub">Proofs generated</div></div>
+    <div class="sc"><div class="sc-label">Total proofs</div><div class="sc-num green" id="statTotal">—</div><div class="sc-sub">Since joining</div></div>
+    <div class="sc"><div class="sc-label">This month</div><div class="sc-num" id="statMonth">—</div><div class="sc-sub">Proofs generated</div></div>
     <div class="sc"><div class="sc-label">Disputes won</div><div class="sc-num green">3</div><div class="sc-sub">Using SENT. receipts</div></div>
     <div class="sc"><div class="sc-label">Value protected</div><div class="sc-num green">$8.4K</div><div class="sc-sub">In recovered payments</div></div>
   </div>
 
-  <!-- HABIT REINFORCEMENT -->
   <div class="habit-reinforce" id="habitReinforce" style="display:none"></div>
-  </div>
 
   <div class="qp">
     <div class="qp-head">
@@ -219,11 +206,11 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
       <div class="qp-plan">Unlimited · Solo plan</div>
     </div>
     <div class="qp-body">
-      <div class="qp-drop" onclick="location.href='/'">
+      <div class="qp-drop" onclick="openProofModal()">
         <div class="qp-di">📁</div>
         <div class="qp-dt"><strong>Proof your next file</strong> — drop it here before you send</div>
       </div>
-      <button class="qp-btn" onclick="location.href='/'">SEAL NOW</button>
+      <button class="qp-btn" onclick="openProofModal()">SEAL NOW</button>
     </div>
   </div>
 
@@ -232,7 +219,7 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
       <div class="db-icon">🛡️</div>
       <div>
         <div class="db-title">Dispute protection active</div>
-        <div class="db-sub">All 47 proofs are permanently sealed and independently verifiable. Upgrade for court-ready exports.</div>
+        <div class="db-sub" id="dbSub">All your proofs are permanently sealed and independently verifiable.</div>
       </div>
     </div>
     <button class="db-btn" onclick="location.href='/pricing'">Upgrade →</button>
@@ -241,96 +228,114 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
   <div class="sec-hdr">
     <div class="sec-title">// Recent proofs</div>
     <div class="filters">
-      <button class="filter active" onclick="setF(this)">All</button>
-      <button class="filter" onclick="setF(this)">This month</button>
-      <button class="filter" onclick="setF(this)">Disputed</button>
+      <button class="filter active" onclick="setF(this,'all')">All</button>
+      <button class="filter" onclick="setF(this,'month')">This month</button>
+      <button class="filter" onclick="setF(this,'disputed')">Disputed</button>
     </div>
   </div>
 
-  <div class="proof-list" id="proofList"></div>
+  <div class="proof-list" id="proofList"><div style="padding:20px;text-align:center;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Loading proofs...</div></div>
 </main>
+
+<!-- SOLO PROOF MODAL -->
+<div class="solo-modal-overlay" id="soloModal">
+  <div class="solo-modal">
+    <button class="solo-modal-close" onclick="closeProofModal()">×</button>
+    <div class="solo-modal-logo"><div class="tb-dot"></div>SENT.</div>
+    <div class="solo-modal-sub">Solo plan · Seal instantly · No payment required</div>
+
+    <div class="solo-dropzone" id="soloDropzone">
+      <input type="file" class="solo-file-input" id="soloFileInput" aria-label="Select file">
+      <div class="solo-drop-icon" id="soloDropIcon">📁</div>
+      <div class="solo-drop-main" id="soloDropMain">Drop your deliverable here</div>
+      <div class="solo-drop-sub" id="soloDropSub">or click to browse · any file type</div>
+    </div>
+
+    <div class="solo-hash-preview" id="soloHashPreview">
+      <div class="solo-hash-row"><span class="solo-hash-key">file</span><span class="solo-hash-val dim" id="shFile">—</span></div>
+      <div class="solo-hash-row"><span class="solo-hash-key">hash</span><span class="solo-hash-val" id="shHash">—</span></div>
+      <div class="solo-hash-row"><span class="solo-hash-key">timestamp</span><span class="solo-hash-val dim" id="shTime">—</span></div>
+      <div class="solo-hash-row"><span class="solo-hash-key">status</span><span class="solo-hash-val" id="shStatus">computing...</span></div>
+    </div>
+
+    <label class="solo-label" for="soloRecipient">Client email — required for RAC chain</label>
+    <input class="solo-input" id="soloRecipient" type="email" placeholder="client@company.com">
+
+    <label class="solo-label" for="soloProject">Project name (optional)</label>
+    <input class="solo-input" id="soloProject" type="text" placeholder="e.g. Brand Guidelines Q2">
+
+    <div class="solo-error" id="soloError"></div>
+
+    <button class="solo-seal-btn" id="soloSealBtn" disabled onclick="submitSoloProof()">SEAL NOW</button>
+    <div class="solo-seal-note">Sealed instantly · Full RAC chain · No payment</div>
+  </div>
+</div>
 
 <div class="toast" id="toast">Link copied</div>
 
 <script>
-const PROOFS=[
-  {file:'brand-guidelines-final-v3.pdf',size:'4.2 MB',time:'2026-05-03 · 11:44 UTC',hash:'a3f9d2e8...d72c',project:'Acme Corp Rebrand',amount:'$3,200'},
-  {file:'website-mockup-approved.fig',size:'18.7 MB',time:'2026-05-02 · 09:22 UTC',hash:'b7e1c4f9...a01b',project:'TechCo Website',amount:'$5,500'},
-  {file:'copywriting-deliverable-final.docx',size:'124 KB',time:'2026-04-29 · 16:05 UTC',hash:'c9d3a7e2...f33a',project:'Newsletter Campaign',amount:'$1,200'},
-  {file:'project-scope-agreed.pdf',size:'89 KB',time:'2026-04-28 · 10:00 UTC',hash:'d2f8b1c7...e94c',project:'TechCo Website',amount:'Scope Lock'},
-  {file:'logo-package-v2.zip',size:'34.1 MB',time:'2026-04-25 · 14:30 UTC',hash:'e4a9c2d8...b17f',project:'Startup Identity',amount:'$800'},
-  {file:'motion-graphics-export.mp4',size:'2.1 GB',time:'2026-04-22 · 18:45 UTC',hash:'f1b7e3c9...d42a',project:'Product Launch Video',amount:'$4,500'},
-  {file:'ui-components-handoff.zip',size:'8.4 MB',time:'2026-04-20 · 11:15 UTC',hash:'g5c2a8f1...e63d',project:'App Redesign',amount:'$2,800'},
-  {file:'seo-audit-report.pdf',size:'2.3 MB',time:'2026-04-18 · 09:00 UTC',hash:'h8d4b7e2...f91c',project:'SEO Consultation',amount:'$650'}
-];
-function render(list){
-  const c=document.getElementById('proofList');c.innerHTML='';
-  list.forEach(p=>{
-    const isAmt=p.amount.startsWith('$');
-    const el=document.createElement('div');el.className='pi';
-    el.innerHTML=`<div class="pi-inner">
-      <div class="pi-dot"></div>
-      <div><div class="pi-file">${p.file}</div>
-        <div class="pi-meta">
-          <span>📅 ${p.time}</span><span>📦 ${p.size}</span>
-          <span class="pi-tag">${p.project}</span>
-          ${p.amount?`<span class="${isAmt?'pi-amount':''}">${p.amount}</span>`:''}
-        </div>
-      </div>
-      <div class="pi-hash">${p.hash}</div>
-      <div class="pi-actions">
-        <button class="pi-btn primary" onclick="event.stopPropagation();viewR('${encodeURIComponent(p.file)}','${encodeURIComponent(p.hash)}','${encodeURIComponent(p.size)}')">View receipt</button>
-        <button class="pi-btn" onclick="event.stopPropagation();cpLink()">Copy link</button>
-      </div>
-    </div>`;
-    c.appendChild(el);
-  });
-}
-function viewR(f,h,s){const p=new URLSearchParams({file:decodeURIComponent(f),hash:decodeURIComponent(h),size:decodeURIComponent(s),time:new Date().toISOString(),id:genId()});location.href='/receipt?'+p}
-function cpLink(){navigator.clipboard.writeText('https://vxsent.com/verify/'+genId()).then(()=>showToast('Link copied')).catch(()=>{})}
-function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function setSb(el){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active')}
-function setF(el){document.querySelectorAll('.filter').forEach(f=>f.classList.remove('active'));el.classList.add('active');loadDashboard()}
-function toggleSb(){document.getElementById('sidebar').classList.toggle('open')}
-document.addEventListener('click',e=>{const sb=document.getElementById('sidebar');if(sb.classList.contains('open')&&!sb.contains(e.target)&&!e.target.classList.contains('tb-ham'))sb.classList.remove('open')});
+// ── STATE ──
+let currentUserPlan = null;
+let currentUserEmail = null;
+let soloFile = null;
+let soloHash = null;
+let soloTimestamp = null;
 
-async function loadDashboard(){
-  try{
-    const sessRes=await fetch('/api/auth/session');
-    if(sessRes.ok){
-      const sess=await sessRes.json();
-      document.querySelector('.tb-user').textContent=sess.email;
-      document.querySelector('.tb-plan').textContent=sess.plan==='solo'?'Solo · $12.99/mo':sess.plan==='none'?'Day Pass':sess.plan;
-      const proofsRes=await fetch('/api/proofs');
-      if(proofsRes.ok){
-        const data=await proofsRes.json();
-        const nums=document.querySelectorAll('.sc-num');
-        if(nums[0])nums[0].textContent=data.stats.totalProofs;
+// ── LOAD DASHBOARD ──
+async function loadDashboard() {
+  try {
+    const sessRes = await fetch('/api/auth/session');
+    if (!sessRes.ok) { window.location.href = '/login'; return; }
+    const sess = await sessRes.json();
+
+    currentUserPlan = sess.plan;
+    currentUserEmail = sess.email;
+
+    document.getElementById('tbUser').textContent = sess.email;
+    document.getElementById('tbPlan').textContent =
+      sess.plan === 'solo' ? 'Solo · $12.99/mo' :
+      sess.plan === 'none' ? 'Day Pass' : sess.plan;
+
+    const proofsRes = await fetch('/api/proofs');
+    if (proofsRes.ok) {
+      const data = await proofsRes.json();
+      document.getElementById('statTotal').textContent = data.stats.totalProofs || 0;
+      document.getElementById('statMonth').textContent = data.stats.monthProofs || 0;
+      document.getElementById('dbSub').textContent =
+        `All ${data.stats.totalProofs || 0} proofs are permanently sealed and independently verifiable.`;
       showHabitReinforce(data.stats.totalProofs, sess.plan);
-        if(nums[1])nums[1].textContent=data.stats.monthProofs;
-        if(data.proofs&&data.proofs.length>0)renderReal(data.proofs);
-        else render(PROOFS);
-      } else { render(PROOFS); }
+      if (data.proofs && data.proofs.length > 0) renderReal(data.proofs);
+      else renderEmpty();
     } else {
-      // Not authenticated — redirect to login
-      window.location.href='/login';
-      return;
+      renderEmpty();
     }
-  }catch(e){
-    // Backend not yet connected — show demo data
-    render(PROOFS);
+  } catch(e) {
+    console.error('Dashboard load error:', e);
+    window.location.href = '/login';
   }
 }
 
-function renderReal(proofs){
-  const c=document.getElementById('proofList');c.innerHTML='';
-  proofs.forEach(p=>{
-    const el=document.createElement('div');el.className='pi';
-    el.innerHTML=`<div class="pi-inner">
+function renderEmpty() {
+  document.getElementById('proofList').innerHTML =
+    `<div style="padding:40px;text-align:center;color:var(--ink-3);font-size:14px">
+      No proofs yet. Click <strong>Proof a file →</strong> to create your first one.
+    </div>`;
+}
+
+function renderReal(proofs) {
+  const c = document.getElementById('proofList');
+  c.innerHTML = '';
+  proofs.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'pi';
+    el.innerHTML = `<div class="pi-inner">
       <div class="pi-dot"></div>
-      <div><div class="pi-file">${p.fileName}</div>
-        <div class="pi-meta"><span>📅 ${new Date(p.sealedAt).toLocaleDateString()}</span><span>📦 ${p.fileSize}</span></div>
+      <div>
+        <div class="pi-file">${p.fileName}</div>
+        <div class="pi-meta">
+          <span>📅 ${new Date(p.sealedAt).toLocaleDateString()}</span>
+          <span>📦 ${p.fileSize}</span>
+        </div>
       </div>
       <div class="pi-hash">${p.fileHash}</div>
       <div class="pi-actions">
@@ -341,46 +346,165 @@ function renderReal(proofs){
     c.appendChild(el);
   });
 }
-function cpD(url){navigator.clipboard.writeText(url).then(()=>showToast('Link copied')).catch(()=>{})}
-function logout(){window.location.href='/api/auth/logout'}
 
-loadDashboard();
+// ── SOLO PROOF MODAL ──
+function openProofModal() {
+  document.getElementById('soloModal').classList.add('open');
+  resetSoloModal();
+}
 
-function showHabitReinforce(totalProofs, plan){
-  const el=document.getElementById('habitReinforce');
-  if(!el)return;
+function closeProofModal() {
+  document.getElementById('soloModal').classList.remove('open');
+  resetSoloModal();
+}
 
-  // Subscription trigger after 2nd proof
-  if(totalProofs>=2 && plan!=='solo'){
-    el.style.display='flex';
-    el.innerHTML=`
-      <div class="hr-left">
-        <div class="hr-icon">🔥</div>
-        <div>
-          <div class="hr-title">You've created ${totalProofs} proofs.</div>
-          <div class="hr-sub">Unlimited is $12.99/month. Skip the $0.99 every time.</div>
-        </div>
-      </div>
-      <button class="hr-btn" onclick="location.href='/pricing'">Go unlimited →</button>
-    `;
+function resetSoloModal() {
+  soloFile = null; soloHash = null; soloTimestamp = null;
+  document.getElementById('soloDropzone').className = 'solo-dropzone';
+  document.getElementById('soloDropIcon').textContent = '📁';
+  document.getElementById('soloDropMain').textContent = 'Drop your deliverable here';
+  document.getElementById('soloDropSub').textContent = 'or click to browse · any file type';
+  document.getElementById('soloHashPreview').className = 'solo-hash-preview';
+  document.getElementById('soloRecipient').value = '';
+  document.getElementById('soloProject').value = '';
+  document.getElementById('soloError').textContent = '';
+  document.getElementById('soloSealBtn').disabled = true;
+  document.getElementById('soloSealBtn').textContent = 'SEAL NOW';
+}
+
+// Close on overlay click
+document.getElementById('soloModal').addEventListener('click', function(e) {
+  if (e.target === this) closeProofModal();
+});
+
+// ── FILE HANDLING ──
+const soloDropzone = document.getElementById('soloDropzone');
+const soloFileInput = document.getElementById('soloFileInput');
+
+soloDropzone.addEventListener('dragover', e => { e.preventDefault(); soloDropzone.classList.add('dragover'); });
+soloDropzone.addEventListener('dragleave', e => { if (!soloDropzone.contains(e.relatedTarget)) soloDropzone.classList.remove('dragover'); });
+soloDropzone.addEventListener('drop', e => { e.preventDefault(); soloDropzone.classList.remove('dragover'); if (e.dataTransfer.files.length) handleSoloFile(e.dataTransfer.files[0]); });
+soloFileInput.addEventListener('change', () => { if (soloFileInput.files.length) handleSoloFile(soloFileInput.files[0]); });
+
+async function handleSoloFile(file) {
+  soloFile = file;
+  document.getElementById('soloError').textContent = '';
+  soloDropzone.classList.add('has-file');
+  document.getElementById('soloDropIcon').textContent = '⏳';
+  document.getElementById('soloDropMain').textContent = file.name;
+  document.getElementById('soloDropSub').textContent = fmtSize(file.size) + ' · computing hash...';
+
+  const preview = document.getElementById('soloHashPreview');
+  preview.classList.add('visible');
+  document.getElementById('shFile').textContent = file.name.length > 38 ? file.name.substring(0, 38) + '...' : file.name;
+  document.getElementById('shHash').textContent = 'computing...';
+  soloTimestamp = new Date().toISOString();
+  document.getElementById('shTime').textContent = soloTimestamp;
+  document.getElementById('shStatus').textContent = 'computing...';
+  document.getElementById('soloSealBtn').disabled = true;
+
+  try {
+    const buf = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    const hashArr = Array.from(new Uint8Array(hashBuf));
+    soloHash = hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+    document.getElementById('shHash').textContent = soloHash.substring(0, 32) + '...';
+    document.getElementById('shStatus').textContent = 'READY TO SEAL ✓';
+    document.getElementById('soloDropIcon').textContent = '✓';
+    document.getElementById('soloDropSub').textContent = fmtSize(file.size) + ' · ready to seal';
+    document.getElementById('soloSealBtn').disabled = false;
+  } catch(e) {
+    document.getElementById('soloError').textContent = 'Failed to process file. Please try again.';
+    document.getElementById('soloDropIcon').textContent = '📁';
+    document.getElementById('soloDropMain').textContent = 'Drop your deliverable here';
+    soloFile = null; soloHash = null;
+    soloDropzone.classList.remove('has-file');
+    preview.classList.remove('visible');
+  }
+}
+
+// ── SUBMIT SOLO PROOF ──
+async function submitSoloProof() {
+  if (!soloFile || !soloHash) return;
+
+  const recipientEmail = document.getElementById('soloRecipient').value.trim();
+  const projectName = document.getElementById('soloProject').value.trim();
+  const btn = document.getElementById('soloSealBtn');
+  const errEl = document.getElementById('soloError');
+
+  if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+    errEl.textContent = 'Valid client email required.';
     return;
   }
 
-  // Habit reinforcement for solo users
-  if(plan==='solo'){
-    el.style.display='flex';
-    const week=Math.min(totalProofs,7);
-    el.innerHTML=`
-      <div class="hr-left">
-        <div class="hr-icon">✓</div>
-        <div>
-          <div class="hr-title">You've protected ${totalProofs} deliveries.</div>
-          <div class="hr-sub">Send work? Proof it. Every time.</div>
-        </div>
-      </div>
-    `;
+  btn.textContent = 'SEALING...';
+  btn.disabled = true;
+  errEl.textContent = '';
+
+  try {
+    const res = await fetch('/api/create-proof-solo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileHash: soloHash,
+        fileName: soloFile.name,
+        fileSize: fmtSize(soloFile.size),
+        timestamp: soloTimestamp,
+        recipientEmail,
+        projectName: projectName || ''
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Failed to create proof. Please try again.';
+      btn.textContent = 'SEAL NOW';
+      btn.disabled = false;
+      return;
+    }
+
+    // Success — redirect to receipt
+    closeProofModal();
+    window.location.href = data.receiptUrl || `/receipt?id=${data.proofId}`;
+
+  } catch(e) {
+    errEl.textContent = 'Network error. Please try again.';
+    btn.textContent = 'SEAL NOW';
+    btn.disabled = false;
   }
 }
+
+// ── HELPERS ──
+function fmtSize(b) {
+  if (b < 1024) return b + 'B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + 'KB';
+  if (b < 1073741824) return (b / 1048576).toFixed(1) + 'MB';
+  return (b / 1073741824).toFixed(2) + 'GB';
+}
+
+function cpD(url) { navigator.clipboard.writeText(url).then(() => showToast('Link copied')).catch(() => {}); }
+function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2400); }
+function setSb(el) { document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+function setF(el, filter) { document.querySelectorAll('.filter').forEach(f => f.classList.remove('active')); el.classList.add('active'); loadDashboard(); }
+function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); }
+document.addEventListener('click', e => { const sb = document.getElementById('sidebar'); if (sb.classList.contains('open') && !sb.contains(e.target) && !e.target.classList.contains('tb-ham')) sb.classList.remove('open'); });
+
+function showHabitReinforce(totalProofs, plan) {
+  const el = document.getElementById('habitReinforce');
+  if (!el) return;
+  if (totalProofs >= 2 && plan !== 'solo') {
+    el.style.display = 'flex';
+    el.innerHTML = `<div class="hr-left"><div class="hr-icon">🔥</div><div><div class="hr-title">You've created ${totalProofs} proofs.</div><div class="hr-sub">Unlimited is $12.99/month. Skip the $0.99 every time.</div></div></div><button class="hr-btn" onclick="location.href='/pricing'">Go unlimited →</button>`;
+    return;
+  }
+  if (plan === 'solo') {
+    el.style.display = 'flex';
+    el.innerHTML = `<div class="hr-left"><div class="hr-icon">✓</div><div><div class="hr-title">You've protected ${totalProofs} deliveries.</div><div class="hr-sub">Send work? Proof it. Every time.</div></div></div>`;
+  }
+}
+
+loadDashboard();
 </script>
 </body>
 </html>
