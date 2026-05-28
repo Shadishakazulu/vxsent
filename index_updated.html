@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENT. — Prove You Delivered It | vxsent.com</title>
-<meta name="description" content="Clients lie about delivery. Timestamps don't. SENT. creates a permanent, cryptographic proof of every file you deliver. $0.99 per receipt. If a client disputes it — show them the link. The argument ends.">
+<meta name="description" content="Clients lie about delivery. Timestamps don't. SENT. creates a permanent, cryptographic proof of every file you deliver — and now locks the file behind their acknowledgment. $0.99 per receipt. The argument ends.">
 <meta property="og:title" content="SENT. — Prove You Delivered It">
 <meta property="og:description" content="Clients lie about delivery. Timestamps don't. $0.99 creates a permanent, cryptographic proof of every file you deliver.">
 <meta property="og:url" content="https://vxsent.com">
@@ -65,8 +65,11 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .hero-h1 .l1,.hero-h1 .l2{display:block;color:var(--ink)}
 .hero-h1 .l3{display:block;color:var(--green)}
 
-.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:36px;max-width:440px;opacity:0;animation:fu 0.5s 0.36s forwards}
+.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:24px;max-width:460px;opacity:0;animation:fu 0.5s 0.36s forwards}
 .hero-sub strong{color:var(--ink);font-weight:700}
+
+.hero-newbadge{display:inline-flex;align-items:center;gap:8px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green-dk);padding:6px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:24px;opacity:0;animation:fu 0.5s 0.42s forwards;font-weight:500}
+.hero-newbadge .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 
 .stat-row{display:flex;gap:36px;opacity:0;animation:fu 0.5s 0.48s forwards}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);line-height:1}
@@ -85,7 +88,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .drop-icon{font-size:28px;margin-bottom:10px}
 .drop-main{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:5px}
 .drop-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
-input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 
 .hash-preview{margin:0 18px;padding:14px 16px;background:#1a1f2e;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.9;display:none}
 .hash-preview.visible{display:block;animation:fu 0.3s forwards}
@@ -100,7 +103,14 @@ input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;h
 .proof-cta{margin:14px 18px 0;width:calc(100% - 36px);padding:16px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;cursor:pointer;transition:all 0.2s;border-radius:4px;font-weight:400}
 .proof-cta:hover:not(:disabled){background:var(--green-dk);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,179,86,0.35)}
 .proof-cta:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed;transform:none;box-shadow:none}
-.proof-cta-sub{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:10px 18px 18px}
+.proof-cta-sub{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:10px 18px 8px}
+
+.proof-upsell{margin:0 18px 18px;padding:12px 14px;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:5px;display:flex;align-items:center;gap:10px}
+.proof-upsell-icon{font-size:18px;flex-shrink:0}
+.proof-upsell-text{font-size:12px;color:var(--ink-2);line-height:1.5}
+.proof-upsell-text strong{color:var(--green-dk);font-weight:700}
+.proof-upsell-text a{color:var(--green-dk);text-decoration:none;border-bottom:1px solid var(--green-bd);font-weight:600;white-space:nowrap}
+.proof-upsell-text a:hover{border-bottom-color:var(--green-dk)}
 
 @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -112,6 +122,24 @@ input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;h
 .how-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--green);opacity:0.3;line-height:1;margin-bottom:14px}
 .how-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px}
 .how-body{font-size:14px;color:var(--ink-2);line-height:1.68}
+
+/* GATED DELIVERY (NEW) */
+.gated{border-top:1px solid var(--border);background:linear-gradient(180deg,var(--surface) 0%,var(--green-lt) 100%);padding:90px 48px;max-width:none;margin:0;text-align:center;position:relative;overflow:hidden}
+.gated-inner{max-width:1100px;margin:0 auto}
+.gated-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--green-bd);color:var(--green-dk);padding:8px 16px;border-radius:50px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:28px;font-weight:500;box-shadow:var(--shadow-sm)}
+.gated-badge .pulse{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+.gated-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,5.5vw,68px);line-height:0.95;letter-spacing:0.02em;margin-bottom:20px;color:var(--ink)}
+.gated-hl .green{color:var(--green-dk)}
+.gated-sub{font-size:17px;color:var(--ink-2);line-height:1.7;max-width:680px;margin:0 auto 48px;padding:0 8px}
+.gated-sub strong{color:var(--ink);font-weight:700}
+.gated-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:48px}
+.gated-feat{background:var(--surface);border:1px solid var(--border);padding:24px 20px;border-radius:8px;text-align:left;box-shadow:var(--shadow-sm)}
+.gated-feat-icon{font-size:24px;margin-bottom:12px;line-height:1}
+.gated-feat-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.gated-feat-body{font-size:13px;color:var(--ink-3);line-height:1.6}
+.gated-quote{background:var(--surface);border-left:3px solid var(--green);padding:22px 28px;max-width:720px;margin:0 auto;text-align:left;border-radius:0 8px 8px 0;box-shadow:var(--shadow-sm)}
+.gated-quote-text{font-size:15px;color:var(--ink);line-height:1.7;font-style:italic;font-weight:500}
+.gated-quote-attr{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);margin-top:10px;font-style:normal}
 
 /* DISPUTE */
 .dispute{border-top:1px solid var(--border);background:var(--surface);padding:64px 48px;max-width:1320px;margin:0 auto}
@@ -140,6 +168,27 @@ input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;h
 .testi-author{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
 .testi-amount{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green-dk);margin-top:6px}
 
+/* PRICING BANNER */
+.pricing-banner{border-top:1px solid var(--border);background:var(--ink);color:#fff;padding:60px 48px}
+.pricing-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ptier{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:28px 26px}
+.ptier.featured{background:rgba(0,179,86,0.1);border-color:var(--green)}
+.ptier-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:8px;font-weight:500}
+.ptier.featured .ptier-tag{color:var(--green)}
+.ptier-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.06em;margin-bottom:4px}
+.ptier-price{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;margin-bottom:14px}
+.ptier-price .per{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:0.1em;text-transform:uppercase;margin-left:4px}
+.ptier-list{list-style:none;padding:0;margin:0 0 18px}
+.ptier-list li{font-size:13px;color:rgba(255,255,255,0.82);padding:5px 0 5px 22px;position:relative;line-height:1.55}
+.ptier-list li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700}
+.ptier-list li.muted{color:rgba(255,255,255,0.45)}
+.ptier-list li.muted::before{content:'·';color:rgba(255,255,255,0.3)}
+.ptier-cta{display:inline-block;padding:10px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;border-radius:4px;font-weight:600;transition:all 0.15s;cursor:pointer;border:none}
+.ptier-cta.primary{background:var(--green);color:#fff}
+.ptier-cta.primary:hover{background:var(--green-dk)}
+.ptier-cta.outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.35)}
+.ptier-cta.outline:hover{border-color:#fff;background:rgba(255,255,255,0.06)}
+
 /* FINAL CTA */
 .final{border-top:1px solid var(--border);padding:100px 48px;text-align:center;max-width:1320px;margin:0 auto}
 .final-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,84px);line-height:0.9;letter-spacing:0.02em;margin-bottom:20px}
@@ -163,10 +212,15 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   header{padding:0 20px}
   .hdr-nav .hdr-link:not(.hdr-signin){display:none}
   .hero{grid-template-columns:1fr;gap:36px;padding:80px 20px 48px}
-  .how,.dispute,.testi,.final{padding-left:20px;padding-right:20px}
+  .how,.dispute,.testi,.final,.gated,.pricing-banner{padding-left:20px;padding-right:20px}
   .how-grid,.testi-grid{grid-template-columns:1fr;gap:10px}
+  .gated-grid{grid-template-columns:1fr 1fr;gap:10px}
   .dispute-inner{grid-template-columns:1fr;gap:28px}
+  .pricing-inner{grid-template-columns:1fr;gap:14px}
   footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
+}
+@media(max-width:540px){
+  .gated-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -190,7 +244,8 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       <span class="l2">ABOUT DELIVERY.</span>
       <span class="l3">TIMESTAMPS DON'T.</span>
     </h1>
-    <p class="hero-sub">SENT. creates a <strong>permanent, verifiable proof</strong> of every file you deliver. If a client ever disputes it — show them the link. <strong>The argument ends.</strong></p>
+    <div class="hero-newbadge"><span class="pulse"></span>New · Gated file delivery on Solo</div>
+    <p class="hero-sub">SENT. creates a <strong>permanent, verifiable proof</strong> of every file you deliver. Solo plan now locks the file itself behind their click. If they say they never got it — <strong>the click is in the chain.</strong></p>
     <div class="stat-row">
       <div class="stat"><div class="stat-num">$0.99</div><div class="stat-label">Per proof</div></div>
       <div class="stat"><div class="stat-num">60s</div><div class="stat-label">To generate</div></div>
@@ -218,6 +273,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <div class="proof-error" id="proofError">Unable to process file. Please try again.</div>
     <button class="proof-cta" id="ctaBtn" disabled onclick="initPayment()">GET YOUR SENT. RECEIPT — $0.99</button>
     <div class="proof-cta-sub">Timestamped · SHA-256 sealed · Permanently verifiable</div>
+    <div class="proof-upsell">
+      <div class="proof-upsell-icon">🔒</div>
+      <div class="proof-upsell-text">Need to <strong>lock the file</strong> until they acknowledge? <a href="/pricing">Get Solo — $12.99/mo →</a></div>
+    </div>
   </div>
 </section>
 
@@ -231,13 +290,47 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     </div>
     <div class="how-step">
       <div class="how-num">02</div>
-      <div class="how-title">Get your receipt</div>
-      <div class="how-body">A permanent SENT. receipt is generated — containing your file hash, timestamp, and cryptographic signature. You get a shareable link that works forever. No account required to verify.</div>
+      <div class="how-title">Get your receipt — or lock the file</div>
+      <div class="how-body">A permanent SENT. receipt is generated with hash, timestamp, and cryptographic signature. On Solo plan, the file itself can be locked behind an acknowledge click — the recipient cannot download it without sealing Layer 4 of the chain.</div>
     </div>
     <div class="how-step">
       <div class="how-num">03</div>
       <div class="how-title">Share it. Win disputes.</div>
       <div class="how-body">Send the receipt link with every deliverable. If a client claims you didn't deliver — show them the link. The timestamp is permanent. The proof is independent. The argument ends.</div>
+    </div>
+  </div>
+</section>
+
+<section class="gated">
+  <div class="gated-inner">
+    <div class="gated-badge"><span class="pulse"></span>New on Solo · Gated file delivery</div>
+    <h2 class="gated-hl">THE FILE IS <span class="green">LOCKED.</span><br>UNTIL THEY PROVE THEY GOT IT.</h2>
+    <p class="gated-sub">With gated delivery, the file itself is sealed inside the proof. Your client can't access it without clicking <strong>ACKNOWLEDGE & DOWNLOAD</strong> — and that click is permanently logged with their IP, timestamp, and cryptographic confirmation. <strong>You can't backdate a click.</strong></p>
+    <div class="gated-grid">
+      <div class="gated-feat">
+        <div class="gated-feat-icon">🔒</div>
+        <div class="gated-feat-title">File stays locked</div>
+        <div class="gated-feat-body">Encrypted in secure storage. The recipient must acknowledge receipt before they can download. No exceptions.</div>
+      </div>
+      <div class="gated-feat">
+        <div class="gated-feat-icon">⛓️</div>
+        <div class="gated-feat-title">The click is the proof</div>
+        <div class="gated-feat-body">Their acknowledge click becomes Layer 4 of the RAC chain — sealed with IP, timestamp, and confirmation hash. No dispute possible.</div>
+      </div>
+      <div class="gated-feat">
+        <div class="gated-feat-icon">🔥</div>
+        <div class="gated-feat-title">Auto-deletes after download</div>
+        <div class="gated-feat-body">The file is destroyed 30 minutes after confirmed download — or 7 days max if never opened. The receipt stays forever.</div>
+      </div>
+      <div class="gated-feat">
+        <div class="gated-feat-icon">📩</div>
+        <div class="gated-feat-title">You know the second they got it</div>
+        <div class="gated-feat-body">Acknowledgment email hits your inbox the moment they click. The proof was sealed before the click. Cryptography doesn't lie.</div>
+      </div>
+    </div>
+    <div class="gated-quote">
+      <div class="gated-quote-text">"The proof was created before the dispute. You can't backdate cryptography."</div>
+      <div class="gated-quote-attr">— What you tell them when they push back</div>
     </div>
   </div>
 </section>
@@ -256,7 +349,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       </div>
       <div class="dblock dblock-with">
         <div class="dblock-label">With SENT.</div>
-        <div class="dblock-text">You delivered the final files with a SENT. receipt attached. Client disputes delivery. You send the link. The timestamp shows exactly when the files existed. <strong>The dispute ends in 60 seconds.</strong></div>
+        <div class="dblock-text">You delivered the final files with a SENT. receipt attached. Client disputes delivery. You send the link. The timestamp shows exactly when the files existed — and on Solo, when they clicked acknowledge. <strong>The dispute ends in 60 seconds.</strong></div>
       </div>
     </div>
   </div>
@@ -279,6 +372,39 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       <div class="testi-quote">"Used SENT. to prove the contract terms at project start. Client tried to add three rounds of revisions for free. <strong>The timestamp killed the argument instantly.</strong>"</div>
       <div class="testi-author">Copywriter · 200+ completed projects</div>
       <div class="testi-amount">$1,800 scope protected</div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-banner">
+  <div class="pricing-inner">
+    <div class="ptier">
+      <div class="ptier-tag">// Pay as you go</div>
+      <div class="ptier-name">DAY PASS</div>
+      <div class="ptier-price">$0.99<span class="per">per proof</span></div>
+      <ul class="ptier-list">
+        <li>Permanent SENT. receipt</li>
+        <li>SHA-256 file fingerprint</li>
+        <li>Full 3-layer RAC chain</li>
+        <li>Shareable verify link</li>
+        <li class="muted">Gated file delivery</li>
+        <li class="muted">Unlimited proofs</li>
+      </ul>
+      <button class="ptier-cta outline" onclick="scrollToProof()">PROOF A FILE →</button>
+    </div>
+    <div class="ptier featured">
+      <div class="ptier-tag">// Recommended for freelancers</div>
+      <div class="ptier-name">SOLO</div>
+      <div class="ptier-price">$12.99<span class="per">per month</span></div>
+      <ul class="ptier-list">
+        <li>Everything in Day Pass</li>
+        <li><strong style="color:#fff">🔒 Gated file delivery</strong></li>
+        <li><strong style="color:#fff">Layer 4 RAC chain (acknowledge click)</strong></li>
+        <li>Auto-delete after download</li>
+        <li>Unlimited proofs every month</li>
+        <li>Full dashboard + history</li>
+      </ul>
+      <a href="/pricing" class="ptier-cta primary">GET SOLO — $12.99/MO →</a>
     </div>
   </div>
 </section>
@@ -336,6 +462,9 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 </div>
 
 <script>
+// Stripe publishable key (public — safe to include in frontend per Stripe docs)
+const STRIPE_PK = 'pk_live_51SqgalLxymsbUTEPQ4x1l73zBGPEYCfNAW22SB1KNebjrihrRjk29K7k3PEqeBqbGx2DbKFIPuGWbYqp0bxVRgfe00ThFFizIL';
+
 let currentFile=null,currentHash=null,currentTimestamp=null;
 const dz=document.getElementById('dropzone'),fi=document.getElementById('fileInput'),di=document.getElementById('dropIcon'),dm=document.getElementById('dropMain'),ds=document.getElementById('dropSub'),hp=document.getElementById('hashPreview'),pe=document.getElementById('proofError'),cb=document.getElementById('ctaBtn');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
@@ -361,7 +490,6 @@ async function handleFile(file){
     document.getElementById('hpStatus').textContent='READY TO SEAL ✓';
     di.textContent='✓';ds.textContent=fmt(file.size)+' · ready to seal';
     cb.disabled=false;cb.textContent='GET YOUR SENT. RECEIPT — $0.99';
-    // Pre-mount Stripe card element for faster checkout
     setTimeout(mountStripeCard, 500);
   }catch(e){
     pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your deliverable here';
@@ -371,15 +499,12 @@ async function handleFile(file){
 }
 async function initPayment(){
   if(!currentFile||!currentHash)return;
-  // Show file info in modal
   const info=document.getElementById('payFileInfo');
   if(info)info.textContent=currentFile.name+' · '+fmt(currentFile.size);
   document.getElementById('payModal').style.display='flex';
   mountStripeCard();
 }
 
-// Stripe publishable key (public — safe to include in frontend)
-const STRIPE_PK = process.env.STRIPE_PUBLISHABLE_KEY
 let stripeInstance = null;
 let cardElement = null;
 let stripeInitialized = false;
@@ -430,7 +555,6 @@ async function submitPayment() {
   document.getElementById('payError').textContent = '';
 
   try {
-    // Step 2: Call create-payment-intent per spec Section 2
     const res = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -452,7 +576,6 @@ async function submitPayment() {
     if (!clientSecret || !proofId) throw new Error('Payment initialization failed. Please try again.');
     if (!cardElement) throw new Error('Card element not ready. Please refresh and try again.');
 
-    // Step 4: Confirm payment with Stripe
     const { error: stripeError, paymentIntent } = await stripeInstance.confirmCardPayment(clientSecret, {
       payment_method: {
         card: cardElement,
@@ -464,11 +587,9 @@ async function submitPayment() {
       throw new Error(stripeError.message);
     }
 
-    // Step 5: Payment succeeded — show SEALING state
     payBtn.textContent = 'SEALING...';
     payBtn.disabled = true;
 
-    // Step 6: Poll GET /api/proof/:id every 1 second, timeout 15s
     let attempts = 0;
     const maxAttempts = 15;
     const poll = setInterval(async () => {
@@ -478,11 +599,9 @@ async function submitPayment() {
         const pd = await pr.json();
         if (pd && pd.proof && pd.proof.is_valid) {
           clearInterval(poll);
-          // Step 9: Redirect to receipt page
           window.location.href = '/receipt?id=' + proofId;
         } else if (attempts >= maxAttempts) {
           clearInterval(poll);
-          // Timeout — redirect anyway with pending flag
           window.location.href = '/receipt?id=' + proofId + '&pending=true';
         }
       } catch (e) {
@@ -506,7 +625,6 @@ function closePayModal() {
   cb.disabled = false;
   cb.textContent = 'GET YOUR SENT. RECEIPT — $0.99';
 }
-function genId(){const y=new Date().getFullYear(),h=n=>Math.random().toString(16).substring(2,2+n).toUpperCase();return`SENT-${y}-${h(6)}-${h(4)}-${h(4)}-${h(4)}`}
 function fmt(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB'}
 function trunc(s,n){return s.length>n?s.substring(0,n)+'...':s}
 function scrollToProof(){document.getElementById('proofBox').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>fi.click(),600)}
