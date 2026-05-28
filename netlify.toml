@@ -15,6 +15,22 @@
 package = "@netlify/plugin-functions-install-core"
 
 
+# ============================================================
+# SCHEDULED FUNCTIONS
+# ============================================================
+
+# File deletion runs every 5 minutes:
+# - deletes files 30 min after first download
+# - deletes files 7 days after upload if never downloaded
+# - deletes files when sender revokes
+[functions."delete-expired-files"]
+  schedule = "*/5 * * * *"
+
+
+# ============================================================
+# PAGE REDIRECTS
+# ============================================================
+
 [[redirects]]
 from = "/"
 to = "/index.html"
@@ -49,6 +65,26 @@ to = "/receipt.html"
 status = 200
 force = true
 
+
+# Verify endpoint — recipient email links land here.
+# Format: /verify/SENT-2026-XXX?confirm=true
+# verify.html reads the proof ID from window.location.pathname
+[[redirects]]
+from = "/verify/*"
+to = "/verify.html"
+status = 200
+
+
+[[redirects]]
+from = "/verify"
+to = "/verify.html"
+status = 200
+force = true
+
+
+# ============================================================
+# API REDIRECTS — EXISTING (DO NOT REMOVE)
+# ============================================================
 
 [[redirects]]
 from = "/api/create-payment-intent"
@@ -119,4 +155,26 @@ status = 200
 [[redirects]]
 from = "/api/confirm-receipt"
 to = "/.netlify/functions/confirm-receipt"
+status = 200
+
+
+# ============================================================
+# API REDIRECTS — NEW FOR FILE DELIVERY
+# ============================================================
+
+[[redirects]]
+from = "/api/finalize-proof"
+to = "/.netlify/functions/finalize-proof"
+status = 200
+
+
+[[redirects]]
+from = "/api/acknowledge-and-download"
+to = "/.netlify/functions/acknowledge-and-download"
+status = 200
+
+
+[[redirects]]
+from = "/api/revoke-file"
+to = "/.netlify/functions/revoke-file"
 status = 200
