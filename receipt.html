@@ -1,284 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SENT. Receipt</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Courier New', monospace;
-      background: #0a1628;
-      color: #00ff9d;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .card {
-      background: #0d1f3c;
-      border: 1px solid #1a3a5c;
-      border-radius: 4px;
-      padding: 40px;
-      width: 100%;
-      max-width: 560px;
-    }
-    .logo { font-size: 28px; letter-spacing: 6px; font-weight: bold; }
-    .subtitle { color: #7a8fa6; font-size: 11px; letter-spacing: 3px; margin-top: 4px; }
-    .divider { border: none; border-top: 1px solid #1a3a5c; margin: 24px 0; }
-    .banner {
-      padding: 12px 16px;
-      border-radius: 2px;
-      font-size: 12px;
-      letter-spacing: 2px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .banner-green { background: rgba(0,255,157,0.1); border: 1px solid #00ff9d; color: #00ff9d; }
-    .banner-amber { background: rgba(255,193,7,0.1); border: 1px solid #ffc107; color: #ffc107; }
-    .banner-red { background: rgba(255,82,82,0.1); border: 1px solid #ff5252; color: #ff5252; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #1a3a5c;
-      border-top-color: #00ff9d;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 30px auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .proof-table { width: 100%; font-size: 13px; }
-    .proof-table tr td:first-child { color: #7a8fa6; padding-right: 16px; padding-bottom: 10px; white-space: nowrap; font-size: 11px; letter-spacing: 1px; }
-    .proof-table tr td:last-child { color: #e0e0e0; word-break: break-all; padding-bottom: 10px; }
-    .proof-id { color: #00ff9d !important; font-size: 12px !important; }
-    .hash-val { font-size: 10px !important; color: #7a8fa6 !important; }
-    .btn {
-      display: inline-block;
-      padding: 12px 20px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      border-radius: 2px;
-      margin: 6px 4px 6px 0;
-    }
-    .btn-primary { background: #00ff9d; color: #0a1628; font-weight: bold; }
-    .btn-outline { background: transparent; color: #00ff9d; border: 1px solid #00ff9d; }
-    .btn-confirm { background: #00ff9d; color: #0a1628; font-weight: bold; width: 100%; text-align: center; margin: 16px 0 0; padding: 16px; font-size: 13px; }
-    .copy-feedback { font-size: 11px; color: #00ff9d; margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
-    .copy-feedback.show { opacity: 1; }
-    .nav-links { margin-top: 28px; display: flex; gap: 20px; flex-wrap: wrap; }
-    .nav-links a { color: #7a8fa6; text-decoration: none; font-size: 12px; letter-spacing: 1px; }
-    .nav-links a:hover { color: #00ff9d; }
-    .confirm-section { background: rgba(0,255,157,0.05); border: 1px solid #1a3a5c; border-radius: 2px; padding: 20px; margin-top: 20px; }
-    .confirm-section h3 { font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
-    .confirm-section p { color: #7a8fa6; font-size: 12px; line-height: 1.6; margin-bottom: 16px; }
-    .pending-title { text-align: center; font-size: 18px; letter-spacing: 4px; margin-bottom: 8px; }
-    .pending-sub { text-align: center; color: #7a8fa6; font-size: 12px; letter-spacing: 1px; }
-    .error-title { font-size: 16px; letter-spacing: 3px; color: #ff5252; margin-bottom: 12px; }
-    .error-sub { color: #7a8fa6; font-size: 13px; line-height: 1.6; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. Receipt</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Courier New',monospace;background:#0a1628;color:#00ff9d;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#0d1f3c;border:1px solid #1a3a5c;border-radius:4px;padding:40px;width:100%;max-width:560px}
+.logo{font-size:28px;letter-spacing:6px;font-weight:bold}
+.subtitle{color:#7a8fa6;font-size:11px;letter-spacing:3px;margin-top:4px}
+.divider{border:none;border-top:1px solid #1a3a5c;margin:24px 0}
+.banner{padding:12px 16px;border-radius:2px;font-size:12px;letter-spacing:2px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.banner-green{background:rgba(0,255,157,0.1);border:1px solid #00ff9d;color:#00ff9d}
+.banner-amber{background:rgba(255,193,7,0.1);border:1px solid #ffc107;color:#ffc107}
+.banner-red{background:rgba(255,82,82,0.1);border:1px solid #ff5252;color:#ff5252}
+.spinner{width:40px;height:40px;border:3px solid #1a3a5c;border-top-color:#00ff9d;border-radius:50%;animation:spin 1s linear infinite;margin:30px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proof-table{width:100%;font-size:13px}
+.proof-table tr td:first-child{color:#7a8fa6;padding-right:16px;padding-bottom:10px;white-space:nowrap;font-size:11px;letter-spacing:1px}
+.proof-table tr td:last-child{color:#e0e0e0;word-break:break-all;padding-bottom:10px}
+.proof-id{color:#00ff9d!important;font-size:12px!important}
+.hash-val{font-size:10px!important;color:#7a8fa6!important}
+.btn{display:inline-block;padding:12px 20px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:2px;text-decoration:none;cursor:pointer;border:none;border-radius:2px;margin:6px 4px 6px 0}
+.btn-primary{background:#00ff9d;color:#0a1628;font-weight:bold}
+.btn-outline{background:transparent;color:#00ff9d;border:1px solid #00ff9d}
+.btn-download{background:#00ff9d;color:#0a1628;font-weight:bold;width:100%;text-align:center;margin:16px 0 0;padding:18px;font-size:14px;letter-spacing:3px}
+.btn-download:disabled{background:#1a3a5c;color:#7a8fa6;cursor:not-allowed}
+.nav-links{margin-top:28px;display:flex;gap:20px;flex-wrap:wrap}
+.nav-links a{color:#7a8fa6;text-decoration:none;font-size:12px;letter-spacing:1px}
+.nav-links a:hover{color:#00ff9d}
+.acknowledge-section{background:rgba(0,255,157,0.05);border:1px solid #00ff9d;border-radius:4px;padding:24px;margin-top:24px}
+.acknowledge-section h3{font-size:14px;letter-spacing:3px;margin-bottom:14px;color:#00ff9d}
+.acknowledge-section p{color:#a0b0c5;font-size:13px;line-height:1.7;margin-bottom:12px}
+.warning-box{background:rgba(255,193,7,0.08);border:1px solid #ffc107;border-radius:3px;padding:10px 14px;margin-top:12px;font-size:11px;color:#ffc107;line-height:1.5;letter-spacing:0.5px}
+.pending-title{text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:8px}
+.pending-sub{text-align:center;color:#7a8fa6;font-size:12px;letter-spacing:1px}
+.error-title{font-size:16px;letter-spacing:3px;color:#ff5252;margin-bottom:12px}
+.error-sub{color:#7a8fa6;font-size:13px;line-height:1.6}
+.download-success{text-align:center;padding:24px;background:rgba(0,255,157,0.05);border:1px solid #00ff9d;border-radius:4px;margin-top:20px}
+.download-success h3{color:#00ff9d;font-size:14px;letter-spacing:3px;margin-bottom:10px}
+.download-success p{color:#a0b0c5;font-size:13px;line-height:1.6}
+.deletion-timer{font-size:11px;color:#ffc107;margin-top:10px;font-family:monospace}
+</style>
 </head>
 <body>
-  <div class="card">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-      <span style="color:#00ff9d;font-size:18px">●</span>
-      <span class="logo">SENT.</span>
-    </div>
-    <p class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY</p>
-    <hr class="divider">
-    <div id="receipt-content">
-      <div class="spinner"></div>
-      <p class="pending-title">SEALING YOUR PROOF...</p>
-      <p class="pending-sub">Payment confirmed. Sealing your proof on RAC chain...</p>
-    </div>
-    <div class="nav-links">
-      <a href="/">← Create New Proof</a>
-      <a href="/dashboard">My Dashboard</a>
-    </div>
+<div class="card">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+    <span style="color:#00ff9d;font-size:18px">●</span>
+    <span class="logo">SENT.</span>
   </div>
+  <p class="subtitle">SENT. RAC V1 — PROOF OF DELIVERY</p>
+  <hr class="divider">
+  <div id="receipt-content">
+    <div class="spinner"></div>
+    <p class="pending-title">LOADING PROOF...</p>
+    <p class="pending-sub">Fetching cryptographic receipt...</p>
+  </div>
+  <div class="nav-links">
+    <a href="/">← Create New Proof</a>
+    <a href="/dashboard">My Dashboard</a>
+  </div>
+</div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const proofId = params.get('id');
-    const sessionId = params.get('session_id');
-    const showConfirm = params.get('confirm') === '1';
+<script>
+const params = new URLSearchParams(window.location.search);
+const proofId = params.get('id');
+const sessionId = params.get('session_id');
+const showAck = params.get('confirm') === 'true' || params.get('confirm') === '1';
 
-    let pollCount = 0;
-    const MAX_POLLS = 40;
-    let pollTimer = null;
+let pollCount = 0;
+const MAX_POLLS = 40;
+let pollTimer = null;
 
-    function renderPending() {
-      document.getElementById('receipt-content').innerHTML = `
-        <div class="spinner"></div>
-        <p class="pending-title">SEALING YOUR PROOF...</p>
-        <p class="pending-sub">Payment confirmed. Sealing your proof on RAC chain...</p>
-      `;
+function renderError(msg) {
+  document.getElementById('receipt-content').innerHTML = `
+    <p class="error-title">ERROR</p>
+    <p class="error-sub">${msg || 'Proof not found.'}</p>
+  `;
+}
+
+function renderProof(proof) {
+  const id = proof.proof_id || proof.id || proofId;
+  const fileName = proof.file_name || 'N/A';
+  const fileSize = proof.file_size || 'N/A';
+  const fileHash = proof.file_hash || '';
+  const sealedAt = proof.sealed_at || proof.timestamp;
+  const displayDate = sealedAt ? new Date(sealedAt).toUTCString() : 'N/A';
+  const chainHash = proof.rac_chain_hash || '';
+  const recipientEmail = proof.recipient_email || '';
+  const projectName = proof.project_name || '';
+  const senderEmail = proof.user_email || '';
+  const isConfirmed = proof.recipient_confirmed || false;
+  const hasFile = !!proof.file_storage_path || (proof.file_delivery_enabled && !proof.file_deleted_at);
+  const fileDeleted = !!proof.file_deleted_at;
+  const fileExpired = proof.file_expires_at && new Date(proof.file_expires_at) < new Date() && !proof.first_download_at;
+  const fileRevoked = !!proof.revoked_at;
+
+  let statusBanner = '';
+  if (fileRevoked) {
+    statusBanner = `<div class="banner banner-red">⊘ FILE REVOKED BY SENDER</div>`;
+  } else if (fileDeleted && isConfirmed) {
+    statusBanner = `<div class="banner banner-green">✓ DELIVERED & ACKNOWLEDGED — FILE AUTO-DELETED</div>`;
+  } else if (isConfirmed) {
+    statusBanner = `<div class="banner banner-green">✓ DELIVERY ACKNOWLEDGED — LAYER 4 COMPLETE</div>`;
+  } else if (fileExpired) {
+    statusBanner = `<div class="banner banner-red">⊘ FILE EXPIRED (NOT DOWNLOADED WITHIN 7 DAYS)</div>`;
+  } else {
+    statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT</div>`;
+  }
+
+  // Acknowledge section — show if confirm=true in URL OR if this is a fresh file delivery
+  let ackSection = '';
+  if (showAck && !isConfirmed && !fileDeleted && !fileExpired && !fileRevoked) {
+    const ackButtonText = hasFile ? 'ACKNOWLEDGE & DOWNLOAD' : 'CONFIRM I RECEIVED THIS';
+    ackSection = `
+      <div class="acknowledge-section">
+        <h3>${hasFile ? 'CONFIRM RECEIPT TO DOWNLOAD' : 'CONFIRM RECEIPT'}</h3>
+        <p>By clicking below, you acknowledge receiving <strong style="color:#fff">${fileName}</strong> from <strong style="color:#fff">${senderEmail}</strong>.</p>
+        <p>This acknowledgment is permanent and cryptographically sealed. Your IP address and timestamp will be recorded as Layer 4 of the RAC chain.</p>
+        ${hasFile ? '<div class="warning-box">⏱ After download, this file auto-deletes in 30 minutes. The proof receipt remains permanent.</div>' : ''}
+        <button class="btn-download" id="ackBtn" onclick="acknowledgeAndDownload('${id}')">${ackButtonText} →</button>
+      </div>
+    `;
+  } else if (isConfirmed && hasFile && !fileDeleted) {
+    // Already confirmed but file still available — offer re-download
+    ackSection = `
+      <div class="acknowledge-section">
+        <h3>FILE STILL AVAILABLE</h3>
+        <p>You acknowledged this delivery on ${proof.recipient_confirmed_at ? new Date(proof.recipient_confirmed_at).toUTCString() : 'a previous date'}.</p>
+        <p>The file is still available until 30 minutes after first download (or 7 days from sealing).</p>
+        <button class="btn-download" onclick="acknowledgeAndDownload('${id}')">DOWNLOAD AGAIN →</button>
+      </div>
+    `;
+  }
+
+  document.getElementById('receipt-content').innerHTML = `
+    ${statusBanner}
+    <table class="proof-table">
+      <tr><td>PROOF ID</td><td class="proof-id">${id}</td></tr>
+      <tr><td>FILE</td><td>${fileName}</td></tr>
+      <tr><td>SIZE</td><td>${fileSize}</td></tr>
+      <tr><td>SEALED</td><td>${displayDate}</td></tr>
+      ${senderEmail ? `<tr><td>FROM</td><td>${senderEmail}</td></tr>` : ''}
+      ${recipientEmail ? `<tr><td>TO</td><td>${recipientEmail}</td></tr>` : ''}
+      ${projectName ? `<tr><td>PROJECT</td><td>${projectName}</td></tr>` : ''}
+      ${chainHash ? `<tr><td>RAC HASH</td><td class="hash-val">${chainHash}</td></tr>` : ''}
+      ${fileHash ? `<tr><td>FILE HASH</td><td class="hash-val">${fileHash}</td></tr>` : ''}
+      ${isConfirmed && proof.recipient_confirmed_at ? `<tr><td>CONFIRMED</td><td>${new Date(proof.recipient_confirmed_at).toUTCString()}</td></tr>` : ''}
+      ${proof.recipient_confirmation_hash ? `<tr><td>CONFIRM HASH</td><td class="hash-val">${proof.recipient_confirmation_hash}</td></tr>` : ''}
+      ${proof.download_count ? `<tr><td>DOWNLOADS</td><td>${proof.download_count}</td></tr>` : ''}
+      ${proof.file_deleted_at ? `<tr><td>FILE DELETED</td><td style="color:#ffc107">${new Date(proof.file_deleted_at).toUTCString()}</td></tr>` : ''}
+    </table>
+    <hr class="divider">
+    <div>
+      <button class="btn btn-outline" onclick="copyLink('https://vxsent.com/verify/${id}')">COPY VERIFY LINK</button>
+    </div>
+    ${ackSection}
+  `;
+}
+
+async function acknowledgeAndDownload(pid) {
+  const btn = document.getElementById('ackBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'PROCESSING...';
+  }
+
+  try {
+    const resp = await fetch('/api/acknowledge-and-download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proofId: pid })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      alert(data.error || 'Acknowledgment failed.');
+      if (btn) { btn.disabled = false; btn.textContent = 'TRY AGAIN'; }
+      return;
     }
 
-    function renderError(msg) {
-      document.getElementById('receipt-content').innerHTML = `
-        <p class="error-title">ERROR</p>
-        <p class="error-sub">${msg || 'Proof not found. Please check the URL or contact support.'}</p>
-      `;
+    // Trigger download if file URL provided
+    if (data.downloadUrl) {
+      const a = document.createElement('a');
+      a.href = data.downloadUrl;
+      a.download = data.fileName || 'download';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
-    function renderProof(proof) {
-      // Normalize field names — handle both API response formats
-      const id = proof.proof_id || proof.id || proofId;
-      const fileName = proof.file_name || proof.fileName || 'N/A';
-      const fileSize = proof.file_size || proof.fileSize || 'N/A';
-      const fileHash = proof.file_hash || proof.fileHash || '';
-      const sealedAt = proof.sealed_at || proof.sealedAt || proof.timestamp || proof.created_at;
-      const displayDate = sealedAt ? new Date(sealedAt).toUTCString() : 'N/A';
-      const chainHash = proof.rac_chain_hash || proof.chain_hash || proof.rac_signature || '';
-      const recipientEmail = proof.recipient_email || proof.recipientEmail || '';
-      const projectName = proof.project_name || proof.projectName || '';
-      const senderEmail = proof.sender_email || proof.user_email || proof.userEmail || '';
-      const isConfirmed = proof.recipient_confirmed || proof.recipientConfirmed || false;
-      const verifyUrl = `https://vxsent.com/verify/${id}`;
-      const receiptUrl = `https://vxsent.com/receipt?id=${id}`;
+    // Reload page to show updated state
+    setTimeout(() => {
+      window.location.href = `/receipt?id=${pid}`;
+    }, 1000);
 
-      let statusBanner = '';
-      if (isConfirmed) {
-        statusBanner = `<div class="banner banner-green">✓ DELIVERY CONFIRMED — LAYER 4 COMPLETE</div>`;
-      } else {
-        statusBanner = `<div class="banner banner-green">✓ PROOF SEALED — AWAITING RECIPIENT CONFIRMATION</div>`;
-      }
+  } catch(e) {
+    alert('Network error. Please try again.');
+    if (btn) { btn.disabled = false; btn.textContent = 'TRY AGAIN'; }
+  }
+}
 
-      const confirmSection = (!isConfirmed && recipientEmail && showConfirm) ? `
-        <div class="confirm-section">
-          <h3>CONFIRM RECEIPT</h3>
-          <p>By confirming, you acknowledge receiving the file <strong>${fileName}</strong> from <strong>${senderEmail}</strong>. This action is permanent and cryptographically recorded.</p>
-          <button class="btn btn-confirm" onclick="confirmReceipt('${id}')">CONFIRM I RECEIVED THIS →</button>
-        </div>
-      ` : '';
+function copyLink(url) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).catch(() => {});
+  }
+}
 
-      document.getElementById('receipt-content').innerHTML = `
-        ${statusBanner}
-        <table class="proof-table">
-          <tr><td>PROOF ID</td><td class="proof-id">${id}</td></tr>
-          <tr><td>FILE</td><td>${fileName}</td></tr>
-          <tr><td>SIZE</td><td>${fileSize}</td></tr>
-          <tr><td>SEALED</td><td>${displayDate}</td></tr>
-          ${senderEmail ? `<tr><td>FROM</td><td>${senderEmail}</td></tr>` : ''}
-          ${recipientEmail ? `<tr><td>TO</td><td>${recipientEmail}</td></tr>` : ''}
-          ${projectName ? `<tr><td>PROJECT</td><td>${projectName}</td></tr>` : ''}
-          ${chainHash ? `<tr><td>RAC HASH</td><td class="hash-val">${chainHash}</td></tr>` : ''}
-          ${fileHash ? `<tr><td>FILE HASH</td><td class="hash-val">${fileHash}</td></tr>` : ''}
-          ${isConfirmed && proof.recipient_confirmed_at ? `<tr><td>CONFIRMED</td><td>${new Date(proof.recipient_confirmed_at).toUTCString()}</td></tr>` : ''}
-        </table>
-        <hr class="divider">
-        <div>
-          <a class="btn btn-primary" href="${receiptUrl}">VIEW RECEIPT</a>
-          <button class="btn btn-outline" onclick="copyLink('${verifyUrl}')">COPY VERIFY LINK</button>
-          <span class="copy-feedback" id="copy-feedback">COPIED!</span>
-        </div>
-        ${confirmSection}
-      `;
+async function fetchProofById(pid) {
+  const resp = await fetch(`/api/proof/${pid}`);
+  if (resp.status === 404) return null;
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  return data.proof || data || null;
+}
 
-      setTimeout(() => {
-        if (navigator.clipboard && verifyUrl) {
-          navigator.clipboard.writeText(verifyUrl).catch(() => {});
-        }
-      }, 600);
+async function poll() {
+  pollCount++;
+  if (pollCount > MAX_POLLS) {
+    renderError('Proof is taking longer than expected. Please refresh in a few minutes.');
+    return;
+  }
+
+  try {
+    const proof = await fetchProofById(proofId);
+    if (!proof) {
+      pollTimer = setTimeout(poll, 3000);
+      return;
     }
 
-    function copyLink(url) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-          const fb = document.getElementById('copy-feedback');
-          if (fb) { fb.classList.add('show'); setTimeout(() => fb.classList.remove('show'), 2000); }
-        });
-      }
+    const isValid = proof.is_valid || false;
+    if (!isValid) {
+      pollTimer = setTimeout(poll, 3000);
+      return;
     }
 
-    async function confirmReceipt(pid) {
-      try {
-        const resp = await fetch('/api/confirm-receipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ proofId: pid })
-        });
-        const data = await resp.json();
-        if (data.success || data.confirmed) {
-          window.location.href = `/receipt?id=${pid}`;
-        } else {
-          alert(data.error || 'Confirmation failed. Please try again.');
-        }
-      } catch (err) {
-        alert('Network error. Please try again.');
-      }
-    }
+    renderProof(proof);
+  } catch(err) {
+    console.error('[receipt] Poll error:', err.message);
+    pollTimer = setTimeout(poll, 3000);
+  }
+}
 
-    async function fetchProofById(pid) {
-      const resp = await fetch(`/api/proof/${pid}`);
-      if (resp.status === 404) return null;
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      // Handle both { proof: {...} } and flat response formats
-      return data.proof || data || null;
-    }
-
-    async function fetchProofBySession(sid) {
-      const resp = await fetch(`/.netlify/functions/get-proof-by-session?session_id=${encodeURIComponent(sid)}`);
-      if (resp.status === 404) return null;
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      return data.proof || data || null;
-    }
-
-    async function poll() {
-      pollCount++;
-      if (pollCount > MAX_POLLS) {
-        renderError('Proof is taking longer than expected. Please refresh in a few minutes or contact support.');
-        return;
-      }
-
-      try {
-        let proof = null;
-
-        if (proofId) {
-          proof = await fetchProofById(proofId);
-        }
-
-        if (!proof && sessionId) {
-          proof = await fetchProofBySession(sessionId);
-        }
-
-        if (!proof) {
-          renderPending();
-          pollTimer = setTimeout(poll, 3000);
-          return;
-        }
-
-        // Check if sealed — handle both is_valid and status fields
-        const isValid = proof.is_valid || proof.isValid || proof.status === 'verified';
-
-        if (!isValid) {
-          // Still sealing — keep polling
-          pollTimer = setTimeout(poll, 3000);
-          return;
-        }
-
-        // Proof is ready — render it
-        renderProof(proof);
-
-      } catch (err) {
-        console.error('[receipt] Poll error:', err.message);
-        pollTimer = setTimeout(poll, 3000);
-      }
-    }
-
-    if (!proofId && !sessionId) {
-      renderError('No proof ID found in URL. Please check the link and try again.');
-    } else {
-      poll();
-    }
-  </script>
+if (!proofId) {
+  renderError('No proof ID found in URL.');
+} else {
+  poll();
+}
+</script>
 </body>
 </html>
