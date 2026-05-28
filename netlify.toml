@@ -33,7 +33,7 @@ package = "@netlify/plugin-functions-install-core"
 
 [[redirects]]
 from = "/"
-to = "/index.html"
+to = "/index_updated.html"
 status = 200
 force = true
 
