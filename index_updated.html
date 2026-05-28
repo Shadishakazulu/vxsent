@@ -266,7 +266,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <div class="dropzone" id="dropzone">
       <input type="file" id="fileInput" aria-label="Select file to seal">
       <div class="drop-icon" id="dropIcon">📁</div>
-      <div class="drop-main" id="dropMain">Drop your document here</div>
+      <div class="drop-main" id="dropMain">Drop your file or document here</div>
       <div class="drop-sub" id="dropSub">or click to browse · any file type · any size</div>
     </div>
     <div class="hash-preview" id="hashPreview">
@@ -442,7 +442,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   </div>
   <p class="final-sub">Every file you send without a SENT. receipt is a record you don't have.</p>
   <p class="final-powered">Powered by Veridex cryptographic infrastructure · EYEspAI</p>
-  <button class="final-btn" onclick="scrollToProof()">SEAL YOUR FIRST DOCUMENT — $0.99</button>
+  <button class="final-btn" onclick="scrollToProof()">SEAL YOUR FIRST FILE — $0.99</button>
   <div class="final-note">No account required · Receipt is permanent · Verify from any device</div>
 </section>
 
@@ -516,7 +516,7 @@ async function handleFile(file){
     cb.disabled=false;cb.textContent='GET YOUR SENT. RECEIPT — $0.99';
     setTimeout(mountStripeCard, 500);
   }catch(e){
-    pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your document here';
+    pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your file or document here';
     ds.textContent='or click to browse · any file type · any size';
     dz.classList.remove('has-file');hp.classList.remove('visible');currentFile=null;currentHash=null;
   }
