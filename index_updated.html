@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENT. — Prove You Delivered It | vxsent.com</title>
-<meta name="description" content="Clients lie about delivery. Timestamps don't. SENT. creates a permanent, cryptographic proof of every file you deliver — and now locks the file behind their acknowledgment. $0.99 per receipt. The argument ends.">
+<meta name="description" content="SENT. creates permanent, cryptographic proof of every document you deliver — and every acknowledgment you receive. Sealed the moment it's created. Impossible to backdate. Verified delivery for the documents that matter.">
 <meta property="og:title" content="SENT. — Prove You Delivered It">
-<meta property="og:description" content="Clients lie about delivery. Timestamps don't. $0.99 creates a permanent, cryptographic proof of every file you deliver.">
+<meta property="og:description" content="Permanent, cryptographic proof of delivery and acknowledgment for the documents that matter. Sealed the moment it's created. Impossible to backdate.">
 <meta property="og:url" content="https://vxsent.com">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -65,11 +65,8 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .hero-h1 .l1,.hero-h1 .l2{display:block;color:var(--ink)}
 .hero-h1 .l3{display:block;color:var(--green)}
 
-.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:24px;max-width:460px;opacity:0;animation:fu 0.5s 0.36s forwards}
+.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:36px;max-width:460px;opacity:0;animation:fu 0.5s 0.36s forwards}
 .hero-sub strong{color:var(--ink);font-weight:700}
-
-.hero-newbadge{display:inline-flex;align-items:center;gap:8px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green-dk);padding:6px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:24px;opacity:0;animation:fu 0.5s 0.42s forwards;font-weight:500}
-.hero-newbadge .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 
 .stat-row{display:flex;gap:36px;opacity:0;animation:fu 0.5s 0.48s forwards}
 .stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);line-height:1}
@@ -123,8 +120,8 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .how-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px}
 .how-body{font-size:14px;color:var(--ink-2);line-height:1.68}
 
-/* GATED DELIVERY (NEW) */
-.gated{border-top:1px solid var(--border);background:linear-gradient(180deg,var(--surface) 0%,var(--green-lt) 100%);padding:90px 48px;max-width:none;margin:0;text-align:center;position:relative;overflow:hidden}
+/* GATED DELIVERY */
+.gated{border-top:1px solid var(--border);background:linear-gradient(180deg,var(--surface) 0%,var(--green-lt) 100%);padding:90px 48px;margin:0;text-align:center;position:relative;overflow:hidden}
 .gated-inner{max-width:1100px;margin:0 auto}
 .gated-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--green-bd);color:var(--green-dk);padding:8px 16px;border-radius:50px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:28px;font-weight:500;box-shadow:var(--shadow-sm)}
 .gated-badge .pulse{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
@@ -141,7 +138,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .gated-quote-text{font-size:15px;color:var(--ink);line-height:1.7;font-style:italic;font-weight:500}
 .gated-quote-attr{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);margin-top:10px;font-style:normal}
 
-/* DISPUTE */
+/* CONTRAST */
 .dispute{border-top:1px solid var(--border);background:var(--surface);padding:64px 48px;max-width:1320px;margin:0 auto}
 .dispute-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
 .dispute-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,5vw,58px);line-height:0.92;letter-spacing:0.02em}
@@ -158,32 +155,41 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .dblock-text{font-size:14px;color:var(--ink-2);line-height:1.65}
 .dblock-text strong{color:var(--ink);font-weight:700}
 
-/* TESTIMONIALS */
-.testi{border-top:1px solid var(--border);background:var(--panel);padding:80px 48px;max-width:1320px;margin:0 auto}
-.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.testi-card{background:var(--surface);border:1px solid var(--border);padding:26px;border-radius:8px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
-.testi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green);border-radius:8px 8px 0 0}
-.testi-quote{font-size:14px;color:var(--ink-2);line-height:1.72;margin-bottom:18px;font-style:italic}
-.testi-quote strong{color:var(--ink);font-style:normal;font-weight:700}
-.testi-author{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
-.testi-amount{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green-dk);margin-top:6px}
+/* WHAT THE PROOF CONTAINS */
+.contains{border-top:1px solid var(--border);background:var(--panel);padding:80px 48px;max-width:1320px;margin:0 auto}
+.contains-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.contains-copy h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,4.5vw,52px);line-height:0.95;letter-spacing:0.02em;margin-bottom:18px;color:var(--ink)}
+.contains-copy p{font-size:15px;color:var(--ink-2);line-height:1.7;margin-bottom:14px}
+.contains-copy p strong{color:var(--ink);font-weight:700}
+.receipt-card{background:var(--surface);border:1.5px solid var(--border-md);border-radius:8px;padding:0;box-shadow:var(--shadow-md);overflow:hidden}
+.receipt-card-head{background:var(--green);color:#fff;padding:14px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.receipt-rows{padding:18px 22px}
+.receipt-row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.receipt-row:last-child{border-bottom:none}
+.receipt-row .rk{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.receipt-row .rv{color:var(--ink);text-align:right;word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:10px}
+.receipt-row .rv.green{color:var(--green-dk);font-weight:600}
 
-/* PRICING BANNER */
-.pricing-banner{border-top:1px solid var(--border);background:var(--ink);color:#fff;padding:60px 48px}
-.pricing-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+/* PRICING */
+.pricing-banner{border-top:1px solid var(--border);background:var(--ink);color:#fff;padding:80px 48px}
+.pricing-head{text-align:center;max-width:680px;margin:0 auto 44px}
+.pricing-head h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,5vw,56px);letter-spacing:0.03em;margin-bottom:14px}
+.pricing-head p{font-size:15px;color:rgba(255,255,255,0.7);line-height:1.6}
+.pricing-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
 .ptier{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:28px 26px}
 .ptier.featured{background:rgba(0,179,86,0.1);border-color:var(--green)}
 .ptier-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:8px;font-weight:500}
 .ptier.featured .ptier-tag{color:var(--green)}
 .ptier-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.06em;margin-bottom:4px}
 .ptier-price{font-family:'Bebas Neue',sans-serif;font-size:38px;color:#fff;line-height:1;margin-bottom:14px}
+.ptier-price.small{font-size:28px;padding:7px 0}
 .ptier-price .per{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:0.1em;text-transform:uppercase;margin-left:4px}
 .ptier-list{list-style:none;padding:0;margin:0 0 18px}
 .ptier-list li{font-size:13px;color:rgba(255,255,255,0.82);padding:5px 0 5px 22px;position:relative;line-height:1.55}
 .ptier-list li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700}
 .ptier-list li.muted{color:rgba(255,255,255,0.45)}
 .ptier-list li.muted::before{content:'·';color:rgba(255,255,255,0.3)}
-.ptier-cta{display:inline-block;padding:10px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;border-radius:4px;font-weight:600;transition:all 0.15s;cursor:pointer;border:none}
+.ptier-cta{display:inline-block;width:100%;text-align:center;padding:11px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;border-radius:4px;font-weight:600;transition:all 0.15s;cursor:pointer;border:none}
 .ptier-cta.primary{background:var(--green);color:#fff}
 .ptier-cta.primary:hover{background:var(--green-dk)}
 .ptier-cta.outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.35)}
@@ -212,10 +218,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   header{padding:0 20px}
   .hdr-nav .hdr-link:not(.hdr-signin){display:none}
   .hero{grid-template-columns:1fr;gap:36px;padding:80px 20px 48px}
-  .how,.dispute,.testi,.final,.gated,.pricing-banner{padding-left:20px;padding-right:20px}
-  .how-grid,.testi-grid{grid-template-columns:1fr;gap:10px}
+  .how,.dispute,.final,.gated,.pricing-banner,.contains{padding-left:20px;padding-right:20px}
+  .how-grid{grid-template-columns:1fr;gap:10px}
   .gated-grid{grid-template-columns:1fr 1fr;gap:10px}
-  .dispute-inner{grid-template-columns:1fr;gap:28px}
+  .dispute-inner,.contains-grid{grid-template-columns:1fr;gap:28px}
   .pricing-inner{grid-template-columns:1fr;gap:14px}
   footer{padding:20px;flex-direction:column;gap:10px;text-align:center}
 }
@@ -238,14 +244,13 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 
 <section class="hero">
   <div>
-    <div class="hero-kicker">Proof of delivery for freelancers</div>
+    <div class="hero-kicker">Verified proof of delivery & acknowledgment</div>
     <h1 class="hero-h1">
-      <span class="l1">CLIENTS LIE</span>
-      <span class="l2">ABOUT DELIVERY.</span>
-      <span class="l3">TIMESTAMPS DON'T.</span>
+      <span class="l1">PROVE</span>
+      <span class="l2">YOU</span>
+      <span class="l3">DELIVERED IT.</span>
     </h1>
-    <div class="hero-newbadge"><span class="pulse"></span>New · Gated file delivery on Solo</div>
-    <p class="hero-sub">SENT. creates a <strong>permanent, verifiable proof</strong> of every file you deliver. Solo plan now locks the file itself behind their click. If they say they never got it — <strong>the click is in the chain.</strong></p>
+    <p class="hero-sub">"I never got it" isn't a problem anymore. SENT. creates <strong>permanent, cryptographic proof</strong> of every document you deliver — and every acknowledgment you receive. <strong>Sealed the moment it's created. Impossible to backdate.</strong></p>
     <div class="stat-row">
       <div class="stat"><div class="stat-num">$0.99</div><div class="stat-label">Per proof</div></div>
       <div class="stat"><div class="stat-num">60s</div><div class="stat-label">To generate</div></div>
@@ -261,7 +266,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <div class="dropzone" id="dropzone">
       <input type="file" id="fileInput" aria-label="Select file to seal">
       <div class="drop-icon" id="dropIcon">📁</div>
-      <div class="drop-main" id="dropMain">Drop your deliverable here</div>
+      <div class="drop-main" id="dropMain">Drop your document here</div>
       <div class="drop-sub" id="dropSub">or click to browse · any file type · any size</div>
     </div>
     <div class="hash-preview" id="hashPreview">
@@ -272,10 +277,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     </div>
     <div class="proof-error" id="proofError">Unable to process file. Please try again.</div>
     <button class="proof-cta" id="ctaBtn" disabled onclick="initPayment()">GET YOUR SENT. RECEIPT — $0.99</button>
-    <div class="proof-cta-sub">Timestamped · SHA-256 sealed · Permanently verifiable</div>
+    <div class="proof-cta-sub">Timestamped · SHA-256 sealed · Independently verifiable</div>
     <div class="proof-upsell">
       <div class="proof-upsell-icon">🔒</div>
-      <div class="proof-upsell-text">Need to <strong>lock the file</strong> until they acknowledge? <a href="/pricing">Get Solo — $12.99/mo →</a></div>
+      <div class="proof-upsell-text">Need to <strong>lock the document</strong> until they acknowledge? <a href="/pricing">Get Solo — $12.99/mo →</a></div>
     </div>
   </div>
 </section>
@@ -285,52 +290,52 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   <div class="how-grid">
     <div class="how-step">
       <div class="how-num">01</div>
-      <div class="how-title">Upload your deliverable</div>
-      <div class="how-body">Drop any file — design, document, code, video. SENT. generates a cryptographic fingerprint of your exact file at that exact moment. Nothing leaves your hands unproven.</div>
+      <div class="how-title">Seal the document</div>
+      <div class="how-body">Drop any file — contract, statement, disclosure, deliverable. SENT. generates a cryptographic fingerprint of the exact document at the exact moment, before it ever leaves your hands.</div>
     </div>
     <div class="how-step">
       <div class="how-num">02</div>
-      <div class="how-title">Get your receipt — or lock the file</div>
-      <div class="how-body">A permanent SENT. receipt is generated with hash, timestamp, and cryptographic signature. On Solo plan, the file itself can be locked behind an acknowledge click — the recipient cannot download it without sealing Layer 4 of the chain.</div>
+      <div class="how-title">Send the link — or lock the file</div>
+      <div class="how-body">A permanent receipt is created with hash, timestamp, and cryptographic signature. On Solo and above, the document itself stays locked until the recipient acknowledges — and that acknowledgment is sealed into the record.</div>
     </div>
     <div class="how-step">
       <div class="how-num">03</div>
-      <div class="how-title">Share it. Win disputes.</div>
-      <div class="how-body">Send the receipt link with every deliverable. If a client claims you didn't deliver — show them the link. The timestamp is permanent. The proof is independent. The argument ends.</div>
+      <div class="how-title">The record is final</div>
+      <div class="how-body">Anyone can verify the receipt — no account required. The timestamp is permanent. The acknowledgment is independent. If delivery is ever questioned, the answer already exists.</div>
     </div>
   </div>
 </section>
 
 <section class="gated">
   <div class="gated-inner">
-    <div class="gated-badge"><span class="pulse"></span>New on Solo · Gated file delivery</div>
-    <h2 class="gated-hl">THE FILE IS <span class="green">LOCKED.</span><br>UNTIL THEY PROVE THEY GOT IT.</h2>
-    <p class="gated-sub">With gated delivery, the file itself is sealed inside the proof. Your client can't access it without clicking <strong>ACKNOWLEDGE & DOWNLOAD</strong> — and that click is permanently logged with their IP, timestamp, and cryptographic confirmation. <strong>You can't backdate a click.</strong></p>
+    <div class="gated-badge"><span class="pulse"></span>Gated delivery · Solo and Enterprise</div>
+    <h2 class="gated-hl">THE DOCUMENT STAYS <span class="green">LOCKED.</span><br>UNTIL RECEIPT IS CONFIRMED.</h2>
+    <p class="gated-sub">With gated delivery, the document is sealed inside the proof. The recipient confirms receipt before they can access it — and that confirmation is permanently recorded with their IP, timestamp, and a cryptographic acknowledgment. <strong>The proof is created before any dispute. A timestamp cannot be backdated.</strong></p>
     <div class="gated-grid">
       <div class="gated-feat">
         <div class="gated-feat-icon">🔒</div>
-        <div class="gated-feat-title">File stays locked</div>
-        <div class="gated-feat-body">Encrypted in secure storage. The recipient must acknowledge receipt before they can download. No exceptions.</div>
+        <div class="gated-feat-title">Document stays sealed</div>
+        <div class="gated-feat-body">Encrypted in secure storage. The recipient confirms receipt before access is granted — every time, without exception.</div>
       </div>
       <div class="gated-feat">
         <div class="gated-feat-icon">⛓️</div>
-        <div class="gated-feat-title">The click is the proof</div>
-        <div class="gated-feat-body">Their acknowledge click becomes Layer 4 of the RAC chain — sealed with IP, timestamp, and confirmation hash. No dispute possible.</div>
+        <div class="gated-feat-title">Confirmation is sealed</div>
+        <div class="gated-feat-body">The recipient's confirmation becomes a tamper-evident layer in the record — sealed with IP, timestamp, and cryptographic acknowledgment.</div>
       </div>
       <div class="gated-feat">
         <div class="gated-feat-icon">🔥</div>
-        <div class="gated-feat-title">Auto-deletes after download</div>
-        <div class="gated-feat-body">The file is destroyed 30 minutes after confirmed download — or 7 days max if never opened. The receipt stays forever.</div>
+        <div class="gated-feat-title">Auto-expires</div>
+        <div class="gated-feat-body">The document is removed shortly after confirmed access — or after a fixed window if never opened. The receipt remains permanent.</div>
       </div>
       <div class="gated-feat">
         <div class="gated-feat-icon">📩</div>
-        <div class="gated-feat-title">You know the second they got it</div>
-        <div class="gated-feat-body">Acknowledgment email hits your inbox the moment they click. The proof was sealed before the click. Cryptography doesn't lie.</div>
+        <div class="gated-feat-title">Instant confirmation</div>
+        <div class="gated-feat-body">You're notified the moment receipt is confirmed. The proof was sealed before the confirmation — the sequence is verifiable.</div>
       </div>
     </div>
     <div class="gated-quote">
       <div class="gated-quote-text">"The proof was created before the dispute. You can't backdate cryptography."</div>
-      <div class="gated-quote-attr">— What you tell them when they push back</div>
+      <div class="gated-quote-attr">— The principle the entire record rests on</div>
     </div>
   </div>
 </section>
@@ -338,45 +343,50 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 <section class="dispute">
   <div class="dispute-inner">
     <div class="dispute-hl">
-      <span class="red">WITHOUT SENT.</span><br>
-      <span class="dim">YOUR WORD</span><br>
-      <span class="green">AGAINST THEIRS.</span>
+      <span class="dim">DELIVERY</span><br>
+      <span class="dim">SHOULDN'T BE</span><br>
+      <span class="green">A QUESTION.</span>
     </div>
     <div>
       <div class="dblock dblock-without">
-        <div class="dblock-label">Without SENT.</div>
-        <div class="dblock-text">You delivered the final files. The client claims they never arrived. You have an email thread. They have a lawyer. <strong>You lose $4,000 and three weeks of your life.</strong></div>
+        <div class="dblock-label">The usual record</div>
+        <div class="dblock-text">A sent-folder timestamp. A read receipt that can be disabled. A portal log only one side controls. When delivery is questioned, the evidence is <strong>disputable, one-sided, or gone.</strong></div>
       </div>
       <div class="dblock dblock-with">
-        <div class="dblock-label">With SENT.</div>
-        <div class="dblock-text">You delivered the final files with a SENT. receipt attached. Client disputes delivery. You send the link. The timestamp shows exactly when the files existed — and on Solo, when they clicked acknowledge. <strong>The dispute ends in 60 seconds.</strong></div>
+        <div class="dblock-label">The SENT. record</div>
+        <div class="dblock-text">An independent, cryptographically sealed proof of exactly what was delivered, when, and when it was acknowledged — verifiable by either party or a third party. <strong>The question is answered before it's asked.</strong></div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="testi">
-  <div class="section-label">// What happens when proof exists</div>
-  <div class="testi-grid">
-    <div class="testi-card">
-      <div class="testi-quote">"Client claimed I never sent the brand guidelines. I had the SENT. receipt. Showed them the link. They paid within the hour. <strong>$3,200 I almost lost.</strong>"</div>
-      <div class="testi-author">Brand designer · 6 years freelancing</div>
-      <div class="testi-amount">$3,200 recovered</div>
+<section class="contains">
+  <div class="contains-grid">
+    <div class="contains-copy">
+      <h2>WHAT EVERY RECEIPT CONTAINS</h2>
+      <p>Each SENT. receipt is a self-contained, independently verifiable record. <strong>No account required to open it.</strong> No reliance on the sender's word, the recipient's word, or any single platform's logs.</p>
+      <p>The proof cannot be altered after it's sealed. The timestamp cannot be backdated. The acknowledgment, once confirmed, is permanent.</p>
     </div>
-    <div class="testi-card">
-      <div class="testi-quote">"I started using SENT. for every deliverable after a client disputed scope. Now I send the receipt link in every project email. <strong>Not a single dispute since.</strong>"</div>
-      <div class="testi-author">Web developer · Upwork Top Rated</div>
-      <div class="testi-amount">Zero disputes in 8 months</div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-quote">"Used SENT. to prove the contract terms at project start. Client tried to add three rounds of revisions for free. <strong>The timestamp killed the argument instantly.</strong>"</div>
-      <div class="testi-author">Copywriter · 200+ completed projects</div>
-      <div class="testi-amount">$1,800 scope protected</div>
+    <div class="receipt-card">
+      <div class="receipt-card-head">✓ Delivery Verified</div>
+      <div class="receipt-rows">
+        <div class="receipt-row"><span class="rk">Proof ID</span><span class="rv green">SENT-2026-VX9F3A-D72C</span></div>
+        <div class="receipt-row"><span class="rk">Document</span><span class="rv">agreement-final.pdf</span></div>
+        <div class="receipt-row"><span class="rk">Sealed</span><span class="rv">2026-05-02 · 11:44:02 UTC</span></div>
+        <div class="receipt-row"><span class="rk">File hash</span><span class="rv">SHA-256 ✓ verified</span></div>
+        <div class="receipt-row"><span class="rk">Signature</span><span class="rv">Ed25519 ✓ verified</span></div>
+        <div class="receipt-row"><span class="rk">Acknowledged</span><span class="rv green">2026-05-02 · 14:09 UTC</span></div>
+        <div class="receipt-row"><span class="rk">Status</span><span class="rv green">Delivery confirmed</span></div>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="pricing-banner">
+  <div class="pricing-head">
+    <h2>ONE RECORD. EVERY SCALE.</h2>
+    <p>From a single proof to organization-wide deployment — the same cryptographic guarantee, sized to how you work.</p>
+  </div>
   <div class="pricing-inner">
     <div class="ptier">
       <div class="ptier-tag">// Pay as you go</div>
@@ -385,40 +395,54 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       <ul class="ptier-list">
         <li>Permanent SENT. receipt</li>
         <li>SHA-256 file fingerprint</li>
-        <li>Full 3-layer RAC chain</li>
-        <li>Shareable verify link</li>
-        <li class="muted">Gated file delivery</li>
+        <li>Timestamp + signature</li>
+        <li>Independently verifiable link</li>
+        <li class="muted">Gated document delivery</li>
         <li class="muted">Unlimited proofs</li>
       </ul>
-      <button class="ptier-cta outline" onclick="scrollToProof()">PROOF A FILE →</button>
+      <button class="ptier-cta outline" onclick="scrollToProof()">SEAL A DOCUMENT →</button>
     </div>
     <div class="ptier featured">
-      <div class="ptier-tag">// Recommended for freelancers</div>
+      <div class="ptier-tag">// For professionals</div>
       <div class="ptier-name">SOLO</div>
       <div class="ptier-price">$12.99<span class="per">per month</span></div>
       <ul class="ptier-list">
         <li>Everything in Day Pass</li>
-        <li><strong style="color:#fff">🔒 Gated file delivery</strong></li>
-        <li><strong style="color:#fff">Layer 4 RAC chain (acknowledge click)</strong></li>
-        <li>Auto-delete after download</li>
+        <li><strong style="color:#fff">🔒 Gated document delivery</strong></li>
+        <li><strong style="color:#fff">Sealed acknowledgment record</strong></li>
+        <li>Auto-expiring file access</li>
         <li>Unlimited proofs every month</li>
         <li>Full dashboard + history</li>
       </ul>
       <a href="/pricing" class="ptier-cta primary">GET SOLO — $12.99/MO →</a>
+    </div>
+    <div class="ptier">
+      <div class="ptier-tag">// For institutions</div>
+      <div class="ptier-name">ENTERPRISE</div>
+      <div class="ptier-price small">Let's talk</div>
+      <ul class="ptier-list">
+        <li>Everything in Solo</li>
+        <li>Organization-wide deployment</li>
+        <li>SSO + admin controls</li>
+        <li>Audit logging + retention policy</li>
+        <li>Compliance & security review support</li>
+        <li>Dedicated onboarding</li>
+      </ul>
+      <a href="mailto:shadi@eyespai.com?subject=SENT.%20Enterprise%20Inquiry" class="ptier-cta outline">CONTACT SALES →</a>
     </div>
   </div>
 </section>
 
 <section class="final">
   <div class="final-hl">
-    <span class="dim">THE PROOF</span><br>
-    COSTS <span class="green">$0.99.</span><br>
-    <span class="dim">THE DISPUTE</span><br>
-    COSTS EVERYTHING ELSE.
+    <span class="dim">PROVE IT</span><br>
+    <span class="green">ONCE.</span><br>
+    <span class="dim">SETTLE IT</span><br>
+    FOREVER.
   </div>
-  <p class="final-sub">Every deliverable you send without a SENT. receipt is evidence you don't have.</p>
+  <p class="final-sub">Every document you send without a SENT. receipt is a record you don't have.</p>
   <p class="final-powered">Powered by Veridex cryptographic infrastructure · EYEspAI</p>
-  <button class="final-btn" onclick="scrollToProof()">SEND YOUR FIRST PROOF — $0.99</button>
+  <button class="final-btn" onclick="scrollToProof()">SEAL YOUR FIRST DOCUMENT — $0.99</button>
   <div class="final-note">No account required · Receipt is permanent · Verify from any device</div>
 </section>
 
@@ -442,11 +466,11 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Your email (for receipt)</label>
     <input id="payEmail" type="email" placeholder="you@example.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
-    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Client email <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — strengthens proof)</span></label>
-    <input id="payRecipientEmail" type="email" placeholder="client@company.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Recipient email <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — strengthens proof)</span></label>
+    <input id="payRecipientEmail" type="email" placeholder="recipient@company.com" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
-    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Project name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
-    <input id="payProject" type="text" placeholder="e.g. Brand Guidelines Q2" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Reference name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
+    <input id="payProject" type="text" placeholder="e.g. Q2 Agreement" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
     <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
@@ -456,7 +480,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <button id="payBtn" onclick="submitPayment()" style="width:100%;padding:15px;background:#00b356;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s">PAY $0.99 — SEAL PROOF</button>
 
     <div style="margin-top:12px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#9ca3af">
-      🔒 Secured by Stripe · RAC chain sealed on payment
+      🔒 Secured by Stripe · Record sealed on payment
     </div>
   </div>
 </div>
@@ -492,7 +516,7 @@ async function handleFile(file){
     cb.disabled=false;cb.textContent='GET YOUR SENT. RECEIPT — $0.99';
     setTimeout(mountStripeCard, 500);
   }catch(e){
-    pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your deliverable here';
+    pe.classList.add('visible');di.textContent='📁';dm.textContent='Drop your document here';
     ds.textContent='or click to browse · any file type · any size';
     dz.classList.remove('has-file');hp.classList.remove('visible');currentFile=null;currentHash=null;
   }
@@ -541,7 +565,7 @@ async function submitPayment() {
     return;
   }
   if (recipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
-    document.getElementById('payError').textContent = 'Please enter a valid client email address.';
+    document.getElementById('payError').textContent = 'Please enter a valid recipient email address.';
     return;
   }
   if (!cardElement) {
