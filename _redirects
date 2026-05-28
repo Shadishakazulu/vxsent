@@ -1,11 +1,6 @@
 # SENT. — vxsent.com Netlify Redirects
-# Page routes — clean URLs → .html files
-/                       /index_updated.html     200!
-/dashboard              /dashboard.html         200!
-/receipt                /receipt.html           200!
-/pricing                /pricing.html           200!
-/login                  /login.html             200!
-/verify/:id             /receipt?id=:id         301
+# NOTE: Page and verify routes are handled in netlify.toml.
+# This file kept for any rules not in netlify.toml.
 
 # API routes → Netlify Functions
 /api/create-payment-intent      /.netlify/functions/create-payment-intent       200
@@ -21,5 +16,7 @@
 /api/auth/logout                /.netlify/functions/auth-logout                 200
 /api/confirm-receipt            /.netlify/functions/confirm-receipt             200
 /api/cancel-subscription        /.netlify/functions/cancel-subscription         200
+/api/get-proof-by-session       /.netlify/functions/get-proof-by-session        200
 
-/api/get-proof-by-session   /.netlify/functions/get-proof-by-session    200
+# Page routes are now handled by netlify.toml
+# /verify/:id route is now handled by netlify.toml + verify.html (do NOT add /verify rules here)
