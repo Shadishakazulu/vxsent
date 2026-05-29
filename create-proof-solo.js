@@ -75,7 +75,7 @@ export const handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) }; }
 
-  const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile } = body;
+  const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile, deliveryMessage } = body;
 
   // Validation
   if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid file hash' }) };
@@ -110,6 +110,7 @@ export const handler = async (event) => {
       user_email: user.email,
       recipient_email: recipientEmail,
       project_name: projectName || null,
+      delivery_message: (deliveryMessage || '').slice(0, 2000) || null,
       rac_enabled: true,
       rac_level: 3,
       is_valid: !includeFile, // If file included, mark valid only after upload finalize
@@ -130,7 +131,7 @@ export const handler = async (event) => {
       // Call finalize logic inline by importing from finalize-proof
       const { finalizeProof } = await import('./_proof-finalize-helper.js').catch(() => ({ finalizeProof: null }));
       if (finalizeProof) {
-        await finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp });
+        await finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp, deliveryMessage: (deliveryMessage || '').slice(0, 2000) });
       } else {
         // Fallback: send emails directly
         await sendEmails({ user, recipientEmail, proofId, fileName, fileSize, timestamp });
