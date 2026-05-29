@@ -221,6 +221,9 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
     <label class="solo-label" for="soloProject">Project name (optional)</label>
     <input class="solo-input" id="soloProject" type="text" placeholder="e.g. Brand Guidelines Q2">
 
+    <label class="solo-label" for="soloMessage">Message to recipient (optional · sealed into the proof)</label>
+    <textarea class="solo-input" id="soloMessage" rows="3" maxlength="2000" placeholder="e.g. Final version of the contract we discussed — no further revisions included." style="resize:vertical;min-height:60px;font-family:'DM Sans',sans-serif"></textarea>
+
     <div class="upload-progress" id="uploadProgress">
       <div class="upload-progress-label">Uploading file...</div>
       <div class="upload-progress-bar"><div class="upload-progress-fill" id="uploadFill"></div></div>
@@ -341,6 +344,7 @@ function resetSoloModal() {
   document.getElementById('soloHashPreview').className = 'solo-hash-preview';
   document.getElementById('soloRecipient').value = '';
   document.getElementById('soloProject').value = '';
+  document.getElementById('soloMessage').value = '';
   document.getElementById('soloError').textContent = '';
   document.getElementById('soloSealBtn').disabled = true;
   document.getElementById('soloSealBtn').textContent = 'SEAL NOW';
@@ -401,6 +405,7 @@ async function submitSoloProof() {
   if (!soloFile || !soloHash) return;
   const recipientEmail = document.getElementById('soloRecipient').value.trim();
   const projectName = document.getElementById('soloProject').value.trim();
+  const deliveryMessage = document.getElementById('soloMessage').value.trim();
   const includeFile = document.getElementById('includeFileToggle').checked;
   const btn = document.getElementById('soloSealBtn');
   const errEl = document.getElementById('soloError');
@@ -429,6 +434,7 @@ async function submitSoloProof() {
         timestamp: soloTimestamp,
         recipientEmail,
         projectName: projectName || '',
+        deliveryMessage: deliveryMessage || '',
         includeFile
       })
     });
