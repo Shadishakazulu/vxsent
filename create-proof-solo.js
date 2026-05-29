@@ -75,6 +75,8 @@ export const handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) }; }
 
+  console.log('[DEBUG] deliveryMessage:', JSON.stringify(body.deliveryMessage), '| keys:', Object.keys(body).join(','));
+
   const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile, deliveryMessage } = body;
 
   // Validation
