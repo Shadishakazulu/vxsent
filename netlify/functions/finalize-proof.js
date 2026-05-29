@@ -43,17 +43,29 @@ async function verifySession(event) {
   return user2 || null;
 }
 
-function buildRACChainHash({ proofId, senderEmail, recipientEmail, fileName, fileHash, timestamp }) {
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// deliveryMessage folded into scope so it is tamper-evident. Must match
+// _proof-finalize-helper.js buildRACChainHash exactly.
+function buildRACChainHash({ proofId, senderEmail, recipientEmail, fileName, fileHash, timestamp, deliveryMessage }) {
   const identityHash = createHash('sha256').update(senderEmail + proofId).digest('hex');
-  const scopeHash = createHash('sha256').update(`${recipientEmail || ''}:${fileName}:${fileHash}`).digest('hex');
+  const scopeHash = createHash('sha256').update(`${recipientEmail || ''}:${fileName}:${fileHash}:${deliveryMessage || ''}`).digest('hex');
   const chainHash = createHash('sha256').update(`${identityHash}:${scopeHash}:solo_plan:${timestamp}`).digest('hex');
   return chainHash;
 }
 
-async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt, recipientEmail, chainHash, hasFile }) {
+async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt, recipientEmail, chainHash, hasFile, deliveryMessage }) {
   const resendKey = process.env.RESEND_API_KEY;
   const baseUrl = process.env.URL || 'https://vxsent.com';
   if (!resendKey) return;
+
+  const msgBlock = deliveryMessage ? `
+    <div style="background:#f0f2f5;border:1px solid #e1e4e8;border-radius:4px;padding:12px 16px;margin:16px 0">
+      <div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Sealed message</div>
+      <div style="font-size:13px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div>
+    </div>` : '';
 
   const fileBlock = hasFile ? `
     <div style="background:rgba(0,179,86,0.06);border:1px solid rgba(0,179,86,0.2);border-radius:4px;padding:12px 16px;margin:16px 0">
@@ -74,6 +86,7 @@ async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt,
         <div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px">
           <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#111318;margin-bottom:8px">${hasFile ? 'YOUR FILE IS LOCKED.' : 'THIS FILE WAS DELIVERED.'}</h2>
           <p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">${hasFile ? `Sealed via your Solo plan. ${recipientEmail} must acknowledge receipt before they can download.` : 'Sealed via your Solo plan.'}</p>
+          ${msgBlock}
           ${fileBlock}
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:110px">Proof ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${proofId}</td></tr>
@@ -89,16 +102,17 @@ async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt,
   });
 }
 
-async function sendRecipientNotification({ recipientEmail, senderEmail, proofId, fileName, sealedAt, hasFile }) {
+async function sendRecipientNotification({ recipientEmail, senderEmail, proofId, fileName, sealedAt, hasFile, deliveryMessage }) {
   const resendKey = process.env.RESEND_API_KEY;
   const baseUrl = process.env.URL || 'https://vxsent.com';
   if (!resendKey) return;
 
   const cta = hasFile ? 'ACKNOWLEDGE & DOWNLOAD' : 'CONFIRM I RECEIVED THIS';
   const subject = hasFile ? `${senderEmail} sent you a file — acknowledge to download` : `You have a verified delivery — ${fileName}`;
-  const intro = hasFile 
+  const intro = hasFile
     ? `<strong>${senderEmail}</strong> has sent you a file. To download it, you'll need to acknowledge receipt. This acknowledgment is cryptographically sealed.`
     : `<strong>${senderEmail}</strong> has sent you a file with a cryptographic proof of delivery.`;
+  const msgBlock = deliveryMessage ? `<div style="background:#f0f2f5;border-left:3px solid #00b356;border-radius:4px;padding:12px 16px;margin-bottom:20px"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Message from ${senderEmail}</div><div style="font-size:14px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : '';
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -111,6 +125,7 @@ async function sendRecipientNotification({ recipientEmail, senderEmail, proofId,
         <div style="background:#fff;border:1px solid #e1e4e8;border-radius:8px;padding:32px;border-top:3px solid #00b356">
           <h2 style="font-size:20px;color:#111318;margin-bottom:12px">${hasFile ? 'You have a file delivery.' : 'You have a verified delivery.'}</h2>
           <p style="font-size:14px;color:#374151;line-height:1.65;margin-bottom:24px">${intro}</p>
+          ${msgBlock}
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:100px">File</td><td style="padding:10px 0;font-size:13px;color:#111318">${fileName}</td></tr>
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Proof ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${proofId}</td></tr>
@@ -150,7 +165,6 @@ export const handler = async (event) => {
   try {
     const supabase = getSupabase();
 
-    // Get the pending proof
     const { data: proof, error: fetchError } = await supabase
       .from('proofs')
       .select('*')
@@ -163,7 +177,6 @@ export const handler = async (event) => {
     }
 
     if (!uploadSuccess) {
-      // Upload failed — clean up
       if (proof.file_storage_path) {
         await supabase.storage.from('proof-files').remove([proof.file_storage_path]);
       }
@@ -171,7 +184,6 @@ export const handler = async (event) => {
       return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Upload failed — proof cancelled' }) };
     }
 
-    // Verify file actually exists in storage
     if (proof.file_storage_path) {
       const { data: fileCheck } = await supabase.storage
         .from('proof-files')
@@ -181,20 +193,18 @@ export const handler = async (event) => {
       }
     }
 
-    // Compute RAC chain hash
     const chainHash = buildRACChainHash({
       proofId,
       senderEmail: user.email,
       recipientEmail: proof.recipient_email,
       fileName: proof.file_name,
       fileHash: proof.file_hash,
-      timestamp: proof.sealed_at
+      timestamp: proof.sealed_at,
+      deliveryMessage: proof.delivery_message
     });
 
-    // Generate Ed25519 signature (mock for now — real Veridex integration TBD)
     const veridexSignature = `mock_ed25519_${randomBytes(16).toString('hex')}`;
 
-    // Finalize proof
     const { error: updateError } = await supabase
       .from('proofs')
       .update({
@@ -211,7 +221,6 @@ export const handler = async (event) => {
       throw new Error('Failed to finalize proof');
     }
 
-    // Send emails
     await sendSenderReceipt({
       email: user.email,
       proofId,
@@ -220,7 +229,8 @@ export const handler = async (event) => {
       sealedAt: proof.sealed_at,
       recipientEmail: proof.recipient_email,
       chainHash,
-      hasFile: !!proof.file_storage_path
+      hasFile: !!proof.file_storage_path,
+      deliveryMessage: proof.delivery_message
     });
 
     await sendRecipientNotification({
@@ -229,7 +239,8 @@ export const handler = async (event) => {
       proofId,
       fileName: proof.file_name,
       sealedAt: proof.sealed_at,
-      hasFile: !!proof.file_storage_path
+      hasFile: !!proof.file_storage_path,
+      deliveryMessage: proof.delivery_message
     });
 
     const baseUrl = process.env.URL || 'https://vxsent.com';
