@@ -252,9 +252,31 @@ async function loadDashboard() {
     currentUserPlan = sess.plan;
     currentUserEmail = sess.email;
     document.getElementById('tbUser').textContent = sess.email;
-    document.getElementById('tbPlan').textContent =
-      sess.plan === 'solo' ? 'Solo · $12.99/mo' :
-      sess.plan === 'none' ? 'Day Pass' : sess.plan;
+
+    // Determine plan label. A user with plan='solo' and a future plan_expires_at
+    // is on Solo (whether paid or on a promo trial). Show trial state + days left
+    // when we can tell it's time-limited.
+    const tbPlan = document.getElementById('tbPlan');
+    const now = Date.now();
+    const expiresAt = sess.plan_expires_at ? new Date(sess.plan_expires_at).getTime() : null;
+    const soloActive = sess.plan === 'solo' && (!expiresAt || expiresAt > now);
+
+    if (soloActive) {
+      if (expiresAt) {
+        const daysLeft = Math.max(0, Math.ceil((expiresAt - now) / (24 * 60 * 60 * 1000)));
+        // Heuristic: a trial is a short, fixed window. Paid Solo renews monthly (~28-31 days out).
+        // If 14 days or fewer remain, treat/label as trial so the user sees the clock.
+        tbPlan.textContent = daysLeft <= 14
+          ? `Solo · Trial · ${daysLeft}d left`
+          : 'Solo · $12.99/mo';
+      } else {
+        tbPlan.textContent = 'Solo · $12.99/mo';
+      }
+    } else if (sess.plan === 'solo' && expiresAt && expiresAt <= now) {
+      tbPlan.textContent = 'Solo · Expired';
+    } else {
+      tbPlan.textContent = 'No active plan';
+    }
     const proofsRes = await fetch('/api/proofs');
     if (proofsRes.ok) {
       const data = await proofsRes.json();
