@@ -18,17 +18,29 @@ function getSupabase() {
   );
 }
 
-function buildRACChainHash({ proofId, senderEmail, recipientEmail, fileName, fileHash, timestamp }) {
+function buildRACChainHash({ proofId, senderEmail, recipientEmail, fileName, fileHash, timestamp, deliveryMessage }) {
   const identityHash = createHash('sha256').update(senderEmail + proofId).digest('hex');
-  const scopeHash = createHash('sha256').update(`${recipientEmail || ''}:${fileName}:${fileHash}`).digest('hex');
+  // deliveryMessage is folded into the scope so it is tamper-evident: altering the
+  // message after sealing changes the hash and breaks verification.
+  const scopeHash = createHash('sha256').update(`${recipientEmail || ''}:${fileName}:${fileHash}:${deliveryMessage || ''}`).digest('hex');
   const chainHash = createHash('sha256').update(`${identityHash}:${scopeHash}:solo_plan:${timestamp}`).digest('hex');
   return chainHash;
 }
 
-async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt, recipientEmail, hasFile }) {
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt, recipientEmail, hasFile, deliveryMessage }) {
   const resendKey = process.env.RESEND_API_KEY;
   const baseUrl = process.env.URL || 'https://vxsent.com';
   if (!resendKey) return;
+
+  const msgBlock = deliveryMessage ? `
+    <div style="background:#f0f2f5;border:1px solid #e1e4e8;border-radius:4px;padding:12px 16px;margin:16px 0">
+      <div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Sealed message</div>
+      <div style="font-size:13px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div>
+    </div>` : '';
 
   const fileBlock = hasFile ? `
     <div style="background:rgba(0,179,86,0.06);border:1px solid rgba(0,179,86,0.2);border-radius:4px;padding:12px 16px;margin:16px 0">
@@ -49,6 +61,7 @@ async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt,
         <div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px">
           <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#111318;margin-bottom:8px">${hasFile ? 'YOUR FILE IS LOCKED.' : 'THIS FILE WAS DELIVERED.'}</h2>
           <p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">${hasFile ? `Sealed via your Solo plan. ${recipientEmail} must acknowledge receipt before they can download.` : 'Sealed via your Solo plan.'}</p>
+          ${msgBlock}
           ${fileBlock}
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:110px">Proof ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${proofId}</td></tr>
@@ -64,7 +77,7 @@ async function sendSenderReceipt({ email, proofId, fileName, fileSize, sealedAt,
   });
 }
 
-async function sendRecipientNotification({ recipientEmail, senderEmail, proofId, fileName, sealedAt, hasFile }) {
+async function sendRecipientNotification({ recipientEmail, senderEmail, proofId, fileName, sealedAt, hasFile, deliveryMessage }) {
   const resendKey = process.env.RESEND_API_KEY;
   const baseUrl = process.env.URL || 'https://vxsent.com';
   if (!resendKey) return;
@@ -74,6 +87,7 @@ async function sendRecipientNotification({ recipientEmail, senderEmail, proofId,
   const intro = hasFile
     ? `<strong>${senderEmail}</strong> has sent you a file. To download it, you'll need to acknowledge receipt. This acknowledgment is cryptographically sealed.`
     : `<strong>${senderEmail}</strong> has sent you a file with a cryptographic proof of delivery.`;
+  const msgBlock = deliveryMessage ? `<div style="background:#f0f2f5;border-left:3px solid #00b356;border-radius:4px;padding:12px 16px;margin-bottom:20px"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Message from ${senderEmail}</div><div style="font-size:14px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : '';
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -86,6 +100,7 @@ async function sendRecipientNotification({ recipientEmail, senderEmail, proofId,
         <div style="background:#fff;border:1px solid #e1e4e8;border-radius:8px;padding:32px;border-top:3px solid #00b356">
           <h2 style="font-size:20px;color:#111318;margin-bottom:12px">${hasFile ? 'You have a file delivery.' : 'You have a verified delivery.'}</h2>
           <p style="font-size:14px;color:#374151;line-height:1.65;margin-bottom:24px">${intro}</p>
+          ${msgBlock}
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:100px">File</td><td style="padding:10px 0;font-size:13px;color:#111318">${fileName}</td></tr>
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Proof ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${proofId}</td></tr>
@@ -116,7 +131,7 @@ async function sendRecipientNotification({ recipientEmail, senderEmail, proofId,
  * @param {boolean} args.hasFile - true if file delivery enabled
  * @returns {object} { chainHash, veridexSignature }
  */
-export async function finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp, hasFile = false }) {
+export async function finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp, hasFile = false, deliveryMessage = '' }) {
   const supabase = getSupabase();
 
   const chainHash = buildRACChainHash({
@@ -125,7 +140,8 @@ export async function finalizeProof({ proofId, user, recipientEmail, fileName, f
     recipientEmail,
     fileName,
     fileHash,
-    timestamp
+    timestamp,
+    deliveryMessage
   });
 
   const veridexSignature = `mock_ed25519_${randomBytes(16).toString('hex')}`;
@@ -159,7 +175,8 @@ export async function finalizeProof({ proofId, user, recipientEmail, fileName, f
       fileSize,
       sealedAt: timestamp,
       recipientEmail,
-      hasFile
+      hasFile,
+      deliveryMessage
     });
     await sendRecipientNotification({
       recipientEmail,
@@ -167,7 +184,8 @@ export async function finalizeProof({ proofId, user, recipientEmail, fileName, f
       proofId,
       fileName,
       sealedAt: timestamp,
-      hasFile
+      hasFile,
+      deliveryMessage
     });
   } catch (emailErr) {
     console.error('[_proof-finalize-helper] Email send failed (non-fatal):', emailErr.message);
