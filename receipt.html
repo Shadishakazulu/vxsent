@@ -80,6 +80,10 @@ function renderError(msg) {
   `;
 }
 
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
 function renderProof(proof) {
   const id = proof.proof_id || proof.id || proofId;
   const fileName = proof.file_name || 'N/A';
@@ -90,6 +94,7 @@ function renderProof(proof) {
   const chainHash = proof.rac_chain_hash || '';
   const recipientEmail = proof.recipient_email || '';
   const projectName = proof.project_name || '';
+  const deliveryMessage = proof.delivery_message || '';
   const senderEmail = proof.user_email || '';
   const isConfirmed = proof.recipient_confirmed || false;
   const hasFile = !!proof.file_storage_path || (proof.file_delivery_enabled && !proof.file_deleted_at);
@@ -137,6 +142,7 @@ function renderProof(proof) {
 
   document.getElementById('receipt-content').innerHTML = `
     ${statusBanner}
+    ${deliveryMessage ? `<div style="background:rgba(0,255,157,0.05);border-left:3px solid #00ff9d;border-radius:3px;padding:14px 16px;margin-bottom:20px"><div style="color:#7a8fa6;font-size:10px;letter-spacing:2px;margin-bottom:6px">SEALED MESSAGE</div><div style="color:#e0e0e0;font-size:13px;line-height:1.6;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : ''}
     <table class="proof-table">
       <tr><td>PROOF ID</td><td class="proof-id">${id}</td></tr>
       <tr><td>FILE</td><td>${fileName}</td></tr>
