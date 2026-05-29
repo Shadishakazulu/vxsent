@@ -75,7 +75,7 @@ export const handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) }; }
 
-  const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile } = body;
+  const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile, deliveryMessage } = body;
 
   // Validation
   if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid file hash' }) };
@@ -110,6 +110,7 @@ export const handler = async (event) => {
       user_email: user.email,
       recipient_email: recipientEmail,
       project_name: projectName || null,
+      delivery_message: (deliveryMessage && deliveryMessage.trim()) ? deliveryMessage.trim() : null,
       rac_enabled: true,
       rac_level: 3,
       is_valid: !includeFile, // If file included, mark valid only after upload finalize
@@ -130,10 +131,10 @@ export const handler = async (event) => {
       // Call finalize logic inline by importing from finalize-proof
       const { finalizeProof } = await import('./_proof-finalize-helper.js').catch(() => ({ finalizeProof: null }));
       if (finalizeProof) {
-        await finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp });
+        await finalizeProof({ proofId, user, recipientEmail, fileName, fileSize, fileHash, projectName, timestamp, deliveryMessage: proofRecord.delivery_message || '' });
       } else {
         // Fallback: send emails directly
-        await sendEmails({ user, recipientEmail, proofId, fileName, fileSize, timestamp });
+        await sendEmails({ user, recipientEmail, proofId, fileName, fileSize, timestamp, deliveryMessage: proofRecord.delivery_message || '' });
       }
 
       const baseUrl = process.env.URL || 'https://vxsent.com';
@@ -179,10 +180,17 @@ export const handler = async (event) => {
 };
 
 // Inline email helper (fallback when finalize helper not present)
-async function sendEmails({ user, recipientEmail, proofId, fileName, fileSize, timestamp }) {
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+async function sendEmails({ user, recipientEmail, proofId, fileName, fileSize, timestamp, deliveryMessage }) {
   const resendKey = process.env.RESEND_API_KEY;
   const baseUrl = process.env.URL || 'https://vxsent.com';
   if (!resendKey) return;
+
+  const senderMsgBlock = deliveryMessage ? `<div style="background:#f0f2f5;border:1px solid #e1e4e8;border-radius:4px;padding:12px 16px;margin:16px 0"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Sealed message</div><div style="font-size:13px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : '';
+  const recipientMsgBlock = deliveryMessage ? `<div style="background:#f0f2f5;border-left:3px solid #00b356;border-radius:4px;padding:12px 16px;margin:16px 0"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Message from ${user.email}</div><div style="font-size:14px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : '';
 
   // Sender receipt
   await fetch('https://api.resend.com/emails', {
@@ -192,7 +200,7 @@ async function sendEmails({ user, recipientEmail, proofId, fileName, fileSize, t
       from: 'SENT. <receipts@vxsent.com>',
       to: user.email,
       subject: `Your SENT. receipt — ${fileName}`,
-      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 20px"><h2>Proof Sealed</h2><p>Your delivery proof has been cryptographically sealed.</p><p><strong>Proof ID:</strong> ${proofId}<br><strong>File:</strong> ${fileName}<br><strong>To:</strong> ${recipientEmail}<br><strong>Sealed:</strong> ${new Date(timestamp).toUTCString()}</p><a href="${baseUrl}/receipt?id=${proofId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;border-radius:4px">View Receipt</a></div>`
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 20px"><h2>Proof Sealed</h2><p>Your delivery proof has been cryptographically sealed.</p>${senderMsgBlock}<p><strong>Proof ID:</strong> ${proofId}<br><strong>File:</strong> ${fileName}<br><strong>To:</strong> ${recipientEmail}<br><strong>Sealed:</strong> ${new Date(timestamp).toUTCString()}</p><a href="${baseUrl}/receipt?id=${proofId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;border-radius:4px">View Receipt</a></div>`
     })
   });
 
@@ -204,7 +212,7 @@ async function sendEmails({ user, recipientEmail, proofId, fileName, fileSize, t
       from: 'SENT. <receipts@vxsent.com>',
       to: recipientEmail,
       subject: `You have a verified delivery — ${fileName}`,
-      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 20px"><h2>You have a verified delivery</h2><p><strong>${user.email}</strong> sent you a file with cryptographic proof.</p><p><strong>File:</strong> ${fileName}<br><strong>Proof ID:</strong> ${proofId}</p><a href="${baseUrl}/verify/${proofId}?confirm=true" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;border-radius:4px">Confirm Receipt</a></div>`
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 20px"><h2>You have a verified delivery</h2><p><strong>${user.email}</strong> sent you a file with cryptographic proof.</p>${recipientMsgBlock}<p><strong>File:</strong> ${fileName}<br><strong>Proof ID:</strong> ${proofId}</p><a href="${baseUrl}/verify/${proofId}?confirm=true" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;border-radius:4px">Confirm Receipt</a></div>`
     })
   });
 }
