@@ -88,6 +88,47 @@ function sanitizeAttributes(raw) {
   return out;
 }
 
+// PostgREST rejects an insert that names a column the table doesn't have with
+// code PGRST204 ("Could not find the 'X' column ... in the schema cache"); a raw
+// Postgres error uses 42703 ("column ... does not exist"). Pull the offending
+// column name out of either message, but only if we actually sent that column.
+function findMissingColumn(error, record) {
+  const msg = (error && error.message) || '';
+  let m = msg.match(/Could not find the '([^']+)' column/i);
+  if (m && Object.prototype.hasOwnProperty.call(record, m[1])) return m[1];
+  m = msg.match(/column "?(?:\w+\.)?(\w+)"? (?:of relation [^ ]+ )?does not exist/i);
+  if (m && Object.prototype.hasOwnProperty.call(record, m[1])) return m[1];
+  return null;
+}
+
+// Insert the transfer row, tolerating a production schema that pre-dates the
+// `provenance` / `category_attributes` columns (these are added by
+// transfer-migration.sql via ALTER TABLE ... ADD COLUMN IF NOT EXISTS). If a
+// column is absent the seal would otherwise fail outright; instead we fold the
+// value into `notes` — which is always present and is itself sealed into the
+// agreement hash — so nothing is lost or left unsealed, then retry. Once the
+// migration is applied the first insert succeeds and this fallback never runs.
+async function insertTransferRecord(supabase, record) {
+  const attempt = { ...record };
+  for (let i = 0; i < 6; i++) {
+    const { error } = await supabase.from('transfers').insert(attempt);
+    if (!error) return attempt;
+
+    const missing = findMissingColumn(error, attempt);
+    if (!missing) throw new Error(`DB insert failed: ${error.message}`);
+
+    if (missing === 'provenance' && attempt.provenance) {
+      attempt.notes = [attempt.notes, `Provenance: ${attempt.provenance}`].filter(Boolean).join('\n');
+    } else if (missing === 'category_attributes' && attempt.category_attributes && Object.keys(attempt.category_attributes).length) {
+      const rendered = Object.entries(attempt.category_attributes).map(([k, v]) => `${k}: ${v}`).join('; ');
+      attempt.notes = [attempt.notes, `Details: ${rendered}`].filter(Boolean).join('\n');
+    }
+    delete attempt[missing];
+    console.warn(`[create-transfer] transfers table is missing column "${missing}" — value folded into notes and insert retried. Apply transfer-migration.sql to restore the dedicated column.`);
+  }
+  throw new Error('DB insert failed: schema fallback exhausted');
+}
+
 export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -173,10 +214,11 @@ export const handler = async (event) => {
       payment_ref: hasPlan ? `${user.plan}_plan` : 'single_transfer'
     };
 
-    const { error: insErr } = await supabase.from('transfers').insert(record);
-    if (insErr) {
-      console.error('[create-transfer] insert error:', JSON.stringify(insErr));
-      throw new Error(`DB insert failed: ${insErr.message}`);
+    try {
+      await insertTransferRecord(supabase, record);
+    } catch (insErr) {
+      console.error('[create-transfer] insert error:', insErr.message);
+      throw insErr;
     }
 
     // Insert evidence rows + generate signed upload URLs
