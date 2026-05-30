@@ -77,6 +77,15 @@ export const handler = async (event) => {
 
   const { fileHash, fileName, fileSize, fileSizeBytes, fileMimeType, timestamp, recipientEmail, projectName, includeFile, deliveryMessage } = body;
 
+  // Normalize the sender's note once, up front. Cap to the textarea limit (2000)
+  // and collapse blank/whitespace-only input to null so it never renders an empty
+  // "SEALED MESSAGE" block. Logged (not the value) so we can confirm in function
+  // logs that a message actually reaches the server on each delivery.
+  const sealedMessage = (typeof deliveryMessage === 'string' && deliveryMessage.trim())
+    ? deliveryMessage.trim().slice(0, 2000)
+    : null;
+  console.log('[create-proof-solo] deliveryMessage received:', sealedMessage ? `yes (${sealedMessage.length} chars)` : 'no/empty');
+
   // Validation
   if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid file hash' }) };
   if (!fileName) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'File name required' }) };
@@ -110,7 +119,7 @@ export const handler = async (event) => {
       user_email: user.email,
       recipient_email: recipientEmail,
       project_name: projectName || null,
-      delivery_message: (deliveryMessage && deliveryMessage.trim()) ? deliveryMessage.trim() : null,
+      delivery_message: sealedMessage,
       rac_enabled: true,
       rac_level: 3,
       is_valid: !includeFile, // If file included, mark valid only after upload finalize
