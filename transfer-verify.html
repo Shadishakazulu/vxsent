@@ -90,7 +90,9 @@ function showError(msg){ document.getElementById('loadingState').textContent = m
 const ATTR_LABELS = {
   size:'Size', sku:'Style / SKU', authentication:'Authentication',
   metal:'Metal', stones:'Stones', appraisal_cert:'Appraisal / Certificate',
-  serial:'Serial number', imei:'IMEI'
+  serial:'Serial number', imei:'IMEI',
+  vin:'VIN', odometer:'Odometer reading (mi)', year_make_model:'Year / Make / Model', title_status:'Title status',
+  hin:'HIN (Hull ID)', engine_hours:'Engine hours', trailer_included:'Trailer included', registration_status:'Registration status'
 };
 function attrLabel(k){ return ATTR_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 function attrRows(attrs){
@@ -98,7 +100,7 @@ function attrRows(attrs){
   return Object.keys(attrs).filter(k => attrs[k] != null && String(attrs[k]).trim() !== '')
     .map(k => [attrLabel(k), String(attrs[k])]);
 }
-const CATEGORY_LABELS = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics', general:'General goods' };
+const CATEGORY_LABELS = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics', general:'General goods', vehicle:'Vehicle', boat:'Boat' };
 
 async function load() {
   if (!transferId) { showError('No transfer ID provided.'); return; }

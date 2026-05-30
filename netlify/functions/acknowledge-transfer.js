@@ -26,8 +26,28 @@ async function sendEmail(to, subject, html) {
   } catch (e) { console.error('[SENT-TX] Email error:', e.message); }
 }
 
-function ackEmailHtml(transfer, confirmedAt, ip, confirmationHash) {
-  const verifyUrl = `https://vxsent.com/verify/${transfer.id}`;
+// Humanized labels for the per-category attribute bag, mirrored from the verify
+// and acknowledgment pages so the confirmation emails surface the same sealed
+// details (VIN, odometer, title status, HIN, …). Additive across all categories.
+const ATTR_EMAIL_LABELS = {
+  size: 'Size', sku: 'Style / SKU', authentication: 'Authentication',
+  metal: 'Metal', stones: 'Stones', appraisal_cert: 'Appraisal / Certificate',
+  serial: 'Serial number', imei: 'IMEI',
+  vin: 'VIN', odometer: 'Odometer reading (mi)', year_make_model: 'Year / Make / Model', title_status: 'Title status',
+  hin: 'HIN (Hull ID)', engine_hours: 'Engine hours', trailer_included: 'Trailer included', registration_status: 'Registration status'
+};
+function escEmail(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function attrEmailRows(attrs) {
+  if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return '';
+  return Object.keys(attrs)
+    .filter(k => attrs[k] != null && String(attrs[k]).trim() !== '')
+    .map(k => {
+      const label = ATTR_EMAIL_LABELS[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return `<tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:130px">${escEmail(label)}</td><td style="padding:8px 0;font-size:12px;color:#111318">${escEmail(attrs[k])}</td></tr>`;
+    }).join('');
+}
+
+function ackEmailHtml(transfer, confirmedAt, ip, confirmationHash) {  const verifyUrl = `https://vxsent.com/verify/${transfer.id}`;
   return `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8">
     <div style="background:#00b356;color:#fff;padding:14px 28px;border-radius:8px 8px 0 0"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em">\u2713 TRANSFER ACKNOWLEDGED</div></div>
     <div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px">
@@ -35,6 +55,7 @@ function ackEmailHtml(transfer, confirmedAt, ip, confirmationHash) {
       <p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">The RAC chain is now complete. Both parties have a permanent, independently verifiable record of exactly what was agreed.</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:130px">Item</td><td style="padding:8px 0;font-size:12px;color:#111318">${transfer.item_title}</td></tr>
+        ${attrEmailRows(transfer.category_attributes)}
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Acknowledged</td><td style="padding:8px 0;font-size:12px;color:#00b356;font-weight:bold">${confirmedAt}</td></tr>
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">IP Address</td><td style="padding:8px 0;font-size:11px;color:#111318;font-family:monospace">${ip}</td></tr>
         <tr><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Confirmation Hash</td><td style="padding:8px 0;font-size:10px;color:#111318;font-family:monospace;word-break:break-all">${confirmationHash}</td></tr>
@@ -59,6 +80,7 @@ function buyerAckEmailHtml(transfer, confirmedAt, confirmationHash) {
       <p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">This confirms you acknowledged the transfer of <strong>${transfer.item_title}</strong> from <strong>${transfer.seller_name}</strong>. You and the seller now both hold a permanent, independently verifiable record of exactly what was agreed. This email is your copy.</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:130px">Item</td><td style="padding:8px 0;font-size:12px;color:#111318">${transfer.item_title}</td></tr>
+        ${attrEmailRows(transfer.category_attributes)}
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Price</td><td style="padding:8px 0;font-size:12px;color:#111318">${price}</td></tr>
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Transfer ID</td><td style="padding:8px 0;font-size:11px;color:#111318;font-family:monospace">${transfer.id}</td></tr>
         <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Acknowledged</td><td style="padding:8px 0;font-size:12px;color:#00b356;font-weight:bold">${acknowledgedUtc}</td></tr>
