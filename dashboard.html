@@ -480,7 +480,7 @@ async function submitSoloProof() {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proofId: createData.proofId, uploadSuccess: true })
+      body: JSON.stringify({ proofId: createData.proofId, uploadSuccess: true, deliveryMessage: deliveryMessage || '' })
     });
 
     const finalizeData = await finalizeRes.json();

@@ -159,8 +159,16 @@ export const handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) }; }
 
-  const { proofId, uploadSuccess } = body;
+  const { proofId, uploadSuccess, deliveryMessage } = body;
   if (!proofId) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Proof ID required' }) };
+
+  // The sender's note is normally saved in phase 1 (create-proof-solo). We also
+  // accept it here as a fallback so a single delivery cannot silently lose the
+  // message if phase 1 ran without persisting it. Normalized the same way:
+  // trimmed, capped at the textarea's 2000-char limit, blank collapsed to null.
+  const incomingMessage = (typeof deliveryMessage === 'string' && deliveryMessage.trim())
+    ? deliveryMessage.trim().slice(0, 2000)
+    : null;
 
   try {
     const supabase = getSupabase();
@@ -193,6 +201,12 @@ export const handler = async (event) => {
       }
     }
 
+    // Effective message: prefer whatever phase 1 stored; otherwise fall back to
+    // the note re-sent with this request. This is what the chain hash, both
+    // emails, and the receipt page will reflect.
+    const effectiveMessage = proof.delivery_message || incomingMessage || null;
+    console.log('[finalize-proof] message ->', proof.delivery_message ? 'from-phase1' : (incomingMessage ? 'backfilled-from-request' : 'none'), effectiveMessage ? `(${effectiveMessage.length} chars)` : '');
+
     const chainHash = buildRACChainHash({
       proofId,
       senderEmail: user.email,
@@ -200,20 +214,27 @@ export const handler = async (event) => {
       fileName: proof.file_name,
       fileHash: proof.file_hash,
       timestamp: proof.sealed_at,
-      deliveryMessage: proof.delivery_message
+      deliveryMessage: effectiveMessage
     });
 
     const veridexSignature = `mock_ed25519_${randomBytes(16).toString('hex')}`;
 
+    const proofUpdate = {
+      is_valid: true,
+      rac_chain_hash: chainHash,
+      veridex_signature: veridexSignature,
+      veridex_proof_id: proofId,
+      file_uploaded_at: proof.file_storage_path ? new Date().toISOString() : null
+    };
+    // Backfill the note if phase 1 didn't persist it, so the receipt page (which
+    // reads delivery_message from the record) also shows it.
+    if (!proof.delivery_message && incomingMessage) {
+      proofUpdate.delivery_message = incomingMessage;
+    }
+
     const { error: updateError } = await supabase
       .from('proofs')
-      .update({
-        is_valid: true,
-        rac_chain_hash: chainHash,
-        veridex_signature: veridexSignature,
-        veridex_proof_id: proofId,
-        file_uploaded_at: proof.file_storage_path ? new Date().toISOString() : null
-      })
+      .update(proofUpdate)
       .eq('id', proofId);
 
     if (updateError) {
@@ -230,7 +251,7 @@ export const handler = async (event) => {
       recipientEmail: proof.recipient_email,
       chainHash,
       hasFile: !!proof.file_storage_path,
-      deliveryMessage: proof.delivery_message
+      deliveryMessage: effectiveMessage
     });
 
     await sendRecipientNotification({
@@ -240,7 +261,7 @@ export const handler = async (event) => {
       fileName: proof.file_name,
       sealedAt: proof.sealed_at,
       hasFile: !!proof.file_storage_path,
-      deliveryMessage: proof.delivery_message
+      deliveryMessage: effectiveMessage
     });
 
     const baseUrl = process.env.URL || 'https://vxsent.com';
