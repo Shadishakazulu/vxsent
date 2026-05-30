@@ -19,6 +19,28 @@ function getSupabase() {
 
 function sha256(str) { return createHash('sha256').update(str).digest('hex'); }
 
+// Humanized labels for the per-category attribute bag, mirrored from the verify
+// and acknowledgment pages so the emails surface the same sealed details
+// (VIN, odometer, title status, HIN, engine hours, …). Additive: any category's
+// attributes render the same way; unknown keys are humanized.
+const ATTR_EMAIL_LABELS = {
+  size: 'Size', sku: 'Style / SKU', authentication: 'Authentication',
+  metal: 'Metal', stones: 'Stones', appraisal_cert: 'Appraisal / Certificate',
+  serial: 'Serial number', imei: 'IMEI',
+  vin: 'VIN', odometer: 'Odometer reading (mi)', year_make_model: 'Year / Make / Model', title_status: 'Title status',
+  hin: 'HIN (Hull ID)', engine_hours: 'Engine hours', trailer_included: 'Trailer included', registration_status: 'Registration status'
+};
+function escEmail(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function attrEmailRows(attrs) {
+  if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return '';
+  return Object.keys(attrs)
+    .filter(k => attrs[k] != null && String(attrs[k]).trim() !== '')
+    .map(k => {
+      const label = ATTR_EMAIL_LABELS[k] || k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return `<tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">${escEmail(label)}</td><td style="padding:10px 0;font-size:12px;color:#111318">${escEmail(attrs[k])}</td></tr>`;
+    }).join('');
+}
+
 // Real Veridex signing — mirrors stripe-webhook.js callVeridex().
 // Calls /v1/guardedCommit when configured; falls back to deterministic SHA-256
 // signature when Veridex env vars are absent (same behavior as the webhook).
@@ -137,6 +159,7 @@ async function sendSellerReceipt({ transfer, transferId, sealedAt, verifyUrl }) 
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:120px">Transfer ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${transferId}</td></tr>
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Item</td><td style="padding:10px 0;font-size:12px;color:#111318">${transfer.item_title}</td></tr>
+            ${attrEmailRows(transfer.category_attributes)}
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Buyer</td><td style="padding:10px 0;font-size:12px;color:#111318">${transfer.buyer_name}</td></tr>
             <tr><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Sealed</td><td style="padding:10px 0;font-size:11px;color:#00b356;font-weight:bold">${new Date(sealedAt).toUTCString()}</td></tr>
           </table>
@@ -164,6 +187,7 @@ async function sendBuyerAcknowledgmentRequest({ transfer, transferId, sealedAt, 
           <p style="font-size:14px;color:#374151;line-height:1.65;margin-bottom:24px"><strong>${transfer.seller_name}</strong> has sent you a verified record of a sale. Please review the condition, photos, and disclosures, then acknowledge. Your acknowledgment is cryptographically sealed and protects both parties.</p>
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:100px">Item</td><td style="padding:10px 0;font-size:13px;color:#111318">${transfer.item_title}</td></tr>
+            ${attrEmailRows(transfer.category_attributes)}
             <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Price</td><td style="padding:10px 0;font-size:13px;color:#111318">${transfer.sale_price != null ? '$' + transfer.sale_price : '\u2014'}</td></tr>
             <tr><td style="padding:10px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Transfer ID</td><td style="padding:10px 0;font-size:11px;color:#111318;font-family:monospace">${transferId}</td></tr>
           </table>

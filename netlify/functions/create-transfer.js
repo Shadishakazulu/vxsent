@@ -63,8 +63,9 @@ const MAX_EVIDENCE = 20;
 
 const VALID_CONDITIONS = ['New', 'Excellent', 'Good', 'Fair', 'As-Is', 'Salvage', 'Custom'];
 
-// Low-risk categories only. 'general' is the catch-all. Unknown values fall back to 'general'.
-const VALID_CATEGORIES = ['sneakers', 'jewelry', 'electronics', 'general'];
+// Low-risk categories plus vehicle/boat (legal-cleared for go-live). 'general' is
+// the catch-all. Unknown values fall back to 'general'.
+const VALID_CATEGORIES = ['sneakers', 'jewelry', 'electronics', 'general', 'vehicle', 'boat'];
 
 // Build marker — bump on each deploy so the function log proves which code is live.
 const BUILD = '2026-05-30-transfer-payflow';
