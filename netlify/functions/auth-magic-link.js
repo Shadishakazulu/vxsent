@@ -114,6 +114,17 @@ exports.handler = async (event) => {
         };
       }
 
+      // 100%-off coupons (e.g. LAUNCH7) are NOT membership grants — they make a
+      // one-time purchase free and are applied at checkout, not here. Reject them
+      // on the sign-in form so they can never grant a Solo trial.
+      if (promo.kind === 'free_purchase' || promo.plan_granted == null) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'That code is a checkout discount — apply it on the Day Pass or Transfer checkout.' })
+        };
+      }
+
       // One redemption per email per code
       const redRes = await sb(`promo_redemptions?code=eq.${encodeURIComponent(promo.code)}&email=eq.${encodeURIComponent(email)}&select=id`);
       const redRows = await redRes.json();

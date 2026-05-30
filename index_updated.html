@@ -577,7 +577,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       <div style="width:7px;height:7px;background:#00b356;border-radius:50%"></div>
       SENT.
     </div>
-    <div style="font-size:13px;color:#6b7280;margin-bottom:24px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase">Seal your delivery proof — $0.99</div>
+    <div id="paySubPrice" style="font-size:13px;color:#6b7280;margin-bottom:24px;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase">Seal your delivery proof — $0.99</div>
 
     <div id="payFileInfo" style="background:#f0f2f5;border-radius:4px;padding:12px 14px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#374151;letter-spacing:0.1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
 
@@ -593,10 +593,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Message to recipient <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — sealed into the proof)</span></label>
     <textarea id="payMessage" rows="3" maxlength="2000" placeholder="e.g. Final version of the contract we discussed — no further revisions included." style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box;resize:vertical;min-height:60px" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'"></textarea>
 
-    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
+    <label id="payCardLabel" style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
     <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
 
-    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Promo code <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — unlock a Solo membership)</span></label>
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Promo code <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <input id="payPromo" type="text" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
       <button type="button" id="payPromoBtn" onclick="applyDayPassPromo()" style="flex:0 0 auto;padding:0 18px;background:#111318;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.1em;cursor:pointer">APPLY</button>
@@ -697,6 +697,43 @@ async function submitPayment() {
     document.getElementById('payError').textContent = 'Please enter a valid recipient email address.';
     return;
   }
+
+  // FREE PATH — a 100%-off code (e.g. LAUNCH7) is applied: issue the day pass
+  // with NO Stripe charge. No card is collected or required.
+  if (dayPassFreeCode) {
+    const payBtn = document.getElementById('payBtn');
+    payBtn.textContent = 'SEALING…';
+    payBtn.disabled = true;
+    document.getElementById('payError').textContent = '';
+    try {
+      const res = await fetch('/api/redeem-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'redeem',
+          product: 'day_pass',
+          code: dayPassFreeCode,
+          email,
+          fileHash: currentHash,
+          fileName: currentFile.name,
+          fileSize: fmt(currentFile.size),
+          timestamp: currentTimestamp,
+          recipientEmail: recipientEmail || '',
+          projectName: projectName || '',
+          deliveryMessage: deliveryMessage || ''
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not complete your free purchase.');
+      window.location.href = data.receiptUrl || ('/receipt?id=' + data.proofId);
+    } catch (error) {
+      document.getElementById('payError').textContent = error.message || 'Could not complete your free purchase.';
+      payBtn.textContent = 'GET IT FREE →';
+      payBtn.disabled = false;
+    }
+    return;
+  }
+
   if (!cardElement) {
     document.getElementById('payError').textContent = 'Card element not loaded. Please refresh and try again.';
     return;
@@ -774,9 +811,38 @@ async function submitPayment() {
   }
 }
 
-// Apply a promo code (e.g. LAUNCH7) — grants a Solo membership trial via the
-// existing magic-link flow. This is separate from the $0.99 day-pass payment:
-// the code unlocks membership and the user activates it from the email we send.
+// Apply a promo code (e.g. LAUNCH7). A valid 100%-off code makes THIS Day Pass
+// free: the displayed amount drops to $0.00, the card box is hidden (no card is
+// required or charged), and the button becomes "Get it free". On confirm,
+// submitPayment() seals the proof with no Stripe charge.
+let dayPassFreeCode = null;
+
+function setDayPassFree(code) {
+  dayPassFreeCode = code;
+  const cardLabel = document.getElementById('payCardLabel');
+  const cardEl = document.getElementById('card-element');
+  if (cardLabel) cardLabel.style.display = 'none';
+  if (cardEl) cardEl.style.display = 'none';
+  const sub = document.getElementById('paySubPrice');
+  if (sub) sub.textContent = 'Seal your delivery proof — $0.00';
+  const payBtn = document.getElementById('payBtn');
+  if (payBtn) payBtn.textContent = 'GET IT FREE →';
+  const err = document.getElementById('payError');
+  if (err) err.textContent = '';
+}
+
+function clearDayPassFree() {
+  dayPassFreeCode = null;
+  const cardLabel = document.getElementById('payCardLabel');
+  const cardEl = document.getElementById('card-element');
+  if (cardLabel) cardLabel.style.display = '';
+  if (cardEl) cardEl.style.display = '';
+  const sub = document.getElementById('paySubPrice');
+  if (sub) sub.textContent = 'Seal your delivery proof — $0.99';
+  const payBtn = document.getElementById('payBtn');
+  if (payBtn) payBtn.textContent = 'PAY $0.99 — SEAL PROOF';
+}
+
 async function applyDayPassPromo() {
   const codeEl = document.getElementById('payPromo');
   const msg = document.getElementById('payPromoMsg');
@@ -794,25 +860,21 @@ async function applyDayPassPromo() {
   btn.textContent = '…'; btn.disabled = true; msg.textContent = '';
 
   try {
-    const res = await fetch('/api/auth/magic-link', {
+    const res = await fetch('/api/redeem-promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, promoCode: code })
+      body: JSON.stringify({ action: 'validate', product: 'day_pass', code, email })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'That code could not be applied.');
+    if (!res.ok || !data.valid) throw new Error(data.error || 'That code could not be applied.');
 
-    if (data.promoApplied) {
-      msg.style.color = '#009347';
-      msg.innerHTML = `✓ ${data.trialDays}-day Solo membership unlocked — check <strong>${email}</strong> to sign in and activate it.`;
-      codeEl.disabled = true;
-      btn.textContent = 'APPLIED';
-    } else {
-      msg.style.color = '#dc2626';
-      msg.textContent = 'That code could not be applied.';
-      btn.textContent = 'APPLY'; btn.disabled = false;
-    }
+    setDayPassFree(data.code || code.toUpperCase());
+    msg.style.color = '#009347';
+    msg.innerHTML = `✓ Code applied — your Day Pass is <strong>free</strong>. No card needed.`;
+    codeEl.disabled = true;
+    btn.textContent = 'APPLIED';
   } catch (e) {
+    clearDayPassFree();
     msg.style.color = '#dc2626';
     msg.textContent = e.message || 'That code could not be applied.';
     btn.textContent = 'APPLY'; btn.disabled = false;
@@ -823,7 +885,8 @@ function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
   cb.disabled = false;
   cb.textContent = 'GET YOUR SENT. RECEIPT — $0.99';
-  // Reset the promo field so a reopened modal starts clean
+  // Reset the promo field + free state so a reopened modal starts clean
+  clearDayPassFree();
   const promoEl = document.getElementById('payPromo');
   const promoBtn = document.getElementById('payPromoBtn');
   const promoMsg = document.getElementById('payPromoMsg');
