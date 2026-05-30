@@ -97,6 +97,10 @@ exports.handler = async (event) => {
         authenticated: true,
         email: user.email,
         plan: user.plan || 'none',
+        // Expose the plan expiry so the dashboard can mirror the exact Solo check
+        // the file-delivery gate uses (plan === 'solo' && plan_expires_at > now).
+        // Read-only: this does not affect any gating or enforcement.
+        plan_expires_at: user.plan_expires_at || null,
         userId: user.id,
         createdAt: user.created_at
       })
