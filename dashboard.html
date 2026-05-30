@@ -20,13 +20,15 @@
 }
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;display:grid;grid-template-columns:240px 1fr;grid-template-rows:58px 1fr;overflow:hidden}
-.topbar{grid-column:1/-1;grid-row:1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
-.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
+.topbar{grid-column:1/-1;grid-row:1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 22px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+.tb-bar{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);flex-shrink:0}
 .tb-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
 .tb-right{display:flex;align-items:center;gap:12px}
+.tb-actions{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .tb-plan{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);padding:3px 10px;border:1.5px solid var(--green-bd);background:var(--green-bg);border-radius:3px}
 .tb-user{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
-.tb-new{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:3px;transition:background 0.15s}
+.tb-new{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;padding:8px 16px;cursor:pointer;border-radius:3px;transition:background 0.15s;white-space:nowrap;text-align:center}
 .tb-new:hover{background:var(--green-dk)}
 .tb-ham{display:none;background:none;border:none;cursor:pointer;color:var(--ink);font-size:20px;padding:4px 8px}
 .sidebar{grid-column:1;grid-row:2;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;overflow-y:auto}
@@ -130,18 +132,29 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   .pi-actions{grid-column:2;padding-left:20px;margin-top:2px}
   .qp-body{flex-wrap:wrap}
 }
+@media(max-width:560px){
+  /* Let the header grow to two rows so nothing overflows on a phone */
+  body{grid-template-rows:auto 1fr}
+  .topbar{flex-direction:column;align-items:stretch;height:auto;padding:10px 16px;gap:10px}
+  .tb-actions{gap:8px}
+  .tb-actions .tb-new{flex:1;min-width:0;padding:9px 8px;font-size:14px}
+}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <a href="/" class="tb-logo"><div class="tb-dot"></div>SENT.</a>
-  <div class="tb-right">
-    <div class="tb-plan" id="tbPlan">Solo · $12.99/mo</div>
-    <div class="tb-user" id="tbUser">you@email.com</div>
+  <div class="tb-bar">
+    <a href="/" class="tb-logo"><div class="tb-dot"></div>SENT.</a>
+    <div class="tb-right">
+      <div class="tb-plan" id="tbPlan">Solo · $12.99/mo</div>
+      <div class="tb-user" id="tbUser">you@email.com</div>
+      <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div class="tb-actions">
     <a class="tb-new" href="/transfer" style="text-decoration:none;background:transparent;color:var(--green-dk);border:1.5px solid var(--green-bd)">Verified transfer →</a>
     <button class="tb-new" onclick="openProofModal()">Proof a file →</button>
-    <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
   </div>
 </div>
 
