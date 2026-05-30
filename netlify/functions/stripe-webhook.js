@@ -13,6 +13,10 @@ function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
 function buildRacToken({ senderEmail, recipientEmail, fileName, fileHash, paymentIntentId, timestamp, proofId }) {
   const identityHash = sha256(senderEmail + proofId);
   const recipient = recipientEmail || 'unspecified';
@@ -109,6 +113,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     sender_email: senderEmail,
     recipient_email: recipientEmail,
     project_name: projectName,
+    delivery_message: deliveryMessage,
     timestamp
   } = metadata;
 
@@ -120,10 +125,12 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     return;
   }
 
-  // Idempotency check
+  // Idempotency check — also pull the note saved during create-payment-intent so
+  // the full (untruncated) message survives sealing, since Stripe metadata caps
+  // values at 500 chars.
   const { data: existing } = await supabase
     .from('proofs')
-    .select('id, is_valid')
+    .select('id, is_valid, delivery_message')
     .eq('id', proofId)
     .single();
 
@@ -131,6 +138,12 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     console.log('[webhook] Proof already sealed, skipping:', proofId);
     return;
   }
+
+  // Prefer the full note persisted on the pending row; fall back to the truncated
+  // copy carried in Stripe metadata. Collapse blank to null.
+  const effectiveMessage = (existing && existing.delivery_message)
+    || (typeof deliveryMessage === 'string' && deliveryMessage.trim() ? deliveryMessage.trim() : null)
+    || null;
 
   // Build RAC token
   const racToken = buildRacToken({
@@ -176,6 +189,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
     user_email: senderAddr,
     recipient_email: recipientEmail || null,
     project_name: projectName || null,
+    delivery_message: effectiveMessage,
     veridex_proof_id: veridexResult.proof_id || proofId,
     veridex_signature: veridexResult.signature,
     rac_chain_hash: veridexResult.rac_chain_hash,
@@ -224,6 +238,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
           <h1 style="font-size:24px;letter-spacing:4px;margin:0 0 8px">SENT.</h1>
           <p style="color:#8899aa;margin:0 0 24px;letter-spacing:2px">PROOF OF DELIVERY RECEIPT</p>
           <hr style="border-color:#1e3a5f;margin:0 0 24px">
+          ${effectiveMessage ? `<div style="margin:0 0 24px;padding:16px;background:#0d2137;border-left:3px solid #00ff88"><p style="color:#8899aa;font-size:11px;letter-spacing:1px;margin:0 0 8px">SEALED MESSAGE</p><p style="color:#e0e0e0;font-size:13px;line-height:1.6;margin:0;white-space:pre-wrap">${escapeHtml(effectiveMessage)}</p></div>` : ''}
           <table style="width:100%;border-collapse:collapse">
             <tr><td style="color:#8899aa;padding:6px 0;font-size:12px;letter-spacing:1px">PROOF ID</td><td style="color:#00ff88;font-size:12px">${proofId}</td></tr>
             <tr><td style="color:#8899aa;padding:6px 0;font-size:12px;letter-spacing:1px">FILE</td><td style="color:#e0e0e0;font-size:12px">${fileName}</td></tr>
@@ -257,6 +272,7 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
           <p style="color:#8899aa;margin:0 0 24px;letter-spacing:2px">VERIFIED DELIVERY NOTIFICATION</p>
           <hr style="border-color:#1e3a5f;margin:0 0 24px">
           <p style="color:#e0e0e0;font-size:14px;margin:0 0 16px"><strong style="color:#00ff88">${senderAddr}</strong> has sent you a verified delivery.</p>
+          ${effectiveMessage ? `<div style="margin:0 0 16px;padding:16px;background:#0d2137;border-left:3px solid #00ff88"><p style="color:#8899aa;font-size:11px;letter-spacing:1px;margin:0 0 8px">MESSAGE FROM ${escapeHtml(senderAddr)}</p><p style="color:#e0e0e0;font-size:14px;line-height:1.6;margin:0;white-space:pre-wrap">${escapeHtml(effectiveMessage)}</p></div>` : ''}
           <table style="width:100%;border-collapse:collapse">
             <tr><td style="color:#8899aa;padding:6px 0;font-size:12px;letter-spacing:1px">FILE</td><td style="color:#e0e0e0;font-size:12px">${fileName}</td></tr>
             <tr><td style="color:#8899aa;padding:6px 0;font-size:12px;letter-spacing:1px">PROOF ID</td><td style="color:#00ff88;font-size:12px">${proofId}</td></tr>
