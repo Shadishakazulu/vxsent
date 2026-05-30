@@ -43,13 +43,14 @@ exports.handler = async (event) => {
     const userEmail = user.email;
 
     // FIX: query by user_email, filter by is_valid=true (not status=sealed)
+    // Raised the list cap so dashboards with many proofs keep showing recent history.
     const { data: proofs, error: proofsErr } = await supabase
       .from('proofs')
       .select('*')
       .eq('user_email', userEmail)
       .eq('is_valid', true)
       .order('sealed_at', { ascending: false })
-      .limit(50);
+      .limit(1000);
 
     if (proofsErr) {
       console.error('[get-proofs] DB error:', JSON.stringify(proofsErr));
@@ -58,9 +59,27 @@ exports.handler = async (event) => {
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const totalProofs = (proofs || []).length;
-    const monthProofs = (proofs || []).filter(p => new Date(p.sealed_at) >= startOfMonth).length;
-    const disputesWon = (proofs || []).filter(p => p.dispute_status === 'won').length;
+
+    // Stats are computed with dedicated count queries so they reflect the user's
+    // true totals regardless of how many proof rows the list above returns.
+    // Without this the counters plateaued once a user passed the list limit.
+    const baseCount = () => supabase
+      .from('proofs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_email', userEmail)
+      .eq('is_valid', true);
+
+    const [totalRes, monthRes, disputesRes] = await Promise.all([
+      baseCount(),
+      baseCount().gte('sealed_at', startOfMonth.toISOString()),
+      baseCount().eq('dispute_status', 'won')
+    ]);
+
+    // Fall back to the in-memory length if a count query fails, so the dashboard
+    // still renders something sensible rather than erroring out.
+    const totalProofs = totalRes.count ?? (proofs || []).length;
+    const monthProofs = monthRes.count ?? (proofs || []).filter(p => new Date(p.sealed_at) >= startOfMonth).length;
+    const disputesWon = disputesRes.count ?? (proofs || []).filter(p => p.dispute_status === 'won').length;
 
     // FIX: use p.id not p.proof_id for receipt/verify URLs
     const formattedProofs = (proofs || []).map(p => ({
