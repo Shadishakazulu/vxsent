@@ -66,9 +66,24 @@ status = 200
 force = true
 
 
-# Verify endpoint — recipient email links land here.
+# ── SENT Transfer pages ──
+[[redirects]]
+from = "/transfer"
+to = "/transfer.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/transfer-ack"
+to = "/transfer-ack.html"
+status = 200
+force = true
+
+
+# Verify endpoint — recipient/buyer email links land here.
 # Format: /verify/SENT-2026-XXX?confirm=true
-# verify.html reads the proof ID from window.location.pathname
+# verify.html branches: SENT-TX-* -> transfer-verify, SENT-* -> receipt
 [[redirects]]
 from = "/verify/*"
 to = "/verify.html"
@@ -177,4 +192,38 @@ status = 200
 [[redirects]]
 from = "/api/revoke-file"
 to = "/.netlify/functions/revoke-file"
+status = 200
+
+
+# ============================================================
+# API REDIRECTS — SENT TRANSFER (Verified Bill of Sale)
+# ============================================================
+
+[[redirects]]
+from = "/api/create-transfer"
+to = "/.netlify/functions/create-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/finalize-transfer"
+to = "/.netlify/functions/finalize-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/acknowledge-transfer"
+to = "/.netlify/functions/acknowledge-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/create-transfer-payment"
+to = "/.netlify/functions/create-transfer-payment"
+status = 200
+
+
+[[redirects]]
+from = "/api/transfer/:id"
+to = "/.netlify/functions/get-transfer?id=:id"
 status = 200

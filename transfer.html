@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. — Create Verified Transfer</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.06);--red-bd:rgba(220,38,38,0.18);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
+.logo-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk)}
+
+.wrap{max-width:680px;margin:0 auto;padding:28px 20px 80px}
+
+/* Stepper */
+.stepper{display:flex;align-items:center;gap:8px;margin-bottom:28px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase}
+.step-pill{display:flex;align-items:center;gap:7px;color:var(--ink-4)}
+.step-pill.active{color:var(--green-dk)}
+.step-pill.done{color:var(--ink-3)}
+.step-num{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-md);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.step-pill.active .step-num{border-color:var(--green);background:var(--green);color:#fff}
+.step-pill.done .step-num{border-color:var(--green);color:var(--green-dk)}
+.step-line{flex:1;height:1.5px;background:var(--border);min-width:12px}
+
+h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.03em;line-height:1;margin-bottom:6px}
+.lede{font-size:14px;color:var(--ink-2);line-height:1.6;margin-bottom:24px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;margin-top:14px}
+label:first-of-type{margin-top:0}
+label .opt{color:var(--ink-4);text-transform:none;letter-spacing:0}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;background:var(--surface)}
+input:focus,select:focus,textarea:focus{border-color:var(--green)}
+textarea{resize:vertical;min-height:64px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+
+.toggles{display:flex;flex-direction:column;gap:2px}
+.tg{display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.tg:last-child{border-bottom:none}
+.tg input{width:auto;flex-shrink:0;width:18px;height:18px;accent-color:var(--green)}
+.tg span{font-size:14px;color:var(--ink-2)}
+
+.disclaimer{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+.disclaimer-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;font-weight:500}
+.disclaimer-text{font-size:12px;color:var(--ink-2);line-height:1.55}
+
+/* Evidence dropzone */
+.dropzone{border:2px dashed var(--border-md);border-radius:6px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.18s;background:var(--panel);position:relative}
+.dropzone:hover,.dropzone.dragover{border-color:var(--green);background:var(--green-lt)}
+.dz-icon{font-size:26px;margin-bottom:8px}
+.dz-main{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.dz-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)}
+.dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ev-hint{font-size:12px;color:var(--green-dk);margin-top:10px;text-align:center;font-style:italic}
+
+.ev-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.ev-item{display:flex;align-items:center;gap:11px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:5px}
+.ev-thumb{width:40px;height:40px;border-radius:4px;background:var(--panel-hi);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.ev-thumb img{width:100%;height:100%;object-fit:cover}
+.ev-info{flex:1;min-width:0}
+.ev-name{font-size:13px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);letter-spacing:0.06em;margin-top:2px}
+.ev-meta .hashed{color:var(--green-dk)}
+.ev-remove{background:none;border:none;cursor:pointer;color:var(--ink-4);font-size:18px;flex-shrink:0;padding:4px}
+.ev-remove:hover{color:var(--red)}
+
+/* Review */
+.rev-section{margin-bottom:18px}
+.rev-h{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px}
+.rev-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.rev-row:last-child{border-bottom:none}
+.rev-k{color:var(--ink-3);flex-shrink:0}
+.rev-v{color:var(--ink);text-align:right;font-weight:500;word-break:break-word}
+.rev-disc{font-size:13px;color:var(--ink-2);line-height:1.6;background:var(--panel);border-radius:5px;padding:10px 13px;margin-top:4px}
+.trust-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.trust-chip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-dk);background:var(--green-bg);border:1px solid var(--green-bd);padding:5px 9px;border-radius:50px}
+
+.confirm-box{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+.confirm-box label{margin:0;display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-transform:none;letter-spacing:0;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-2);line-height:1.5}
+.confirm-box input{width:18px;height:18px;flex-shrink:0;accent-color:var(--green);margin-top:1px}
+
+.err{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;min-height:16px;margin-bottom:10px}
+
+.actions{display:flex;gap:10px;margin-top:8px}
+.btn{flex:1;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.08em;border:none;border-radius:4px;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--green-dk)}
+.btn-primary:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
+.btn-ghost{flex:0 0 auto;padding:14px 22px;background:transparent;color:var(--ink-3);border:1.5px solid var(--border-md)}
+.btn-ghost:hover{border-color:var(--ink-3);color:var(--ink)}
+
+.upload-prog{display:none;margin:14px 0;padding:12px 16px;background:#1a1f2e;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px}
+.upload-prog.show{display:block}
+.upload-prog-label{color:rgba(255,255,255,0.7);margin-bottom:7px;letter-spacing:0.1em;text-transform:uppercase}
+.upload-prog-bar{height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.upload-prog-fill{height:100%;background:#4ade80;width:0%;transition:width 0.3s}
+.upload-prog-text{color:#4ade80;font-size:9px}
+
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/dashboard" class="logo"><div class="logo-dot"></div>SENT.</a>
+  <div class="hdr-tag">Verified Transfer</div>
+</header>
+
+<div class="wrap">
+
+  <div class="stepper" id="stepper">
+    <div class="step-pill active" data-s="1"><div class="step-num">1</div>Details</div>
+    <div class="step-line"></div>
+    <div class="step-pill" data-s="2"><div class="step-num">2</div>Evidence</div>
+    <div class="step-line"></div>
+    <div class="step-pill" data-s="3"><div class="step-num">3</div>Review & Seal</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section id="step1">
+    <h1>CREATE VERIFIED TRANSFER</h1>
+    <p class="lede">Document the condition. Seal the agreement. When a dispute happens later, the record already exists — timestamped and impossible to backdate.</p>
+
+    <div class="card">
+      <div class="card-title">// Seller</div>
+      <label for="sName">Full name</label>
+      <input id="sName" type="text" placeholder="Your name">
+      <div class="row">
+        <div><label for="sEmail">Email</label><input id="sEmail" type="email" placeholder="you@email.com"></div>
+        <div><label for="sPhone">Phone <span class="opt">(optional)</span></label><input id="sPhone" type="tel" placeholder="(555) 555-5555"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Buyer</div>
+      <label for="bName">Full name</label>
+      <input id="bName" type="text" placeholder="Buyer's name">
+      <div class="row">
+        <div><label for="bEmail">Email</label><input id="bEmail" type="email" placeholder="buyer@email.com"></div>
+        <div><label for="bPhone">Phone <span class="opt">(optional)</span></label><input id="bPhone" type="tel" placeholder="(555) 555-5555"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Transfer details</div>
+      <label for="iTitle">Item title</label>
+      <input id="iTitle" type="text" placeholder="e.g. Air Jordan 1 Retro High OG 'Chicago'">
+      <div class="row">
+        <div><label for="iCat">Category</label>
+          <select id="iCat">
+            <option value="general">General goods</option>
+            <option value="sneakers">Sneakers</option>
+            <option value="jewelry">Jewelry</option>
+            <option value="electronics">Electronics</option>
+          </select>
+        </div>
+        <div><label for="iPrice">Sale price <span class="opt">(optional)</span></label><input id="iPrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
+      </div>
+      <div class="row">
+        <div><label for="iDate">Date of transfer</label><input id="iDate" type="date"></div>
+        <div><label for="iCond">Condition</label>
+          <select id="iCond"><option value="">Select…</option><option>New</option><option>Excellent</option><option>Good</option><option>Fair</option><option>As-Is</option><option>Salvage</option><option>Custom</option></select>
+        </div>
+      </div>
+      <div id="condCustomWrap" class="hidden"><label for="iCondCustom">Custom condition</label><input id="iCondCustom" type="text" placeholder="Describe the condition"></div>
+      <label for="iDesc">Description</label>
+      <textarea id="iDesc" placeholder="Describe the item, its features, and anything relevant to the sale."></textarea>
+      <label for="iLoc">Location <span class="opt">(optional)</span></label>
+      <input id="iLoc" type="text" placeholder="City, State">
+    </div>
+
+    <div class="card" id="catCard">
+      <div class="card-title" id="catCardTitle">// Specifics</div>
+      <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:4px" id="catHint">Choose a category above to surface the right details for this item.</p>
+      <div id="catFields"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Provenance &amp; authenticity</div>
+      <label for="iProv">Provenance <span class="opt">(ownership &amp; authenticity history)</span></label>
+      <textarea id="iProv" placeholder="Where it came from and how its authenticity is established. e.g. Purchased new in 2021, single owner, kept in original box. Authenticated by StockX, tag attached."></textarea>
+      <p style="font-size:11px;color:var(--ink-3);line-height:1.5;margin-top:6px">Provenance is sealed into the cryptographic record alongside the evidence — it's first-class proof, not a note.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Disclosures — declare what the buyer should know</div>
+      <label for="dDefects">Known defects</label>
+      <textarea id="dDefects" placeholder="Any known defects or issues."></textarea>
+      <label for="dDamage">Damage</label>
+      <textarea id="dDamage" placeholder="Existing damage (scratches, dents, wear)."></textarea>
+      <label for="dMissing">Missing parts</label>
+      <textarea id="dMissing" placeholder="Anything missing or not included."></textarea>
+      <label for="dRepairs">Repairs</label>
+      <textarea id="dRepairs" placeholder="Past or needed repairs."></textarea>
+      <label for="dSpecial">Special conditions</label>
+      <textarea id="dSpecial" placeholder="Any other conditions of the sale."></textarea>
+
+      <div style="margin-top:16px" class="toggles">
+        <label class="tg"><input type="checkbox" id="tgAsIs"><span>Sold As-Is</span></label>
+        <label class="tg"><input type="checkbox" id="tgNoWarranty"><span>No Warranty</span></label>
+        <label class="tg"><input type="checkbox" id="tgInspected"><span>Buyer Inspected Item</span></label>
+        <label class="tg"><input type="checkbox" id="tgTestDrive"><span>Inspection Completed</span></label>
+        <label class="tg"><input type="checkbox" id="tgAckCond"><span>Buyer Acknowledged Condition</span></label>
+      </div>
+    </div>
+
+    <div class="err" id="err1"></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="goStep(2)">CONTINUE → EVIDENCE</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="step2" class="hidden">
+    <h1>ADD EVIDENCE</h1>
+    <p class="lede">Add photos, video, receipts, inspection reports, or the title. Every file is cryptographically hashed and sealed into the record. <strong>The stronger the evidence, the stronger the protection.</strong></p>
+
+    <div class="card">
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" multiple accept="image/*,video/*,application/pdf,.pdf,.doc,.docx">
+        <div class="dz-icon">📎</div>
+        <div class="dz-main">Drop files here or tap to browse</div>
+        <div class="dz-sub">Photos · Video · PDFs · Receipts · Title · max 100MB each</div>
+      </div>
+      <div class="ev-hint" id="evHint">Add evidence of the item's condition.</div>
+      <div class="ev-list" id="evList"></div>
+    </div>
+
+    <div class="err" id="err2"></div>
+    <div class="actions">
+      <button class="btn-ghost btn" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">CONTINUE → REVIEW</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section id="step3" class="hidden">
+    <h1>REVIEW & SEAL</h1>
+    <p class="lede">Confirm everything is accurate. Once sealed, the agreement, condition, disclosures, and evidence are locked into a tamper-evident record.</p>
+
+    <div class="card" id="reviewCard"><!-- filled by JS --></div>
+
+    <div class="disclaimer">
+      <div class="disclaimer-title">⚠ Important — what this is and isn't</div>
+      <div class="disclaimer-text">SENT Transfer creates cryptographic proof of a transaction and its agreed terms only. It is <strong>not a legal title transfer</strong>, <strong>not a substitute for any state-required form</strong> (such as a DMV title transfer or odometer disclosure), and <strong>not legal advice</strong>. You remain responsible for completing any forms required by law for your item. SENT seals what was agreed, its condition, and when — nothing more.</div>
+    </div>
+
+    <div class="confirm-box">
+      <label><input type="checkbox" id="confirmAccurate"><span>I confirm the information, condition, and disclosures above are accurate and complete to the best of my knowledge.</span></label>
+    </div>
+
+    <div class="upload-prog" id="uploadProg">
+      <div class="upload-prog-label" id="uploadLabel">Uploading evidence…</div>
+      <div class="upload-prog-bar"><div class="upload-prog-fill" id="uploadFill"></div></div>
+      <div class="upload-prog-text" id="uploadText">0%</div>
+    </div>
+
+    <div class="err" id="err3"></div>
+    <div class="actions">
+      <button class="btn-ghost btn" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" id="sealBtn" disabled onclick="sealTransfer()">SEAL TRANSFER →</button>
+    </div>
+    <div class="trust-row" style="justify-content:center;margin-top:16px">
+      <span class="trust-chip">✓ Timestamped</span>
+      <span class="trust-chip">✓ Cryptographically sealed</span>
+      <span class="trust-chip">✓ Independently verifiable</span>
+      <span class="trust-chip">✓ Tamper evident</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const MAX_FILE_SIZE = 104857600;
+const MAX_EVIDENCE = 20;
+let evidence = []; // { file, name, hash, mime, sizeBytes, sizeHuman, previewUrl }
+
+// Lightweight category adapter — the same record surfaces the few extra fields a
+// category needs, without separate forms. Keys match the backend category_attributes bag.
+const CATEGORY_FIELDS = {
+  general: [],
+  sneakers: [
+    { key:'size', label:'Size', ph:'e.g. US 10 / EU 44' },
+    { key:'sku', label:'Style / SKU', ph:'e.g. DZ5485-612' },
+    { key:'authentication', label:'Authentication', ph:'e.g. StockX verified, LegitCheck' }
+  ],
+  jewelry: [
+    { key:'metal', label:'Metal', ph:'e.g. 18k yellow gold' },
+    { key:'stones', label:'Stones', ph:'e.g. 1.2ct diamond, VS1' },
+    { key:'appraisal_cert', label:'Appraisal / certificate', ph:'e.g. GIA report #2141438167' }
+  ],
+  electronics: [
+    { key:'serial', label:'Serial number', ph:"Device serial number" },
+    { key:'imei', label:'IMEI', ph:'For phones / cellular devices' }
+  ]
+};
+const CATEGORY_LABEL = { general:'General goods', sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics' };
+
+function renderCategoryFields() {
+  const cat = document.getElementById('iCat').value || 'general';
+  const fields = CATEGORY_FIELDS[cat] || [];
+  const wrap = document.getElementById('catFields');
+  const hint = document.getElementById('catHint');
+  document.getElementById('catCardTitle').textContent = `// ${CATEGORY_LABEL[cat] || 'Specifics'}`;
+  if (!fields.length) {
+    wrap.innerHTML = '';
+    hint.textContent = 'No category-specific fields for general goods — your description, provenance, and evidence carry the detail.';
+    return;
+  }
+  hint.textContent = 'These are sealed into the record as part of the agreement.';
+  wrap.innerHTML = fields.map(f =>
+    `<label for="attr_${f.key}">${f.label} <span class="opt">(optional)</span></label>
+     <input id="attr_${f.key}" type="text" data-attr="${f.key}" placeholder="${f.ph}">`
+  ).join('');
+}
+
+// Collect the category adapter bag from whatever fields are currently shown.
+function collectAttributes() {
+  const out = {};
+  document.querySelectorAll('#catFields [data-attr]').forEach(el => {
+    const v = el.value.trim();
+    if (v) out[el.dataset.attr] = v;
+  });
+  return out;
+}
+
+document.getElementById('iCat').addEventListener('change', renderCategoryFields);
+renderCategoryFields();
+
+// Condition custom toggle
+document.getElementById('iCond').addEventListener('change', e => {
+  document.getElementById('condCustomWrap').classList.toggle('hidden', e.target.value !== 'Custom');
+});
+
+// Default date = today
+document.getElementById('iDate').value = new Date().toISOString().slice(0,10);
+
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function goStep(n) {
+  // Validate step 1 before leaving it
+  if (n >= 2) {
+    const err = document.getElementById('err1');
+    err.textContent = '';
+    if (!val('sName')) return failStep(1, 'Seller name is required.');
+    if (!emailRe.test(val('sEmail'))) return failStep(1, 'Valid seller email is required.');
+    if (!val('bName')) return failStep(1, 'Buyer name is required.');
+    if (!emailRe.test(val('bEmail'))) return failStep(1, 'Valid buyer email is required.');
+    if (!val('iTitle')) return failStep(1, 'Item title is required.');
+  }
+  document.querySelectorAll('section[id^=step]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('step' + n).classList.remove('hidden');
+  // stepper state
+  document.querySelectorAll('.step-pill').forEach(p => {
+    const s = +p.dataset.s;
+    p.classList.toggle('active', s === n);
+    p.classList.toggle('done', s < n);
+  });
+  if (n === 3) buildReview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function failStep(n, msg) { document.getElementById('err' + n).textContent = msg; window.scrollTo({top:0,behavior:'smooth'}); }
+function val(id) { return document.getElementById(id).value.trim(); }
+function chk(id) { return document.getElementById(id).checked; }
+
+// Evidence handling
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('fileInput');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', e => { if (!dz.contains(e.relatedTarget)) dz.classList.remove('dragover'); });
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+fi.addEventListener('change', () => { addFiles(fi.files); fi.value = ''; });
+
+async function addFiles(fileList) {
+  const err = document.getElementById('err2'); err.textContent = '';
+  for (const file of fileList) {
+    if (evidence.length >= MAX_EVIDENCE) { err.textContent = `Maximum ${MAX_EVIDENCE} files.`; break; }
+    if (file.size > MAX_FILE_SIZE) { err.textContent = `"${file.name}" exceeds 100MB.`; continue; }
+    const item = { file, name: file.name, hash: null, mime: file.type, sizeBytes: file.size, sizeHuman: fmtSize(file.size), previewUrl: null };
+    if (file.type.startsWith('image/')) item.previewUrl = URL.createObjectURL(file);
+    evidence.push(item);
+    renderEvidence();
+    // hash async
+    try {
+      const buf = await file.arrayBuffer();
+      const hb = await crypto.subtle.digest('SHA-256', buf);
+      item.hash = Array.from(new Uint8Array(hb)).map(b => b.toString(16).padStart(2,'0')).join('');
+      renderEvidence();
+    } catch (e) { err.textContent = `Failed to hash "${file.name}".`; }
+  }
+}
+
+function renderEvidence() {
+  const list = document.getElementById('evList');
+  const hint = document.getElementById('evHint');
+  hint.style.display = evidence.length ? 'none' : 'block';
+  list.innerHTML = '';
+  evidence.forEach((ev, i) => {
+    const el = document.createElement('div');
+    el.className = 'ev-item';
+    const thumb = ev.previewUrl ? `<img src="${ev.previewUrl}" alt="">` : iconFor(ev.mime);
+    el.innerHTML = `
+      <div class="ev-thumb">${thumb}</div>
+      <div class="ev-info">
+        <div class="ev-name">${ev.name}</div>
+        <div class="ev-meta">${ev.sizeHuman} · ${ev.hash ? '<span class="hashed">SHA-256 ✓ sealed</span>' : 'hashing…'}</div>
+      </div>
+      <button class="ev-remove" onclick="removeEvidence(${i})" aria-label="Remove">×</button>`;
+    list.appendChild(el);
+  });
+}
+function iconFor(mime) {
+  if (!mime) return '📄';
+  if (mime.startsWith('video/')) return '🎬';
+  if (mime === 'application/pdf') return '📕';
+  if (mime.includes('word') || mime.includes('document')) return '📄';
+  return '📄';
+}
+function removeEvidence(i) { if (evidence[i].previewUrl) URL.revokeObjectURL(evidence[i].previewUrl); evidence.splice(i,1); renderEvidence(); }
+
+function buildReview() {
+  const condition = val('iCond') === 'Custom' ? (val('iCondCustom') || 'Custom') : val('iCond');
+  const price = val('iPrice') ? '$' + Number(val('iPrice')).toLocaleString(undefined,{minimumFractionDigits:2}) : '—';
+  const disclosures = [
+    ['Known defects', val('dDefects')],
+    ['Damage', val('dDamage')],
+    ['Missing parts', val('dMissing')],
+    ['Repairs', val('dRepairs')],
+    ['Special conditions', val('dSpecial')]
+  ].filter(d => d[1]);
+  const toggles = [
+    ['Sold As-Is', chk('tgAsIs')],
+    ['No Warranty', chk('tgNoWarranty')],
+    ['Buyer Inspected', chk('tgInspected')],
+    ['Inspection Completed', chk('tgTestDrive')],
+    ['Buyer Acknowledged Condition', chk('tgAckCond')]
+  ].filter(t => t[1]).map(t => t[0]);
+  const ids = Object.entries(collectAttributes()).map(([k, v]) => {
+    const def = (CATEGORY_FIELDS[val('iCat') || 'general'] || []).find(f => f.key === k);
+    return [def ? def.label : k, v];
+  });
+  const provenance = val('iProv');
+  const categoryLabel = CATEGORY_LABEL[val('iCat') || 'general'] || '';
+
+  let html = `
+    <div class="rev-section"><div class="rev-h">Parties</div>
+      <div class="rev-row"><span class="rev-k">Seller</span><span class="rev-v">${esc(val('sName'))} · ${esc(val('sEmail'))}</span></div>
+      <div class="rev-row"><span class="rev-k">Buyer</span><span class="rev-v">${esc(val('bName'))} · ${esc(val('bEmail'))}</span></div>
+    </div>
+    <div class="rev-section"><div class="rev-h">Item</div>
+      <div class="rev-row"><span class="rev-k">Title</span><span class="rev-v">${esc(val('iTitle'))}</span></div>
+      <div class="rev-row"><span class="rev-k">Category</span><span class="rev-v">${esc(categoryLabel)}</span></div>
+      <div class="rev-row"><span class="rev-k">Price</span><span class="rev-v">${price}</span></div>
+      <div class="rev-row"><span class="rev-k">Date</span><span class="rev-v">${esc(val('iDate')) || '—'}</span></div>
+      <div class="rev-row"><span class="rev-k">Condition</span><span class="rev-v">${esc(condition) || '—'}</span></div>
+      ${val('iLoc') ? `<div class="rev-row"><span class="rev-k">Location</span><span class="rev-v">${esc(val('iLoc'))}</span></div>` : ''}
+      ${val('iDesc') ? `<div class="rev-disc">${esc(val('iDesc'))}</div>` : ''}
+    </div>
+    ${ids.length ? `<div class="rev-section"><div class="rev-h">${esc(categoryLabel)} details</div>${ids.map(d=>`<div class="rev-row"><span class="rev-k">${esc(d[0])}</span><span class="rev-v">${esc(d[1])}</span></div>`).join('')}</div>` : ''}
+    <div class="rev-section"><div class="rev-h">Provenance</div>${provenance ? `<div class="rev-disc">${esc(provenance)}</div>` : '<div class="rev-row"><span class="rev-k">None provided</span></div>'}</div>
+    ${disclosures.length ? `<div class="rev-section"><div class="rev-h">Disclosures</div>${disclosures.map(d=>`<div class="rev-row"><span class="rev-k">${d[0]}</span></div><div class="rev-disc">${esc(d[1])}</div>`).join('')}</div>` : '<div class="rev-section"><div class="rev-h">Disclosures</div><div class="rev-row"><span class="rev-k">None declared</span></div></div>'}
+    ${toggles.length ? `<div class="rev-section"><div class="rev-h">Agreement terms</div><div class="trust-row">${toggles.map(t=>`<span class="trust-chip">✓ ${t}</span>`).join('')}</div></div>` : ''}
+    <div class="rev-section"><div class="rev-h">Evidence (${evidence.length})</div>
+      ${evidence.length ? evidence.map(e=>`<div class="rev-row"><span class="rev-k">${esc(e.name)}</span><span class="rev-v">${e.hash ? 'sealed ✓' : 'hashing…'}</span></div>`).join('') : '<div class="rev-row"><span class="rev-k">No evidence attached</span></div>'}
+    </div>`;
+  document.getElementById('reviewCard').innerHTML = html;
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+document.getElementById('confirmAccurate').addEventListener('change', e => {
+  document.getElementById('sealBtn').disabled = !e.target.checked;
+});
+
+async function sealTransfer() {
+  const err = document.getElementById('err3'); err.textContent = '';
+  const btn = document.getElementById('sealBtn');
+  // ensure all hashes done
+  if (evidence.some(e => !e.hash)) { err.textContent = 'Evidence still hashing — wait a moment.'; return; }
+
+  btn.disabled = true; btn.textContent = 'CREATING…';
+
+  const condition = val('iCond');
+  const payload = {
+    transfer: {
+      seller_name: val('sName'), seller_email: val('sEmail'), seller_phone: val('sPhone'),
+      buyer_name: val('bName'), buyer_email: val('bEmail'), buyer_phone: val('bPhone'),
+      item_title: val('iTitle'), category: val('iCat') || 'general',
+      sale_price: val('iPrice') || '', transfer_date: val('iDate'),
+      description: val('iDesc'), condition: condition,
+      condition_custom: condition === 'Custom' ? val('iCondCustom') : '',
+      provenance: val('iProv'),
+      category_attributes: collectAttributes(),
+      location: val('iLoc'), notes: '',
+      disclosed_defects: val('dDefects'), disclosed_damage: val('dDamage'),
+      disclosed_missing_parts: val('dMissing'), disclosed_repairs: val('dRepairs'),
+      disclosed_special_conditions: val('dSpecial'),
+      sold_as_is: chk('tgAsIs'), no_warranty: chk('tgNoWarranty'),
+      buyer_inspected: chk('tgInspected'), inspection_completed: chk('tgTestDrive'),
+      buyer_acknowledged_condition: chk('tgAckCond')
+    },
+    evidence: evidence.map(e => ({ fileName: e.name, fileHash: e.hash, fileMimeType: e.mime, fileSizeBytes: e.sizeBytes, fileSize: e.sizeHuman }))
+  };
+
+  try {
+    const res = await fetch('/api/create-transfer', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Failed to create transfer.'; btn.disabled = false; btn.textContent = 'SEAL TRANSFER →'; return; }
+
+    const { transferId, uploads } = data;
+
+    // Upload evidence files to signed URLs
+    if (uploads && uploads.length) {
+      document.getElementById('uploadProg').classList.add('show');
+      for (let i = 0; i < uploads.length; i++) {
+        const up = uploads[i];
+        const ev = evidence.find(e => e.name === up.fileName);
+        if (!ev) continue;
+        document.getElementById('uploadLabel').textContent = `Uploading ${i+1} of ${uploads.length}…`;
+        const ok = await putFile(up.uploadUrl, ev.file, (pct) => {
+          document.getElementById('uploadFill').style.width = pct + '%';
+          document.getElementById('uploadText').textContent = pct + '%';
+        });
+        if (!ok) {
+          await fetch('/api/finalize-transfer', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ transferId, uploadSuccess: false }) });
+          err.textContent = `Upload failed on "${up.fileName}". Transfer cancelled — please retry.`;
+          document.getElementById('uploadProg').classList.remove('show');
+          btn.disabled = false; btn.textContent = 'SEAL TRANSFER →';
+          return;
+        }
+      }
+    }
+
+    // Finalize / seal
+    btn.textContent = 'SEALING…';
+    const finRes = await fetch('/api/finalize-transfer', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transferId, uploadSuccess: true })
+    });
+    const finData = await finRes.json();
+    if (!finRes.ok) { err.textContent = finData.error || 'Failed to seal transfer.'; btn.disabled = false; btn.textContent = 'SEAL TRANSFER →'; return; }
+
+    window.location.href = `/verify/${transferId}`;
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    btn.disabled = false; btn.textContent = 'SEAL TRANSFER →';
+  }
+}
+
+function putFile(url, file, onProgress) {
+  return new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round(e.loaded/e.total*100)); };
+    xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300);
+    xhr.onerror = () => resolve(false);
+    xhr.open('PUT', url);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.send(file);
+  });
+}
+
+function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB';}
+</script>
+</body>
+</html>

@@ -321,6 +321,127 @@ async function sealProof({ supabase, resend, metadata, paymentIntentId }) {
   }
 }
 
+// ─── SENT TRANSFER: single-transfer seal (mirrors _transfer-finalize-helper.js) ──
+// Inlined here because the webhook is CJS and the helper is ESM (same reason the
+// webhook already inlines its own buildRacToken/callVeridex rather than importing).
+
+function canonicalTransferAttributes(attrs) {
+  if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return {};
+  const out = {};
+  for (const k of Object.keys(attrs).sort()) {
+    const v = attrs[k];
+    if (v === null || v === undefined || v === '') continue;
+    out[k] = typeof v === 'string' ? v : String(v);
+  }
+  return out;
+}
+
+function buildTransferAgreementHash(transfer, evidenceHashes) {
+  const canonical = JSON.stringify({
+    seller: { name: transfer.seller_name, email: transfer.seller_email },
+    buyer: { name: transfer.buyer_name, email: transfer.buyer_email },
+    item: {
+      title: transfer.item_title, category: transfer.category || '',
+      price: transfer.sale_price != null ? String(transfer.sale_price) : '',
+      date: transfer.transfer_date || '', description: transfer.description || '',
+      condition: transfer.condition || '', condition_custom: transfer.condition_custom || '',
+      provenance: transfer.provenance || '', attributes: canonicalTransferAttributes(transfer.category_attributes),
+      location: transfer.location || '', notes: transfer.notes || ''
+    },
+    disclosures: {
+      defects: transfer.disclosed_defects || '', damage: transfer.disclosed_damage || '',
+      missing_parts: transfer.disclosed_missing_parts || '', repairs: transfer.disclosed_repairs || '',
+      special: transfer.disclosed_special_conditions || ''
+    },
+    toggles: {
+      sold_as_is: !!transfer.sold_as_is, no_warranty: !!transfer.no_warranty,
+      buyer_inspected: !!transfer.buyer_inspected, inspection_completed: !!transfer.inspection_completed,
+      buyer_acknowledged_condition: !!transfer.buyer_acknowledged_condition
+    },
+    evidence: (evidenceHashes || []).slice().sort()
+  });
+  return sha256(canonical);
+}
+
+function buildTransferChainHash({ transferId, sellerEmail, buyerEmail, agreementHash, timestamp }) {
+  const identityHash = sha256(sellerEmail + transferId);
+  const scopeHash = sha256(`${buyerEmail}:${agreementHash}`);
+  return sha256(`${identityHash}:${scopeHash}:transfer:${timestamp}`);
+}
+
+async function sealSingleTransfer({ supabase, resend, metadata, paymentIntentId }) {
+  const transferId = metadata.transfer_id;
+  if (!transferId) { console.warn('[webhook] single_transfer with no transfer_id'); return; }
+
+  // Load transfer
+  const { data: transfer } = await supabase.from('transfers').select('*').eq('id', transferId).maybeSingle();
+  if (!transfer) { console.error('[webhook] transfer not found:', transferId); return; }
+  if (transfer.is_valid) { console.log('[webhook] transfer already sealed:', transferId); return; }
+
+  // Evidence hashes
+  const { data: evidence } = await supabase.from('transfer_evidence').select('file_hash').eq('transfer_id', transferId);
+  const evidenceHashes = (evidence || []).map(e => e.file_hash);
+
+  const sealedAt = new Date().toISOString();
+  const agreementHash = buildTransferAgreementHash(transfer, evidenceHashes);
+  const chainHash = buildTransferChainHash({
+    transferId, sellerEmail: transfer.seller_email, buyerEmail: transfer.buyer_email, agreementHash, timestamp: sealedAt
+  });
+
+  // Signature: reuse callVeridex with transfer context (fallback = SHA-256)
+  let signature;
+  try {
+    const veridexUrl = process.env.VERIDEX_API_URL;
+    const veridexKey = process.env.VERIDEX_API_KEY;
+    if (veridexUrl && veridexKey) {
+      const r = await fetch(`${veridexUrl}/v1/guardedCommit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${veridexKey}`, 'X-Idempotency-Key': transferId, 'X-RAC-Version': '1.0' },
+        body: JSON.stringify({ action: 'seal_transfer', transfer_id: transferId, agreement_hash: agreementHash, rac_chain_hash: chainHash, timestamp: sealedAt })
+      });
+      if (!r.ok) throw new Error(`Veridex ${r.status}`);
+      const j = await r.json();
+      signature = j.signature;
+    } else {
+      signature = sha256(`${transferId}:${agreementHash}:${sealedAt}`);
+    }
+  } catch (e) {
+    console.error('[webhook] transfer Veridex failed, fallback:', e.message);
+    signature = sha256(`${transferId}:${agreementHash}:${sealedAt}`);
+  }
+
+  const { error: upErr } = await supabase.from('transfers').update({
+    agreement_hash: agreementHash,
+    rac_chain_hash: chainHash,
+    veridex_signature: signature,
+    sealed_at: sealedAt,
+    is_valid: true,
+    status: 'sealed',
+    payment_ref: paymentIntentId,
+    updated_at: sealedAt
+  }).eq('id', transferId);
+  if (upErr) { console.error('[webhook] transfer seal update failed:', upErr.message); throw new Error(upErr.message); }
+
+  await supabase.from('payments').update({ status: 'succeeded' }).eq('stripe_payment_id', paymentIntentId);
+
+  // Emails: seller receipt + buyer acknowledgment request
+  const baseUrl = 'https://vxsent.com';
+  if (resend) {
+    await sendEmail({
+      resend, from: 'receipts@vxsent.com', to: transfer.seller_email,
+      subject: `Verified Transfer sealed — ${transfer.item_title}`,
+      html: `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8"><div style="background:#00b356;color:#fff;padding:14px 28px;border-radius:8px 8px 0 0"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em">✓ TRANSFER SEALED</div></div><div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px"><h2 style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#111318;margin-bottom:8px">PROOF CREATED. AWAITING ACKNOWLEDGMENT.</h2><p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">Your verified transfer is sealed and timestamped. <strong>${transfer.buyer_name}</strong> has been sent a secure link to review and acknowledge.</p><a href="${baseUrl}/verify/${transferId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;border-radius:4px">VIEW TRANSFER →</a></div></div>`
+    });
+    await sendEmail({
+      resend, from: 'receipts@vxsent.com', to: transfer.buyer_email,
+      subject: `${transfer.seller_name} sent you a Verified Transfer — review & acknowledge`,
+      html: `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8"><div style="background:#fff;border:1px solid #e1e4e8;border-radius:8px;padding:32px;border-top:3px solid #00b356"><h2 style="font-size:20px;color:#111318;margin-bottom:12px">You have a Verified Transfer.</h2><p style="font-size:14px;color:#374151;line-height:1.65;margin-bottom:24px"><strong>${transfer.seller_name}</strong> has sent you a verified record of a sale. Review the condition, photos, and disclosures, then acknowledge. Your acknowledgment is cryptographically sealed and protects both parties.</p><a href="${baseUrl}/transfer-ack?id=${transferId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;border-radius:4px">REVIEW & ACKNOWLEDGE →</a></div></div>`
+    });
+  }
+
+  console.log('[webhook] single transfer sealed:', transferId);
+}
+
 // ─── MAIN HANDLER ────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -392,13 +513,19 @@ exports.handler = async (event) => {
 
         console.log('[webhook] checkout.session.completed:', session.id, 'proofId:', meta.proof_id);
 
+        // Get the PaymentIntent ID from the session
+        const paymentIntentId = session.payment_intent || session.id;
+
+        // SENT Transfer single-transfer via Checkout
+        if (meta.product === 'single_transfer') {
+          await sealSingleTransfer({ supabase, resend, metadata: meta, paymentIntentId });
+          break;
+        }
+
         if (!meta.proof_id) {
           console.warn('[webhook] No proof_id in checkout session metadata — skipping');
           break;
         }
-
-        // Get the PaymentIntent ID from the session
-        const paymentIntentId = session.payment_intent || session.id;
 
         await sealProof({
           supabase, resend,
@@ -417,7 +544,13 @@ exports.handler = async (event) => {
         const pi = stripeEvent.data.object;
         const meta = pi.metadata || {};
 
-        console.log('[webhook] payment_intent.succeeded:', pi.id, 'proofId:', meta.proof_id);
+        console.log('[webhook] payment_intent.succeeded:', pi.id, 'product:', meta.product, 'proofId:', meta.proof_id);
+
+        // SENT Transfer single-transfer path
+        if (meta.product === 'single_transfer') {
+          await sealSingleTransfer({ supabase, resend, metadata: meta, paymentIntentId: pi.id });
+          break;
+        }
 
         if (!meta.proof_id) {
           console.warn('[webhook] No proof_id in PaymentIntent metadata — skipping');
@@ -435,7 +568,16 @@ exports.handler = async (event) => {
       // ── payment_intent.payment_failed ──────────────────────────────────────
       case 'payment_intent.payment_failed': {
         const pi = stripeEvent.data.object;
-        const proofId = pi.metadata?.proof_id;
+        const meta = pi.metadata || {};
+
+        // Transfer payment failed — leave transfer pending (seller can retry); mark payment failed
+        if (meta.product === 'single_transfer' && meta.transfer_id) {
+          await supabase.from('payments').update({ status: 'failed' }).eq('stripe_payment_id', pi.id);
+          console.log('[webhook] Transfer payment failed:', meta.transfer_id);
+          break;
+        }
+
+        const proofId = meta.proof_id;
 
         if (proofId) {
           await supabase.from('proofs').delete().eq('id', proofId).eq('is_valid', false);

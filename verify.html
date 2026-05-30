@@ -3,25 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENT. — Verify Delivery</title>
+<title>SENT. — Verify</title>
 <script>
-// This page exists for /verify/:id URLs from emails.
-// It just redirects to /receipt?id=:id&confirm=true so the recipient lands directly on the acknowledge UI.
+// /verify/:id router.
+//  - SENT-TX-...  -> transfer verification page
+//  - SENT-...     -> proof receipt/acknowledge page (existing behavior)
 const path = window.location.pathname;
 const match = path.match(/\/verify\/([^\/\?]+)/);
-const proofId = match ? match[1] : null;
+const proofId = match ? decodeURIComponent(match[1]) : null;
 const params = new URLSearchParams(window.location.search);
 const confirm = params.get('confirm');
 
-if (proofId) {
-  const confirmParam = confirm ? `&confirm=${confirm}` : '&confirm=true';
-  window.location.replace(`/receipt?id=${proofId}${confirmParam}`);
+if (proofId && proofId.startsWith('SENT-TX-')) {
+  window.location.replace('/transfer-verify.html?id=' + encodeURIComponent(proofId));
+} else if (proofId) {
+  const confirmParam = confirm ? '&confirm=' + confirm : '&confirm=true';
+  window.location.replace('/receipt?id=' + encodeURIComponent(proofId) + confirmParam);
 } else {
   document.body.innerHTML = '<p style="text-align:center;padding:40px;font-family:monospace">Invalid verify link.</p>';
 }
 </script>
 </head>
 <body style="background:#0a1628;color:#00ff9d;font-family:monospace;text-align:center;padding:40px">
-<p>Redirecting...</p>
+<p>Verifying...</p>
 </body>
 </html>
