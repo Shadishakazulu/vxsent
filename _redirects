@@ -18,5 +18,10 @@
 /api/cancel-subscription        /.netlify/functions/cancel-subscription         200
 /api/get-proof-by-session       /.netlify/functions/get-proof-by-session        200
 
+# Admin API routes (read-only analytics, server-side allowlist-gated)
+/api/admin/check                /.netlify/functions/admin-check                 200
+/api/admin/stats                /.netlify/functions/admin-stats                 200
+/api/admin/user                 /.netlify/functions/admin-user                  200
+
 # Page routes are now handled by netlify.toml
 # /verify/:id route is now handled by netlify.toml + verify.html (do NOT add /verify rules here)

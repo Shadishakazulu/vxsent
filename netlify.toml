@@ -45,6 +45,16 @@ status = 200
 force = true
 
 
+# Admin-only analytics dashboard (read-only). The page is not the security
+# boundary — it probes /api/admin/check on load and the admin APIs gate on a
+# server-side allowlist, so this route being known reveals nothing.
+[[redirects]]
+from = "/admin"
+to = "/admin.html"
+status = 200
+force = true
+
+
 [[redirects]]
 from = "/pricing"
 to = "/pricing.html"
@@ -269,4 +279,26 @@ status = 200
 [[redirects]]
 from = "/api/transfers"
 to = "/.netlify/functions/get-transfers"
+status = 200
+
+
+# ============================================================
+# API REDIRECTS — ADMIN (read-only analytics, allowlist-gated)
+# ============================================================
+
+[[redirects]]
+from = "/api/admin/check"
+to = "/.netlify/functions/admin-check"
+status = 200
+
+
+[[redirects]]
+from = "/api/admin/stats"
+to = "/.netlify/functions/admin-stats"
+status = 200
+
+
+[[redirects]]
+from = "/api/admin/user"
+to = "/.netlify/functions/admin-user"
 status = 200

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. Admin — Platform Analytics</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#ffffff;--panel:#f0f2f5;--panel-hi:#e8eaed;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.2);
+  --red:#dc2626;--border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+a{color:inherit}
+
+/* Topbar */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;height:58px;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100}
+.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
+.tb-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.tb-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);padding:3px 9px;border:1.5px solid var(--green-bd);background:var(--green-bg);border-radius:3px}
+.tb-right{display:flex;align-items:center;gap:12px;min-width:0}
+.tb-user{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
+.tb-link{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;border:1.5px solid var(--border);padding:6px 10px;border-radius:3px;white-space:nowrap}
+.tb-link:hover{color:var(--ink);border-color:var(--border-md)}
+
+/* Layout */
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 64px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.06em;line-height:1;margin-bottom:4px}
+.page-sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:22px}
+
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin:26px 0 10px}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sc{background:var(--surface);border:1px solid var(--border);padding:16px 16px;border-radius:6px;box-shadow:var(--shadow-sm)}
+.sc.hero{grid-column:1/-1;border-color:var(--green-bd);background:linear-gradient(180deg,var(--green-bg),var(--surface))}
+.sc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+.sc-num{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;color:var(--ink)}
+.sc-num.green{color:var(--green-dk)}
+.sc.hero .sc-num{font-size:48px}
+.sc-sub{font-size:12px;color:var(--ink-3);margin-top:4px}
+
+/* Panels / lists */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.panel-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3)}
+
+.feed{display:flex;flex-direction:column}
+.fi{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border)}
+.fi:last-child{border-bottom:none}
+.fi-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.fi-name{font-size:14px;font-weight:600;color:var(--ink);word-break:break-word;margin-bottom:3px}
+.fi-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);letter-spacing:0.06em;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fi-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-4);letter-spacing:0.06em;white-space:nowrap;text-align:right}
+.tag{display:inline-block;padding:1px 6px;border:1px solid var(--border);color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;border-radius:2px}
+.tag.tx{border-color:var(--green-dk);color:#fff;background:var(--green-dk)}
+.tag.proof{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
+.tag.ack{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
+.tag.sealed{border-color:var(--border-md);color:var(--ink-3)}
+.tag.pending{border-color:var(--border-md);color:var(--ink-4)}
+
+/* User lookup */
+.lookup-form{display:flex;gap:8px;padding:16px}
+.lookup-input{flex:1;min-width:0;padding:11px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif}
+.lookup-input:focus{border-color:var(--green)}
+.lookup-btn{padding:11px 18px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.08em;border:none;cursor:pointer;border-radius:4px;white-space:nowrap}
+.lookup-btn:hover{background:var(--green-dk)}
+.lookup-btn:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
+.lookup-result{padding:0 16px 16px}
+.lu-user{border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px;background:var(--panel)}
+.lu-email{font-size:15px;font-weight:700;color:var(--ink);word-break:break-all;margin-bottom:4px}
+.lu-meta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.06em;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.lu-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin:16px 0 8px}
+.lu-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.lu-row:last-child{border-bottom:none}
+.lu-rname{font-size:13px;font-weight:600;color:var(--ink);word-break:break-word;margin-bottom:3px}
+.lu-rmeta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);letter-spacing:0.06em;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.muted{color:var(--ink-3);font-size:13px;padding:18px 16px}
+.err{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em;padding:14px 16px}
+.loading{padding:30px 16px;text-align:center;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase}
+
+@media(min-width:640px){
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .sc.hero{grid-column:span 2}
+  .page-title{font-size:38px}
+}
+#gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3)}
+</style>
+</head>
+<body>
+<!-- Authorization gate: hidden until /api/admin/check confirms the operator.
+     This is convenience only — the data APIs enforce the same allowlist server-side. -->
+<div id="gate">Verifying access…</div>
+
+<div class="topbar" style="display:none" id="topbar">
+  <a class="tb-logo" href="/dashboard">SENT.<span class="tb-dot"></span></a>
+  <div class="tb-right">
+    <span class="tb-tag">Admin</span>
+    <span class="tb-user" id="tbUser"></span>
+    <a class="tb-link" href="/dashboard">Dashboard</a>
+  </div>
+</div>
+
+<main class="wrap" id="app" style="display:none">
+  <h1 class="page-title">Platform Analytics</h1>
+  <div class="page-sub" id="pageSub">Read-only · live data</div>
+
+  <!-- TRANSFERS -->
+  <div class="sec-title">Transfers</div>
+  <div class="stats">
+    <div class="sc hero">
+      <div class="sc-label">Acknowledge rate</div>
+      <div class="sc-num green" id="ackRate">—</div>
+      <div class="sc-sub" id="ackRateSub">Share of sealed transfers a buyer confirmed</div>
+    </div>
+    <div class="sc"><div class="sc-label">Total transfers</div><div class="sc-num" id="tfTotal">—</div></div>
+    <div class="sc"><div class="sc-label">Sealed</div><div class="sc-num" id="tfSealed">—</div></div>
+    <div class="sc"><div class="sc-label">Today</div><div class="sc-num" id="tfToday">—</div><div class="sc-sub"><span id="tfWeek">—</span> this week</div></div>
+  </div>
+
+  <!-- PROOFS + USERS -->
+  <div class="sec-title">Proofs &amp; Users</div>
+  <div class="stats">
+    <div class="sc"><div class="sc-label">Delivery proofs</div><div class="sc-num" id="pfTotal">—</div><div class="sc-sub"><span id="pfWeek">—</span> this week</div></div>
+    <div class="sc"><div class="sc-label">Total users</div><div class="sc-num" id="usTotal">—</div><div class="sc-sub"><span id="usWeek">—</span> new this week</div></div>
+    <div class="sc"><div class="sc-label">Active Solo subs</div><div class="sc-num green" id="usSolo">—</div></div>
+    <div class="sc"><div class="sc-label">Pay-per-use</div><div class="sc-num" id="usPpu">—</div></div>
+  </div>
+
+  <!-- REVENUE -->
+  <div class="sec-title">Revenue collected</div>
+  <div class="stats">
+    <div class="sc"><div class="sc-label">Combined</div><div class="sc-num green" id="revCombined">—</div></div>
+    <div class="sc"><div class="sc-label">Day passes</div><div class="sc-num" id="revDay">—</div></div>
+    <div class="sc"><div class="sc-label">Pay-per-transfer</div><div class="sc-num" id="revTx">—</div></div>
+    <div class="sc"><div class="sc-label">Subscription $</div><div class="sc-num" id="revSub">—</div><div class="sc-sub"><span id="revSubs">—</span> active subs</div></div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="sec-title">Recent activity</div>
+  <div class="panel">
+    <div class="feed" id="feed"><div class="loading">Loading…</div></div>
+  </div>
+
+  <!-- USER LOOKUP -->
+  <div class="sec-title">User lookup</div>
+  <div class="panel">
+    <form class="lookup-form" id="lookupForm" autocomplete="off">
+      <input class="lookup-input" id="lookupEmail" type="email" placeholder="email@example.com" aria-label="User email">
+      <button class="lookup-btn" id="lookupBtn" type="submit">Look up</button>
+    </form>
+    <div class="lookup-result" id="lookupResult" style="display:none"></div>
+  </div>
+</main>
+
+<script>
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function money(v){return v==null?'n/a':'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function n(v){return (v==null)?'n/a':v;}
+
+function relTime(iso){
+  if(!iso) return '';
+  const then=new Date(iso).getTime();
+  if(isNaN(then)) return '';
+  const s=Math.max(0,Math.floor((Date.now()-then)/1000));
+  if(s<60) return s+'s ago';
+  const m=Math.floor(s/60); if(m<60) return m+'m ago';
+  const h=Math.floor(m/60); if(h<24) return h+'h ago';
+  const d=Math.floor(h/24); if(d<30) return d+'d ago';
+  const mo=Math.floor(d/30); if(mo<12) return mo+'mo ago';
+  return Math.floor(mo/12)+'y ago';
+}
+function statusTag(status){
+  const cls = status==='acknowledged'?'ack':(status==='sealed'?'sealed':'pending');
+  return `<span class="tag ${cls}">${esc(status)}</span>`;
+}
+
+// ── Authorization gate ──────────────────────────────────────────────────────
+(async function init(){
+  let res;
+  try { res = await fetch('/api/admin/check', { credentials:'include' }); }
+  catch(e){ window.location.href='/login'; return; }
+
+  if(res.status===401){ window.location.href='/login'; return; }
+  if(res.status===403){ window.location.href='/dashboard'; return; }
+  if(!res.ok){ document.getElementById('gate').textContent='Unable to verify access'; return; }
+
+  let me=null; try{ me=await res.json(); }catch(e){}
+  document.getElementById('gate').style.display='none';
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('app').style.display='block';
+  if(me && me.email) document.getElementById('tbUser').textContent=me.email;
+
+  loadStats();
+})();
+
+// ── Stats + activity feed ───────────────────────────────────────────────────
+async function loadStats(){
+  let data;
+  try{
+    const r=await fetch('/api/admin/stats',{credentials:'include'});
+    if(!r.ok){ document.getElementById('feed').innerHTML='<div class="err">Failed to load stats.</div>'; return; }
+    data=await r.json();
+  }catch(e){ document.getElementById('feed').innerHTML='<div class="err">Failed to load stats.</div>'; return; }
+
+  const t=data.transfers||{}, p=data.proofs||{}, u=data.users||{}, rev=data.revenue||{};
+
+  // Transfers
+  document.getElementById('ackRate').textContent = (t.ackRate==null)?'n/a':(t.ackRate+'%');
+  document.getElementById('ackRateSub').textContent = (t.ackRate==null)
+    ? 'No sealed transfers yet'
+    : `${n(t.acknowledged)} of ${n(t.sealed)} sealed transfers confirmed`;
+  document.getElementById('tfTotal').textContent=n(t.total);
+  document.getElementById('tfSealed').textContent=n(t.sealed);
+  document.getElementById('tfToday').textContent=n(t.today);
+  document.getElementById('tfWeek').textContent=n(t.week);
+
+  // Proofs + users
+  document.getElementById('pfTotal').textContent=n(p.total);
+  document.getElementById('pfWeek').textContent=n(p.week);
+  document.getElementById('usTotal').textContent=n(u.total);
+  document.getElementById('usWeek').textContent=n(u.week);
+  document.getElementById('usSolo').textContent=n(u.activeSolo);
+  document.getElementById('usPpu').textContent=n(u.payPerUse);
+
+  // Revenue
+  document.getElementById('revCombined').textContent=money(rev.combined);
+  document.getElementById('revDay').textContent=money(rev.dayPass);
+  document.getElementById('revTx').textContent=money(rev.payPerTransfer);
+  document.getElementById('revSub').textContent=money(rev.subscription); // null -> n/a (invoices not recorded)
+  document.getElementById('revSubs').textContent=n(rev.activeSubscriptions);
+
+  if(data.generatedAt){
+    document.getElementById('pageSub').textContent='Read-only · as of '+relTime(data.generatedAt);
+  }
+
+  renderFeed(data.activity||[]);
+}
+
+function renderFeed(items){
+  const el=document.getElementById('feed');
+  if(!items.length){ el.innerHTML='<div class="muted">No activity yet.</div>'; return; }
+  el.innerHTML=items.map(a=>{
+    const typeTag = a.type==='transfer'?'<span class="tag tx">Transfer</span>':'<span class="tag proof">Proof</span>';
+    const parties = [a.from,a.to].filter(Boolean).map(esc).join(' → ');
+    return `<div class="fi">
+      <span class="fi-dot"></span>
+      <div>
+        <div class="fi-name">${esc(a.name)}</div>
+        <div class="fi-meta">${typeTag}${statusTag(a.status)}${parties?`<span>${parties}</span>`:''}</div>
+      </div>
+      <div class="fi-time">${esc(relTime(a.at))}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── User lookup ─────────────────────────────────────────────────────────────
+document.getElementById('lookupForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const email=document.getElementById('lookupEmail').value.trim();
+  const btn=document.getElementById('lookupBtn');
+  const box=document.getElementById('lookupResult');
+  if(!email) return;
+  btn.disabled=true; btn.textContent='…';
+  box.style.display='block';
+  box.innerHTML='<div class="loading">Searching…</div>';
+  try{
+    const r=await fetch('/api/admin/user?email='+encodeURIComponent(email),{credentials:'include'});
+    if(r.status===400){ box.innerHTML='<div class="err">Enter a valid email address.</div>'; return; }
+    if(!r.ok){ box.innerHTML='<div class="err">Lookup failed.</div>'; return; }
+    renderLookup(await r.json());
+  }catch(err){ box.innerHTML='<div class="err">Lookup failed.</div>'; }
+  finally{ btn.disabled=false; btn.textContent='Look up'; }
+});
+
+function lookupRow(name, role, counterparty, status){
+  const cp = counterparty ? `<span>${role==='seller'||role==='sender'?'to':'from'} ${esc(counterparty)}</span>` : '';
+  return `<div class="lu-row">
+    <div>
+      <div class="lu-rname">${esc(name)}</div>
+      <div class="lu-rmeta"><span class="tag">${esc(role)}</span>${cp}</div>
+    </div>
+    <div>${statusTag(status)}</div>
+  </div>`;
+}
+
+function renderLookup(d){
+  const box=document.getElementById('lookupResult');
+  let html='';
+
+  if(d.user){
+    const exp = d.user.planExpiresAt ? new Date(d.user.planExpiresAt).toLocaleDateString() : null;
+    html += `<div class="lu-user">
+      <div class="lu-email">${esc(d.user.email)}</div>
+      <div class="lu-meta">
+        <span>${esc(d.user.planStatus)}</span>
+        ${exp?`<span>renews/expires ${esc(exp)}</span>`:''}
+        <span>joined ${esc(new Date(d.user.createdAt).toLocaleDateString())}</span>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="lu-user"><div class="lu-email">${esc(d.query)}</div><div class="lu-meta"><span>Not a registered user — showing any records this email is a party to.</span></div></div>`;
+  }
+
+  html += `<div class="lu-sub">Transfers (${d.transfers.length})</div>`;
+  html += d.transfers.length
+    ? d.transfers.map(t=>lookupRow(t.itemTitle, t.role, t.counterparty, t.status)).join('')
+    : '<div class="muted" style="padding:8px 0">No transfers.</div>';
+
+  html += `<div class="lu-sub">Sealed proofs (${d.proofs.length})</div>`;
+  html += d.proofs.length
+    ? d.proofs.map(p=>lookupRow(p.fileName, p.role, p.counterparty, p.status)).join('')
+    : '<div class="muted" style="padding:8px 0">No proofs.</div>';
+
+  box.innerHTML=html;
+}
+</script>
+</body>
+</html>
