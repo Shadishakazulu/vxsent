@@ -328,8 +328,14 @@ textarea{resize:vertical;min-height:64px}
     <div class="pay-item" id="payItem">—</div>
     <label class="pay-label" for="payEmail">Your email — receipt &amp; transfer link</label>
     <input class="pay-input" id="payEmail" type="email" placeholder="you@email.com">
-    <label class="pay-label">Card details</label>
+    <label class="pay-label" id="txCardLabel">Card details</label>
     <div id="tx-card-element" class="pay-card"></div>
+    <label class="pay-label">Promo code <span style="text-transform:none;letter-spacing:0;color:var(--ink-4)">(optional)</span></label>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input class="pay-input" id="txPromo" type="text" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="margin-bottom:0;flex:1;min-width:0;text-transform:uppercase;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em">
+      <button type="button" class="btn btn-ghost" id="txPromoBtn" onclick="applyTransferPromo()" style="padding:11px 18px;font-size:16px">APPLY</button>
+    </div>
+    <div id="txPromoMsg" style="font-size:12px;font-family:'JetBrains Mono',monospace;min-height:0;margin-bottom:10px;letter-spacing:0.06em;line-height:1.5"></div>
     <div class="pay-err" id="payErr"></div>
     <button class="btn btn-primary" id="payBtn" onclick="submitTransferPayment()" style="width:100%">PAY $4.99 — SEAL TRANSFER</button>
     <div class="pay-note">🔒 Secured by Stripe · Your evidence is already uploaded · The record seals the moment payment succeeds</div>
@@ -714,6 +720,36 @@ async function submitTransferPayment() {
   const errEl = document.getElementById('payErr');
   const email = document.getElementById('payEmail').value.trim();
   if (!emailRe.test(email)) { errEl.textContent = 'Enter a valid email address.'; return; }
+
+  // FREE PATH — a 100%-off code (e.g. LAUNCH7) is applied: seal the transfer
+  // with NO Stripe charge. Only OUR $4.99 verification fee is waived — the
+  // buyer/seller sale is untouched. No card is collected or required.
+  if (txFreeCode) {
+    const pb = document.getElementById('payBtn');
+    pb.disabled = true; pb.textContent = 'SEALING…'; errEl.textContent = '';
+    try {
+      const res = await fetch('/api/redeem-promo', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'redeem',
+          product: 'single_transfer',
+          code: txFreeCode,
+          email,
+          transferId: txTransferId,
+          sellerEmail: email
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not complete your free transfer.');
+      window.location.href = data.verifyUrl || ('/verify/' + txTransferId);
+    } catch (e) {
+      errEl.textContent = e.message || 'Could not complete your free transfer.';
+      pb.disabled = false; pb.textContent = 'GET IT FREE →';
+    }
+    return;
+  }
+
   if (!txCard || !txClientSecret || !txStripe) { errEl.textContent = 'Payment not ready — please close and retry.'; return; }
 
   const pb = document.getElementById('payBtn');
@@ -750,7 +786,83 @@ async function submitTransferPayment() {
   }
 }
 
-function closePayModal() { document.getElementById('payOverlay').classList.remove('open'); }
+// Apply a promo code (e.g. LAUNCH7). A valid 100%-off code makes THIS transfer
+// free: the $4.99 verification fee drops to $0.00, the card box is hidden (no
+// card required or charged), and the button becomes "Get it free". On confirm,
+// submitTransferPayment() seals the transfer with no Stripe charge. Only our fee
+// is waived — the buyer/seller sale is not affected.
+let txFreeCode = null;
+
+function setTransferFree(code) {
+  txFreeCode = code;
+  const cardLabel = document.getElementById('txCardLabel');
+  const cardEl = document.getElementById('tx-card-element');
+  if (cardLabel) cardLabel.style.display = 'none';
+  if (cardEl) cardEl.style.display = 'none';
+  const pb = document.getElementById('payBtn');
+  if (pb) pb.textContent = 'GET IT FREE →';
+  document.getElementById('payErr').textContent = '';
+}
+
+function clearTransferFree() {
+  txFreeCode = null;
+  const cardLabel = document.getElementById('txCardLabel');
+  const cardEl = document.getElementById('tx-card-element');
+  if (cardLabel) cardLabel.style.display = '';
+  if (cardEl) cardEl.style.display = '';
+  const pb = document.getElementById('payBtn');
+  if (pb) pb.textContent = 'PAY $4.99 — SEAL TRANSFER';
+}
+
+async function applyTransferPromo() {
+  const codeEl = document.getElementById('txPromo');
+  const msg = document.getElementById('txPromoMsg');
+  const btn = document.getElementById('txPromoBtn');
+  const code = codeEl.value.trim();
+  const email = document.getElementById('payEmail').value.trim();
+
+  if (!code) { msg.style.color = 'var(--red)'; msg.textContent = 'Enter a promo code first.'; return; }
+  if (!emailRe.test(email)) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Add your email above, then apply the code.';
+    return;
+  }
+
+  btn.textContent = '…'; btn.disabled = true; msg.textContent = '';
+
+  try {
+    const res = await fetch('/api/redeem-promo', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'validate', product: 'single_transfer', code, email })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.valid) throw new Error(data.error || 'That code could not be applied.');
+
+    setTransferFree(data.code || code.toUpperCase());
+    msg.style.color = 'var(--green-dk)';
+    msg.innerHTML = `✓ Code applied — your verification fee is <strong>free</strong>. No card needed.`;
+    codeEl.disabled = true;
+    btn.textContent = 'APPLIED';
+  } catch (e) {
+    clearTransferFree();
+    msg.style.color = 'var(--red)';
+    msg.textContent = e.message || 'That code could not be applied.';
+    btn.textContent = 'APPLY'; btn.disabled = false;
+  }
+}
+
+function closePayModal() {
+  document.getElementById('payOverlay').classList.remove('open');
+  // Reset the promo field + free state so a reopened modal starts clean
+  clearTransferFree();
+  const promoEl = document.getElementById('txPromo');
+  const promoBtn = document.getElementById('txPromoBtn');
+  const promoMsg = document.getElementById('txPromoMsg');
+  if (promoEl) { promoEl.value = ''; promoEl.disabled = false; }
+  if (promoBtn) { promoBtn.textContent = 'APPLY'; promoBtn.disabled = false; }
+  if (promoMsg) { promoMsg.textContent = ''; }
+}
 document.getElementById('payOverlay').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
 </script>
 </body>

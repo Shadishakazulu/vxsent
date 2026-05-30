@@ -220,6 +220,13 @@ to = "/.netlify/functions/confirm-receipt"
 status = 200
 
 
+# 100%-off promo coupons (e.g. LAUNCH7) — validate + redeem a free purchase
+[[redirects]]
+from = "/api/redeem-promo"
+to = "/.netlify/functions/redeem-promo"
+status = 200
+
+
 # ============================================================
 # API REDIRECTS — NEW FOR FILE DELIVERY
 # ============================================================
