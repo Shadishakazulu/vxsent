@@ -91,6 +91,14 @@ status = 200
 force = true
 
 
+# Self-running 30-second product demo (screen-record source).
+[[redirects]]
+from = "/demo"
+to = "/demo.html"
+status = 200
+force = true
+
+
 # ── SENT Transfer SEO landing pages (Verified Bill of Sale) ──
 # Crawlable marketing pages, one per low-risk category, that link into /transfer.
 [[redirects]]
