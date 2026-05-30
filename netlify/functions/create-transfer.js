@@ -67,7 +67,7 @@ const VALID_CONDITIONS = ['New', 'Excellent', 'Good', 'Fair', 'As-Is', 'Salvage'
 const VALID_CATEGORIES = ['sneakers', 'jewelry', 'electronics', 'general'];
 
 // Build marker — bump on each deploy so the function log proves which code is live.
-const BUILD = '2026-05-30-transfer-phase1';
+const BUILD = '2026-05-30-transfer-payflow';
 
 // Lightweight category-adapter bag: accept a flat object of string-ish values,
 // drop empties, cap key count and value length. Never throws.
@@ -92,18 +92,15 @@ export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
 
-  const user = await verifySession(event);
-  if (!user) return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Authentication required. Please sign in.' }) };
-
-  // Entitlement: Pro Seller plan grants unlimited transfers.
-  // (Single-transfer pay-per-use is handled separately via Stripe before this call;
-  //  for now we require an active 'solo'/'pro' plan to seal, mirroring the proof gate.)
+  // Authentication is optional. Two ways to seal a transfer:
+  //   1. An active 'solo'/'pro' plan holder seals immediately (mirrors the proof gate).
+  //   2. Anyone else (no plan, or a guest with no session) creates a PENDING record
+  //      and pays per transfer via Stripe; the webhook seals it on payment success.
+  const user = await verifySession(event); // may be null for guest single-transfer
   const now = new Date();
-  const planExpiry = user.plan_expires_at ? new Date(user.plan_expires_at) : null;
-  const hasPlan = (user.plan === 'solo' || user.plan === 'pro') && planExpiry && planExpiry > now;
-  if (!hasPlan) {
-    return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'An active plan is required to create a verified transfer. Visit /pricing.' }) };
-  }
+  const planExpiry = user && user.plan_expires_at ? new Date(user.plan_expires_at) : null;
+  const hasPlan = !!user && (user.plan === 'solo' || user.plan === 'pro') && planExpiry && planExpiry > now;
+  const requiresPayment = !hasPlan;
 
   let body;
   try { body = JSON.parse(event.body); }
@@ -143,7 +140,7 @@ export const handler = async (event) => {
     // Insert transfer (pending until sealed)
     const record = {
       id: transferId,
-      user_id: user.id,
+      user_id: user ? user.id : null,
       seller_email: t.seller_email,
       seller_name: t.seller_name,
       seller_phone: t.seller_phone || null,
@@ -223,9 +220,9 @@ export const handler = async (event) => {
       });
     }
 
-    // No evidence to upload → seal immediately (mirrors create-proof-solo's no-file path).
-    // Writes the RAC chain hash now and emails both parties.
-    if (uploads.length === 0) {
+    // Plan holder with no evidence → seal immediately (mirrors create-proof-solo's
+    // no-file path): write the RAC chain hash now and email both parties.
+    if (uploads.length === 0 && !requiresPayment) {
       const sealedAt = new Date().toISOString();
       const { agreementHash, chainHash } = await finalizeTransfer({ transferId, sealedAt });
       const baseUrl = process.env.URL || 'https://vxsent.com';
@@ -244,10 +241,13 @@ export const handler = async (event) => {
       };
     }
 
+    // Otherwise the record stays pending. Plan holders upload evidence then call
+    // finalize-transfer to seal; pay-per-use sellers upload evidence (if any) then
+    // pay via /api/create-transfer-payment, and the Stripe webhook seals on success.
     return {
       statusCode: 200,
       headers: CORS_HEADERS,
-      body: JSON.stringify({ transferId, uploads, hasEvidence: uploads.length > 0 })
+      body: JSON.stringify({ transferId, uploads, hasEvidence: uploads.length > 0, requiresPayment })
     };
 
   } catch (error) {

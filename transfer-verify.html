@@ -122,6 +122,32 @@ function render(t, evidence) {
   const category = CATEGORY_LABELS[t.category] || t.category;
   const attrs = attrRows(t.category_attributes);
 
+  // Disclosures the seller declared — sealed into the agreement hash, shown here
+  // so the record is fully self-describing to any third party.
+  const disclosures = [
+    ['Known defects', t.disclosed_defects],
+    ['Damage', t.disclosed_damage],
+    ['Missing parts', t.disclosed_missing_parts],
+    ['Repairs', t.disclosed_repairs],
+    ['Special conditions', t.disclosed_special_conditions]
+  ].filter(d => d[1] && String(d[1]).trim() !== '');
+
+  // Structured agreement terms (toggles) sealed into the record.
+  const terms = [
+    ['Sold As-Is', t.sold_as_is],
+    ['No Warranty', t.no_warranty],
+    ['Buyer Inspected', t.buyer_inspected],
+    ['Inspection Completed', t.inspection_completed],
+    ['Buyer Acknowledged Condition', t.buyer_acknowledged_condition]
+  ].filter(d => d[1]).map(d => d[0]);
+
+  const disclosuresHtml = disclosures.length
+    ? `<div class="card"><div class="card-title">// Disclosures</div>${disclosures.map(d=>`<div class="disc-block"><div class="disc-label">${esc(d[0])}</div><div class="disc-text">${esc(d[1])}</div></div>`).join('')}</div>`
+    : '';
+  const termsHtml = terms.length
+    ? `<div class="card"><div class="card-title">// Agreement terms</div><div class="terms-row">${terms.map(t=>`<span class="chip">✓ ${esc(t)}</span>`).join('')}</div></div>`
+    : '';
+
   let gallery = '';
   if (evidence.length) {
     gallery = `<div class="card"><div class="card-title">// Sealed evidence (${evidence.length})</div><div class="gallery">` +
@@ -162,6 +188,10 @@ function render(t, evidence) {
     ${attrs.length ? `<div class="card"><div class="card-title">// Item details</div>${attrs.map(d=>`<div class="drow"><span class="dk">${esc(d[0])}</span><span class="dv">${esc(d[1])}</span></div>`).join('')}</div>` : ''}
 
     ${t.provenance ? `<div class="card"><div class="card-title">// Provenance</div><div class="desc">${esc(t.provenance)}</div></div>` : ''}
+
+    ${disclosuresHtml}
+
+    ${termsHtml}
 
     ${gallery}
 

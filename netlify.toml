@@ -264,3 +264,9 @@ status = 200
 from = "/api/transfer/:id"
 to = "/.netlify/functions/get-transfer?id=:id"
 status = 200
+
+
+[[redirects]]
+from = "/api/transfers"
+to = "/.netlify/functions/get-transfers"
+status = 200

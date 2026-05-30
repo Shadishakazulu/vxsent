@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/" async></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -117,6 +118,21 @@ textarea{resize:vertical;min-height:64px}
 .upload-prog-text{color:#4ade80;font-size:9px}
 
 .hidden{display:none}
+
+/* Pay-per-transfer modal (sellers without an active plan) */
+.pay-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.72);z-index:600;align-items:center;justify-content:center;padding:20px}
+.pay-overlay.open{display:flex}
+.pay-modal{background:var(--surface);border-radius:10px;padding:28px;max-width:430px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);max-height:92vh;overflow-y:auto}
+.pay-close{position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink-3);line-height:1}
+.pay-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;display:flex;align-items:center;gap:7px;color:var(--ink)}
+.pay-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);margin:4px 0 16px}
+.pay-item{font-size:14px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:11px 13px;margin-bottom:16px;word-break:break-word}
+.pay-label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+.pay-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;margin-bottom:14px;font-family:'DM Sans',sans-serif}
+.pay-input:focus{border-color:var(--green);outline:none}
+.pay-card{padding:13px;border:1.5px solid var(--border);border-radius:4px;margin-bottom:12px}
+.pay-err{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;min-height:16px;margin-bottom:10px;letter-spacing:0.06em}
+.pay-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4);margin-top:12px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -219,7 +235,7 @@ textarea{resize:vertical;min-height:64px}
         <label class="tg"><input type="checkbox" id="tgAsIs"><span>Sold As-Is</span></label>
         <label class="tg"><input type="checkbox" id="tgNoWarranty"><span>No Warranty</span></label>
         <label class="tg"><input type="checkbox" id="tgInspected"><span>Buyer Inspected Item</span></label>
-        <label class="tg"><input type="checkbox" id="tgTestDrive"><span>Inspection Completed</span></label>
+        <label class="tg"><input type="checkbox" id="tgInspectionCompleted"><span>Inspection Completed</span></label>
         <label class="tg"><input type="checkbox" id="tgAckCond"><span>Buyer Acknowledged Condition</span></label>
       </div>
     </div>
@@ -288,6 +304,24 @@ textarea{resize:vertical;min-height:64px}
     </div>
   </section>
 
+</div>
+
+<!-- PAY-PER-TRANSFER MODAL — shown to sellers without an active plan.
+     The pending record + evidence are already saved; payment seals it via the webhook. -->
+<div class="pay-overlay" id="payOverlay">
+  <div class="pay-modal">
+    <button class="pay-close" onclick="closePayModal()" aria-label="Close">×</button>
+    <div class="pay-logo"><div class="logo-dot"></div>SENT.</div>
+    <div class="pay-sub">Single transfer · Sealed on payment</div>
+    <div class="pay-item" id="payItem">—</div>
+    <label class="pay-label" for="payEmail">Your email — receipt &amp; transfer link</label>
+    <input class="pay-input" id="payEmail" type="email" placeholder="you@email.com">
+    <label class="pay-label">Card details</label>
+    <div id="tx-card-element" class="pay-card"></div>
+    <div class="pay-err" id="payErr"></div>
+    <button class="btn btn-primary" id="payBtn" onclick="submitTransferPayment()" style="width:100%">PAY $4.99 — SEAL TRANSFER</button>
+    <div class="pay-note">🔒 Secured by Stripe · Your evidence is already uploaded · The record seals the moment payment succeeds</div>
+  </div>
 </div>
 
 <script>
@@ -457,7 +491,7 @@ function buildReview() {
     ['Sold As-Is', chk('tgAsIs')],
     ['No Warranty', chk('tgNoWarranty')],
     ['Buyer Inspected', chk('tgInspected')],
-    ['Inspection Completed', chk('tgTestDrive')],
+    ['Inspection Completed', chk('tgInspectionCompleted')],
     ['Buyer Acknowledged Condition', chk('tgAckCond')]
   ].filter(t => t[1]).map(t => t[0]);
   const ids = Object.entries(collectAttributes()).map(([k, v]) => {
@@ -520,7 +554,7 @@ async function sealTransfer() {
       disclosed_missing_parts: val('dMissing'), disclosed_repairs: val('dRepairs'),
       disclosed_special_conditions: val('dSpecial'),
       sold_as_is: chk('tgAsIs'), no_warranty: chk('tgNoWarranty'),
-      buyer_inspected: chk('tgInspected'), inspection_completed: chk('tgTestDrive'),
+      buyer_inspected: chk('tgInspected'), inspection_completed: chk('tgInspectionCompleted'),
       buyer_acknowledged_condition: chk('tgAckCond')
     },
     evidence: evidence.map(e => ({ fileName: e.name, fileHash: e.hash, fileMimeType: e.mime, fileSizeBytes: e.sizeBytes, fileSize: e.sizeHuman }))
@@ -535,7 +569,7 @@ async function sealTransfer() {
     const data = await res.json();
     if (!res.ok) { err.textContent = data.error || 'Failed to create transfer.'; btn.disabled = false; btn.textContent = 'SEAL TRANSFER →'; return; }
 
-    const { transferId, uploads } = data;
+    const { transferId, uploads, requiresPayment } = data;
 
     // Upload evidence files to signed URLs
     if (uploads && uploads.length) {
@@ -557,6 +591,15 @@ async function sealTransfer() {
           return;
         }
       }
+    }
+
+    // No active plan → collect a single-transfer payment. The record and its
+    // evidence are already saved; the Stripe webhook seals it on payment success.
+    if (requiresPayment) {
+      document.getElementById('uploadProg').classList.remove('show');
+      btn.textContent = 'SEAL TRANSFER →'; btn.disabled = false;
+      await beginTransferPayment(transferId);
+      return;
     }
 
     // Finalize / seal
@@ -589,6 +632,89 @@ function putFile(url, file, onProgress) {
 }
 
 function fmtSize(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB';}
+
+// ── Pay-per-transfer (sellers without an active plan) ──
+// The pending record + its evidence are already saved by the time we get here.
+// We create a single-transfer PaymentIntent, collect the card, and let the Stripe
+// webhook seal the transfer; we poll the public read until it flips to sealed.
+let txStripe = null, txCard = null, txClientSecret = null, txTransferId = null;
+
+async function beginTransferPayment(transferId) {
+  const err = document.getElementById('err3');
+  txTransferId = transferId;
+  try {
+    const res = await fetch('/api/create-transfer-payment', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transferId, sellerEmail: val('sEmail') })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.clientSecret) { err.textContent = data.error || 'Could not start payment. Please try again.'; return; }
+    txClientSecret = data.clientSecret;
+    const pk = data.publishableKey;
+    if (typeof Stripe === 'undefined' || !pk) { err.textContent = 'Payment is temporarily unavailable. Please try again shortly.'; return; }
+
+    // Build a fresh card element each time the modal opens.
+    txStripe = Stripe(pk);
+    const elements = txStripe.elements();
+    txCard = elements.create('card', { style: { base: { fontFamily: "'DM Sans', sans-serif", fontSize: '14px', color: '#111318', '::placeholder': { color: '#9ca3af' } } } });
+    const mountEl = document.getElementById('tx-card-element');
+    mountEl.innerHTML = '';
+    txCard.mount('#tx-card-element');
+    txCard.on('change', e => { document.getElementById('payErr').textContent = e.error ? e.error.message : ''; });
+
+    document.getElementById('payItem').textContent = val('iTitle') || 'Verified transfer';
+    document.getElementById('payEmail').value = val('sEmail');
+    document.getElementById('payErr').textContent = '';
+    const pb = document.getElementById('payBtn'); pb.disabled = false; pb.textContent = 'PAY $4.99 — SEAL TRANSFER';
+    document.getElementById('payOverlay').classList.add('open');
+  } catch (e) {
+    err.textContent = 'Network error starting payment. Please try again.';
+  }
+}
+
+async function submitTransferPayment() {
+  const errEl = document.getElementById('payErr');
+  const email = document.getElementById('payEmail').value.trim();
+  if (!emailRe.test(email)) { errEl.textContent = 'Enter a valid email address.'; return; }
+  if (!txCard || !txClientSecret || !txStripe) { errEl.textContent = 'Payment not ready — please close and retry.'; return; }
+
+  const pb = document.getElementById('payBtn');
+  pb.disabled = true; pb.textContent = 'PROCESSING…'; errEl.textContent = '';
+
+  try {
+    const { error: stripeErr } = await txStripe.confirmCardPayment(txClientSecret, {
+      payment_method: { card: txCard, billing_details: { email } }
+    });
+    if (stripeErr) { errEl.textContent = stripeErr.message; pb.disabled = false; pb.textContent = 'PAY $4.99 — SEAL TRANSFER'; return; }
+
+    // Payment succeeded → the webhook seals the transfer. Poll until it's valid.
+    pb.textContent = 'SEALING…';
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const pr = await fetch('/api/transfer/' + encodeURIComponent(txTransferId));
+        const pd = await pr.json();
+        if (pd && pd.transfer && pd.transfer.is_valid) {
+          clearInterval(poll);
+          window.location.href = '/verify/' + txTransferId;
+        } else if (attempts >= 20) {
+          clearInterval(poll);
+          window.location.href = '/verify/' + txTransferId;
+        }
+      } catch (e) {
+        if (attempts >= 20) { clearInterval(poll); window.location.href = '/verify/' + txTransferId; }
+      }
+    }, 1000);
+  } catch (e) {
+    errEl.textContent = 'Payment failed. Please try again.';
+    pb.disabled = false; pb.textContent = 'PAY $4.99 — SEAL TRANSFER';
+  }
+}
+
+function closePayModal() { document.getElementById('payOverlay').classList.remove('open'); }
+document.getElementById('payOverlay').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
 </script>
 </body>
 </html>

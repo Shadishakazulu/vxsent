@@ -137,6 +137,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   <div class="tb-right">
     <div class="tb-plan" id="tbPlan">Solo · $12.99/mo</div>
     <div class="tb-user" id="tbUser">you@email.com</div>
+    <a class="tb-new" href="/transfer" style="text-decoration:none;background:transparent;color:var(--green-dk);border:1.5px solid var(--green-bd)">Verified transfer →</a>
     <button class="tb-new" onclick="openProofModal()">Proof a file →</button>
     <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
   </div>
@@ -146,6 +147,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   <div>
     <div class="sb-label">Workspace</div>
     <button class="sb-item active"><span class="sb-icon">📋</span>All Proofs</button>
+    <button class="sb-item" onclick="document.getElementById('transferSection').scrollIntoView({behavior:'smooth'})"><span class="sb-icon">🧾</span>Verified Transfers</button>
   </div>
   <div class="sb-div"></div>
   <div>
@@ -178,6 +180,12 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
 
   <div class="sec-hdr"><div class="sec-title">// Recent proofs</div></div>
   <div class="proof-list" id="proofList"><div style="padding:20px;text-align:center;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Loading proofs...</div></div>
+
+  <div class="sec-hdr" id="transferSection" style="margin-top:26px">
+    <div class="sec-title">// Verified transfers</div>
+    <a href="/transfer" class="pi-btn primary" style="text-decoration:none">+ Create transfer</a>
+  </div>
+  <div class="proof-list" id="transferList"><div style="padding:20px;text-align:center;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Loading transfers…</div></div>
 </main>
 
 <!-- SOLO PROOF MODAL -->
@@ -288,6 +296,7 @@ async function loadDashboard() {
       if (data.proofs && data.proofs.length > 0) renderReal(data.proofs);
       else renderEmpty();
     } else { renderEmpty(); }
+    loadTransfers();
   } catch(e) {
     console.error('Dashboard load error:', e);
     window.location.href = '/login';
@@ -319,6 +328,57 @@ function renderReal(proofs) {
       </div>
       <div class="pi-actions">
         <button class="pi-btn primary" onclick="event.stopPropagation();window.location.href='/receipt?id=${p.id || p.proofId}'">View receipt</button>
+      </div>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+const TX_CATEGORY = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics', general:'General goods' };
+
+async function loadTransfers() {
+  try {
+    const res = await fetch('/api/transfers');
+    if (!res.ok) { renderTransfersEmpty(); return; }
+    const data = await res.json();
+    if (data.transfers && data.transfers.length > 0) renderTransfers(data.transfers);
+    else renderTransfersEmpty();
+  } catch (e) { renderTransfersEmpty(); }
+}
+
+function renderTransfersEmpty() {
+  document.getElementById('transferList').innerHTML =
+    `<div style="padding:32px;text-align:center;color:var(--ink-3);font-size:14px">
+      No verified transfers yet. <a href="/transfer" style="color:var(--green-dk);font-weight:600;text-decoration:none">Create a verified bill of sale →</a>
+    </div>`;
+}
+
+function renderTransfers(transfers) {
+  const c = document.getElementById('transferList');
+  c.innerHTML = '';
+  transfers.forEach(t => {
+    const statusTag = t.acknowledged
+      ? '<span class="pi-tag file">✓ Acknowledged</span>'
+      : (t.isValid ? '<span class="pi-tag">Sealed · awaiting ack</span>' : '<span class="pi-tag">Pending payment</span>');
+    const price = t.salePrice != null ? '$' + Number(t.salePrice).toLocaleString(undefined,{minimumFractionDigits:2}) : '';
+    const dot = t.isValid ? 'var(--green)' : 'var(--ink-4)';
+    const el = document.createElement('div');
+    el.className = 'pi';
+    el.innerHTML = `<div class="pi-inner">
+      <div class="pi-dot" style="background:${dot}"></div>
+      <div>
+        <div class="pi-file">${esc(t.itemTitle || 'Untitled')} ${statusTag}</div>
+        <div class="pi-meta">
+          <span>🧾 ${esc(TX_CATEGORY[t.category] || t.category)}</span>
+          ${price ? `<span>💵 ${price}</span>` : ''}
+          ${t.buyerName ? `<span>👤 ${esc(t.buyerName)}</span>` : ''}
+          <span>📅 ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : ''}</span>
+        </div>
+      </div>
+      <div class="pi-actions">
+        <button class="pi-btn primary" onclick="window.location.href='${t.verifyUrl}'">View transfer</button>
       </div>
     </div>`;
     c.appendChild(el);
