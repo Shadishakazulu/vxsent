@@ -345,6 +345,11 @@ function collectAttributes() {
 }
 
 document.getElementById('iCat').addEventListener('change', renderCategoryFields);
+// Preselect the category from a landing-page deep link (e.g. /transfer?category=sneakers).
+try {
+  const qCat = new URLSearchParams(location.search).get('category');
+  if (qCat && CATEGORY_LABEL[qCat]) document.getElementById('iCat').value = qCat;
+} catch (e) {}
 renderCategoryFields();
 
 // Condition custom toggle

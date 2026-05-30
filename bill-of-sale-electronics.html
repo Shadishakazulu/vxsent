@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verified Bill of Sale for Electronics — Proof Before the Dispute | SENT.</title>
+<meta name="description" content="Create a cryptographic, tamper-evident bill of sale for phones, laptops and electronics before you ship. Seal the serial, IMEI, condition and photos — so a 'arrived broken', 'wrong serial' or stolen-goods accusation can't rewrite what was sold.">
+<meta name="robots" content="index,follow">
+<meta name="keywords" content="bill of sale for electronics, phone bill of sale, laptop bill of sale, IMEI proof of sale, serial number sale receipt, used electronics dispute">
+<link rel="canonical" href="https://vxsent.com/verified-bill-of-sale/electronics">
+<meta property="og:title" content="Verified Bill of Sale for Electronics — SENT.">
+<meta property="og:description" content="Seal the serial, IMEI, condition and photos into a tamper-evident record before you ship. The proof exists before the dispute can.">
+<meta property="og:url" content="https://vxsent.com/verified-bill-of-sale/electronics">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Verified Bill of Sale for Electronics — SENT.">
+<meta name="twitter:description" content="Cryptographic proof of exactly what you sold — sealed before the buyer can claim otherwise.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.06);--red-bd:rgba(220,38,38,0.18);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:inherit}
+header{position:sticky;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:58px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.15em;color:var(--ink);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%}
+.hdr-nav{display:flex;align-items:center;gap:20px}
+.hdr-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;transition:color 0.15s}
+.hdr-link:hover{color:var(--ink)}
+.hdr-signin{color:var(--green-dk);border:1.5px solid var(--green-bd);padding:6px 14px;border-radius:4px}
+.hdr-signin:hover{background:var(--green-bg);border-color:var(--green)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 48px}
+.crumbs{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:20px 0 0}
+.crumbs a{color:var(--ink-3);text-decoration:none}
+.crumbs a:hover{color:var(--green-dk)}
+
+.hero{padding:46px 0 56px;border-bottom:1px solid var(--border)}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:18px;display:flex;align-items:center;gap:10px;font-weight:500}
+.kicker::before{content:'';width:18px;height:2px;background:var(--green);border-radius:1px}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,6.5vw,84px);line-height:0.92;letter-spacing:0.02em;margin-bottom:20px;max-width:14ch}
+h1 .green{color:var(--green)}
+.lede{font-size:18px;color:var(--ink-2);line-height:1.65;max-width:620px;margin-bottom:30px}
+.lede strong{color:var(--ink);font-weight:700}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn-primary{display:inline-block;padding:15px 34px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.08em;border:none;cursor:pointer;border-radius:4px;text-decoration:none;transition:all 0.18s;box-shadow:0 4px 14px rgba(0,179,86,0.28)}
+.btn-primary:hover{background:var(--green-dk);transform:translateY(-1px)}
+.btn-ghost{display:inline-block;padding:15px 26px;background:transparent;color:var(--ink-2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;border:1.5px solid var(--border-md);border-radius:4px;text-decoration:none;transition:all 0.15s}
+.btn-ghost:hover{border-color:var(--ink-3);color:var(--ink)}
+.cta-note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-top:14px}
+
+section{padding:64px 0;border-bottom:1px solid var(--border)}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:26px;font-weight:500}
+h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.5vw,50px);line-height:0.96;letter-spacing:0.02em;margin-bottom:18px}
+h2 .green{color:var(--green-dk)}
+.prose{font-size:16px;color:var(--ink-2);line-height:1.75;max-width:680px}
+.prose p{margin-bottom:16px}
+.prose strong{color:var(--ink);font-weight:700}
+
+.dispute-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.dblock{padding:20px 22px;border-radius:8px}
+.dblock-without{background:var(--red-bg);border:1.5px solid var(--red-bd)}
+.dblock-with{background:var(--green-bg);border:1.5px solid var(--green-bd)}
+.dblock-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:10px;font-weight:500}
+.dblock-without .dblock-label{color:var(--red)}
+.dblock-with .dblock-label{color:var(--green-dk)}
+.dblock-text{font-size:14px;color:var(--ink-2);line-height:1.65}
+.dblock-text strong{color:var(--ink);font-weight:700}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{background:var(--surface);border:1px solid var(--border);padding:28px 24px;border-radius:8px;box-shadow:var(--shadow-sm)}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--green);opacity:0.32;line-height:1;margin-bottom:12px}
+.step-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:9px}
+.step-body{font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.seal-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:40px;align-items:center}
+.seal-list{list-style:none}
+.seal-list li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--ink-2);line-height:1.5}
+.seal-list li:last-child{border-bottom:none}
+.seal-list .chk{color:var(--green);font-weight:700;flex-shrink:0}
+.seal-list strong{color:var(--ink);font-weight:700}
+.record-card{background:var(--surface);border:1.5px solid var(--border-md);border-radius:8px;box-shadow:var(--shadow-md);overflow:hidden}
+.record-head{background:var(--green);color:#fff;padding:14px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase}
+.record-rows{padding:16px 22px}
+.record-row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.record-row:last-child{border-bottom:none}
+.record-row .rk{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3)}
+.record-row .rv{color:var(--ink);text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;word-break:break-word}
+.record-row .rv.green{color:var(--green-dk);font-weight:600}
+
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0}
+.faq-item:first-of-type{border-top:1px solid var(--border)}
+.faq-q{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.faq-a{font-size:15px;color:var(--ink-2);line-height:1.7}
+.faq-a a{color:var(--green-dk);text-decoration:none;border-bottom:1px solid var(--green-bd)}
+
+.related{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.related-card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;text-decoration:none;transition:all 0.15s;box-shadow:var(--shadow-sm)}
+.related-card:hover{border-color:var(--green-bd);transform:translateY(-2px)}
+.related-card.current{border-color:var(--green);background:var(--green-bg)}
+.related-cat{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);margin-bottom:8px}
+.related-title{font-size:15px;font-weight:700;color:var(--ink);line-height:1.3}
+
+.disclaimer{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:18px 22px;margin-top:8px}
+.disclaimer-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;font-weight:500}
+.disclaimer-text{font-size:13px;color:var(--ink-2);line-height:1.6}
+
+.final{text-align:center;padding:84px 0}
+.final h2{margin-bottom:16px}
+.final p{font-size:16px;color:var(--ink-2);margin-bottom:28px}
+
+footer{padding:24px 48px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-top:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.ft-l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.ft-l a{color:var(--ink-3);text-decoration:none}
+.ft-l a:hover{color:var(--ink)}
+.ft-r{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3)}
+.ft-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+@media(max-width:860px){
+  header{padding:0 20px}
+  .hdr-nav .hdr-link:not(.hdr-signin){display:none}
+  .wrap{padding:0 20px}
+  .dispute-grid,.steps,.seal-grid{grid-template-columns:1fr;gap:14px}
+  .related{grid-template-columns:1fr 1fr}
+  footer{padding:20px;flex-direction:column;text-align:center}
+}
+</style>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {"@type":"Question","name":"Is a SENT. bill of sale for electronics a legal document?","acceptedAnswer":{"@type":"Answer","text":"It is cryptographic proof of a transaction and its agreed terms — what was sold, by whom, to whom, when, and in what condition. It is not a legal title transfer and not legal advice. It is independent, tamper-evident evidence you can show a buyer, a marketplace, or a payment processor."}},
+    {"@type":"Question","name":"Why record the serial number or IMEI?","acceptedAnswer":{"@type":"Answer","text":"The serial or IMEI binds the record to the exact unit you sold. If a buyer claims you shipped a different device, or accuses you of selling a blacklisted or stolen unit, the sealed serial and your dated condition photos show precisely what left your hands."}},
+    {"@type":"Question","name":"How does it help with an 'arrived broken' or 'not as described' claim?","acceptedAnswer":{"@type":"Answer","text":"The record is sealed before you ship and timestamped cryptographically, so it cannot be backdated. You have a dated, tamper-evident record of the working condition, accessories and photos you both agreed to at the point of sale."}},
+    {"@type":"Question","name":"What does it cost?","acceptedAnswer":{"@type":"Answer","text":"You can pay per transfer, or create unlimited transfers on a Solo plan. The same cryptographic guarantee applies either way."}}
+  ]
+}
+</script>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><span class="logo-dot"></span>SENT.</a>
+  <nav class="hdr-nav">
+    <a href="/verified-bill-of-sale" class="hdr-link">Bill of Sale</a>
+    <a href="/pricing" class="hdr-link">Pricing</a>
+    <a href="/transfer" class="hdr-link hdr-signin">Create one →</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <a href="/verified-bill-of-sale">Verified Bill of Sale</a> / Electronics
+  </nav>
+</div>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">Verified Bill of Sale · Electronics</p>
+    <h1>A <span class="green">BILL OF SALE</span> FOR ELECTRONICS THAT STICKS.</h1>
+    <p class="lede">Before you ship a phone, laptop or console, seal the <strong>serial number, IMEI, working condition and photos</strong> into a cryptographic, tamper-evident record. When a buyer later claims it arrived broken, that the serial doesn't match, or that the unit is stolen, the proof of exactly what you sold already exists — dated and unalterable. <strong>The proof exists before the dispute can.</strong></p>
+    <div class="cta-row">
+      <a href="/transfer?category=electronics" class="btn-primary">SEAL AN ELECTRONICS SALE →</a>
+      <a href="#how" class="btn-ghost">See how it works</a>
+    </div>
+    <p class="cta-note">Sealed in minutes · SHA-256 + signature · Independently verifiable</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// The dispute this prevents</p>
+    <h2>"IT ARRIVED BROKEN — AND THE SERIAL'S WRONG."</h2>
+    <div class="prose" style="margin-bottom:26px">
+      <p>Used electronics are the easiest category to dispute and the hardest to defend. A buyer claims the screen was cracked on arrival, that the battery is shot, that the IMEI is blacklisted, or that the serial doesn't match what you listed — opening the door to a swap, where they return a broken unit in place of the working one you sent. On a marketplace, the seller almost always loses these without independent, dated proof of what shipped.</p>
+    </div>
+    <div class="dispute-grid">
+      <div class="dblock dblock-without">
+        <div class="dblock-label">Without a sealed record</div>
+        <div class="dblock-text">A listing photo with no provable date. A serial typed into a chat. No record of the unit powering on before it shipped. When the buyer claims a swap or a fault, you can't prove which device you actually sent.</div>
+      </div>
+      <div class="dblock dblock-with">
+        <div class="dblock-label">With a SENT. bill of sale</div>
+        <div class="dblock-text">A dated, cryptographically sealed record binding the <strong>serial, IMEI, working condition and the actual photos</strong> to this exact unit — created before it shipped and impossible to backdate. A return swap can't pass for the device you sold.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="section-label">// How it works — three steps</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Describe the device</div>
+        <div class="step-body">Enter the buyer and seller, the price, and the device specifics — serial number and IMEI. The category form surfaces exactly the fields an electronics sale needs.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Add the evidence</div>
+        <div class="step-body">Attach photos of the device powered on, the serial/IMEI screen, any cosmetic flaws and the accessories included. Every file is hashed in your browser before it uploads, so the images are sealed exactly as they are.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Seal &amp; send</div>
+        <div class="step-body">The record is sealed with a timestamp and signature, and the buyer gets a link to acknowledge the terms. Their acknowledgment is sealed into the same record. Anyone can verify it — no account required.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// What gets sealed</p>
+    <div class="seal-grid">
+      <div>
+        <h2>EVERYTHING THAT <span class="green">SETTLES THE ARGUMENT.</span></h2>
+        <ul class="seal-list">
+          <li><span class="chk">✓</span><span><strong>Serial number</strong> — binds the record to this exact unit.</span></li>
+          <li><span class="chk">✓</span><span><strong>IMEI</strong> — for phones and cellular devices.</span></li>
+          <li><span class="chk">✓</span><span><strong>Working condition &amp; disclosures</strong> — faults you declared up front.</span></li>
+          <li><span class="chk">✓</span><span><strong>Condition photos</strong> — powered-on, serial screen, hashed before upload.</span></li>
+          <li><span class="chk">✓</span><span><strong>Provenance</strong> — where it came from and that it's clear to sell.</span></li>
+          <li><span class="chk">✓</span><span><strong>Buyer's acknowledgment</strong> — sealed with timestamp and IP.</span></li>
+        </ul>
+      </div>
+      <div class="record-card" aria-hidden="true">
+        <div class="record-head">✓ Verified Bill of Sale</div>
+        <div class="record-rows">
+          <div class="record-row"><span class="rk">Record ID</span><span class="rv green">SENT-TX-2026-9P4L2C</span></div>
+          <div class="record-row"><span class="rk">Item</span><span class="rv">iPhone 15 Pro · 256GB</span></div>
+          <div class="record-row"><span class="rk">Serial</span><span class="rv">F2LX...8K9</span></div>
+          <div class="record-row"><span class="rk">IMEI</span><span class="rv">35 982...117</span></div>
+          <div class="record-row"><span class="rk">Condition</span><span class="rv">Good · fully working</span></div>
+          <div class="record-row"><span class="rk">Evidence</span><span class="rv">4 photos · hashed</span></div>
+          <div class="record-row"><span class="rk">Sealed</span><span class="rv">2026-05-30 · 14:02 UTC</span></div>
+          <div class="record-row"><span class="rk">Buyer ack</span><span class="rv green">Confirmed</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// Questions</p>
+    <h2 style="margin-bottom:8px">ELECTRONICS SELLERS ASK</h2>
+    <div class="faq-item">
+      <div class="faq-q">Is this a legal document?</div>
+      <div class="faq-a">It's cryptographic proof of a transaction and its agreed terms — what was sold, by whom, to whom, when, and in what condition. It is not a legal title transfer and not legal advice. It's independent, tamper-evident evidence you can show a buyer, a marketplace, or a payment processor.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Why record the serial number or IMEI?</div>
+      <div class="faq-a">The serial or IMEI binds the record to the exact unit you sold. If a buyer claims you shipped a different device, or accuses you of selling a blacklisted unit, the sealed serial and your dated photos show precisely what left your hands.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How does it help with an "arrived broken" claim?</div>
+      <div class="faq-a">The record is sealed before you ship and timestamped cryptographically, so it can't be backdated. You have a dated record of the working condition, accessories and photos you both agreed to at the point of sale.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What does it cost?</div>
+      <div class="faq-a">Pay per transfer, or create unlimited transfers on a Solo plan — see <a href="/pricing">pricing</a>. The same cryptographic guarantee applies either way.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// Other items</p>
+    <h2 style="margin-bottom:24px">A VERIFIED BILL OF SALE FOR ANYTHING YOU SELL</h2>
+    <div class="related">
+      <a href="/verified-bill-of-sale/sneakers" class="related-card"><div class="related-cat">Sneakers</div><div class="related-title">Bill of Sale for Sneakers</div></a>
+      <a href="/verified-bill-of-sale/jewelry" class="related-card"><div class="related-cat">Jewelry &amp; Watches</div><div class="related-title">Bill of Sale for Jewelry</div></a>
+      <a href="/verified-bill-of-sale/electronics" class="related-card current"><div class="related-cat">Electronics</div><div class="related-title">Bill of Sale for Electronics</div></a>
+      <a href="/verified-bill-of-sale/general-goods" class="related-card"><div class="related-cat">General Goods</div><div class="related-title">Bill of Sale for Used Goods</div></a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="disclaimer">
+      <div class="disclaimer-title">Important</div>
+      <div class="disclaimer-text">SENT. Transfer creates cryptographic proof of a transaction and its agreed terms only. It is not a legal title transfer, not a substitute for any state-required form, and not legal advice.</div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>SEAL THE DEVICE. <span class="green">SETTLE IT FOREVER.</span></h2>
+    <p>Every device you ship without a sealed record is a swap or chargeback you can't fight.</p>
+    <a href="/transfer?category=electronics" class="btn-primary">CREATE AN ELECTRONICS BILL OF SALE →</a>
+    <p class="cta-note">No account needed to verify · Record is permanent</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="ft-l">SENT. — Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-r"><span class="ft-dot"></span>Veridex infrastructure active</div>
+</footer>
+
+</body>
+</html>
