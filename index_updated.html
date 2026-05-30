@@ -596,6 +596,13 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
     <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
 
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Promo code <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — unlock a Solo membership)</span></label>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input id="payPromo" type="text" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
+      <button type="button" id="payPromoBtn" onclick="applyDayPassPromo()" style="flex:0 0 auto;padding:0 18px;background:#111318;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.1em;cursor:pointer">APPLY</button>
+    </div>
+    <div id="payPromoMsg" style="font-size:12px;font-family:'JetBrains Mono',monospace;min-height:0;margin-bottom:14px;letter-spacing:0.06em;line-height:1.5"></div>
+
     <div id="payError" style="font-size:12px;color:#dc2626;font-family:'JetBrains Mono',monospace;min-height:18px;margin-bottom:12px;letter-spacing:0.08em"></div>
 
     <button id="payBtn" onclick="submitPayment()" style="width:100%;padding:15px;background:#00b356;color:#fff;border:none;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.1em;cursor:pointer;transition:background 0.15s">PAY $0.99 — SEAL PROOF</button>
@@ -767,10 +774,62 @@ async function submitPayment() {
   }
 }
 
+// Apply a promo code (e.g. LAUNCH7) — grants a Solo membership trial via the
+// existing magic-link flow. This is separate from the $0.99 day-pass payment:
+// the code unlocks membership and the user activates it from the email we send.
+async function applyDayPassPromo() {
+  const codeEl = document.getElementById('payPromo');
+  const msg = document.getElementById('payPromoMsg');
+  const btn = document.getElementById('payPromoBtn');
+  const code = codeEl.value.trim();
+  const email = document.getElementById('payEmail').value.trim();
+
+  if (!code) { msg.style.color = '#dc2626'; msg.textContent = 'Enter a promo code first.'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.style.color = '#dc2626';
+    msg.textContent = 'Add your email above, then apply the code.';
+    return;
+  }
+
+  btn.textContent = '…'; btn.disabled = true; msg.textContent = '';
+
+  try {
+    const res = await fetch('/api/auth/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, promoCode: code })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'That code could not be applied.');
+
+    if (data.promoApplied) {
+      msg.style.color = '#009347';
+      msg.innerHTML = `✓ ${data.trialDays}-day Solo membership unlocked — check <strong>${email}</strong> to sign in and activate it.`;
+      codeEl.disabled = true;
+      btn.textContent = 'APPLIED';
+    } else {
+      msg.style.color = '#dc2626';
+      msg.textContent = 'That code could not be applied.';
+      btn.textContent = 'APPLY'; btn.disabled = false;
+    }
+  } catch (e) {
+    msg.style.color = '#dc2626';
+    msg.textContent = e.message || 'That code could not be applied.';
+    btn.textContent = 'APPLY'; btn.disabled = false;
+  }
+}
+
 function closePayModal() {
   document.getElementById('payModal').style.display = 'none';
   cb.disabled = false;
   cb.textContent = 'GET YOUR SENT. RECEIPT — $0.99';
+  // Reset the promo field so a reopened modal starts clean
+  const promoEl = document.getElementById('payPromo');
+  const promoBtn = document.getElementById('payPromoBtn');
+  const promoMsg = document.getElementById('payPromoMsg');
+  if (promoEl) { promoEl.value = ''; promoEl.disabled = false; }
+  if (promoBtn) { promoBtn.textContent = 'APPLY'; promoBtn.disabled = false; }
+  if (promoMsg) { promoMsg.textContent = ''; }
 }
 function fmt(b){if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';if(b<1073741824)return(b/1048576).toFixed(1)+'MB';return(b/1073741824).toFixed(2)+'GB'}
 function trunc(s,n){return s.length>n?s.substring(0,n)+'...':s}

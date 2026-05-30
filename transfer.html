@@ -330,6 +330,12 @@ textarea{resize:vertical;min-height:64px}
     <input class="pay-input" id="payEmail" type="email" placeholder="you@email.com">
     <label class="pay-label">Card details</label>
     <div id="tx-card-element" class="pay-card"></div>
+    <label class="pay-label">Promo code <span style="text-transform:none;letter-spacing:0;color:var(--ink-4)">(optional — unlock a Solo membership)</span></label>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input class="pay-input" id="txPromo" type="text" placeholder="Enter code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="margin-bottom:0;flex:1;min-width:0;text-transform:uppercase;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em">
+      <button type="button" class="btn btn-ghost" id="txPromoBtn" onclick="applyTransferPromo()" style="padding:11px 18px;font-size:16px">APPLY</button>
+    </div>
+    <div id="txPromoMsg" style="font-size:12px;font-family:'JetBrains Mono',monospace;min-height:0;margin-bottom:10px;letter-spacing:0.06em;line-height:1.5"></div>
     <div class="pay-err" id="payErr"></div>
     <button class="btn btn-primary" id="payBtn" onclick="submitTransferPayment()" style="width:100%">PAY $4.99 — SEAL TRANSFER</button>
     <div class="pay-note">🔒 Secured by Stripe · Your evidence is already uploaded · The record seals the moment payment succeeds</div>
@@ -750,7 +756,61 @@ async function submitTransferPayment() {
   }
 }
 
-function closePayModal() { document.getElementById('payOverlay').classList.remove('open'); }
+// Apply a promo code (e.g. LAUNCH7) — grants a Solo membership trial via the
+// existing magic-link flow. Independent of the $4.99 single-transfer payment:
+// the code unlocks membership and the seller activates it from the email we send.
+async function applyTransferPromo() {
+  const codeEl = document.getElementById('txPromo');
+  const msg = document.getElementById('txPromoMsg');
+  const btn = document.getElementById('txPromoBtn');
+  const code = codeEl.value.trim();
+  const email = document.getElementById('payEmail').value.trim();
+
+  if (!code) { msg.style.color = 'var(--red)'; msg.textContent = 'Enter a promo code first.'; return; }
+  if (!emailRe.test(email)) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Add your email above, then apply the code.';
+    return;
+  }
+
+  btn.textContent = '…'; btn.disabled = true; msg.textContent = '';
+
+  try {
+    const res = await fetch('/api/auth/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, promoCode: code })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'That code could not be applied.');
+
+    if (data.promoApplied) {
+      msg.style.color = 'var(--green-dk)';
+      msg.innerHTML = `✓ ${data.trialDays}-day Solo membership unlocked — check <strong>${email}</strong> to sign in and activate it.`;
+      codeEl.disabled = true;
+      btn.textContent = 'APPLIED';
+    } else {
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'That code could not be applied.';
+      btn.textContent = 'APPLY'; btn.disabled = false;
+    }
+  } catch (e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = e.message || 'That code could not be applied.';
+    btn.textContent = 'APPLY'; btn.disabled = false;
+  }
+}
+
+function closePayModal() {
+  document.getElementById('payOverlay').classList.remove('open');
+  // Reset the promo field so a reopened modal starts clean
+  const promoEl = document.getElementById('txPromo');
+  const promoBtn = document.getElementById('txPromoBtn');
+  const promoMsg = document.getElementById('txPromoMsg');
+  if (promoEl) { promoEl.value = ''; promoEl.disabled = false; }
+  if (promoBtn) { promoBtn.textContent = 'APPLY'; promoBtn.disabled = false; }
+  if (promoMsg) { promoMsg.textContent = ''; }
+}
 document.getElementById('payOverlay').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
 </script>
 </body>
