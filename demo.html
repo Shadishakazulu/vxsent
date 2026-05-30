@@ -475,6 +475,11 @@ const replayBtn = document.getElementById('replay');
 
 let raf = null, t0 = null, fired = new Set();
 const DURATION = 30;
+// Playback speed. 1 = original 30s pace. Below 1 plays the whole
+// timeline slower (calmer, captions easier to read) without retuning
+// any individual cue. 0.6 ≈ 50s total. Applies to /demo and
+// /demo?v=launch7 alike — they share this one clock.
+const SPEED = 0.6;
 let typers = [];     // running setIntervals (typewriter)
 let timeouts = [];   // running setTimeouts (button press / deferred resets)
 function later(fn, ms){ const id = setTimeout(fn, ms); timeouts.push(id); return id; }
@@ -558,7 +563,7 @@ function fmt(t){ const s=Math.max(0,Math.min(DURATION,Math.floor(t))); return '0
 
 function frame(ts){
   if (t0 === null) t0 = ts;
-  const t = (ts - t0)/1000;
+  const t = (ts - t0)/1000 * SPEED;
 
   // fire actions
   for (const [at, fn] of actions){
