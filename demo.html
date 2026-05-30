@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. — 30-Second Demo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SENT — Self-running 30-second demo.
+   Recreates the real product screens (create → seal → buyer
+   acknowledge → public verify) on the demo-script timeline,
+   with burned-in captions for muted viewing. Vertical 9:16 so
+   it can be screen-recorded straight to a phone-shot clip.
+   Design tokens copied verbatim from transfer.html /
+   transfer-ack.html / transfer-verify.html so the recreated
+   UI is pixel-faithful to production.
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html,body{height:100%}
+body{
+  background:#0b0d10;color:var(--ink);font-family:'DM Sans',sans-serif;
+  min-height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;padding:18px 12px;
+}
+
+/* ---- Phone frame: this is the box you screen-record ---- */
+#stage{
+  position:relative;width:min(92vw,420px);aspect-ratio:9/16;max-height:88vh;
+  background:var(--bg);border-radius:30px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,0.55),0 0 0 9px #16191e,0 0 0 11px #2a2e35;
+  isolation:isolate;
+}
+
+/* Top progress / beat bar */
+#topbar{position:absolute;top:0;left:0;right:0;z-index:40;padding:12px 14px 10px;
+  background:linear-gradient(180deg,rgba(11,13,16,0.55),rgba(11,13,16,0));pointer-events:none}
+#track{height:3px;border-radius:3px;background:rgba(255,255,255,0.28);overflow:hidden}
+#bar{height:100%;width:0%;background:var(--green);border-radius:3px;transition:width 0.12s linear}
+#beat{display:flex;justify-content:space-between;align-items:center;margin-top:7px}
+.beat-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.18em;
+  text-transform:uppercase;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.6)}
+.beat-time{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.08em;
+  color:rgba(255,255,255,0.85);text-shadow:0 1px 3px rgba(0,0,0,0.6)}
+
+/* Scenes stack, crossfade by opacity */
+.scene{position:absolute;inset:0;opacity:0;transition:opacity 0.45s ease;
+  display:flex;flex-direction:column;pointer-events:none}
+.scene.show{opacity:1}
+.scene.zoom{animation:kb 7.5s ease forwards}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.05)}}
+
+/* Faux product header used inside recreated app screens */
+.appbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:46px}
+.appbar.center{justify-content:center}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.15em;display:flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none}
+.logo-dot{width:6px;height:6px;background:var(--green);border-radius:50%}
+.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3)}
+.hdr-tag.g{color:var(--green-dk)}
+.screen{flex:1;overflow:hidden;padding:14px 15px}
+
+/* ---------- Scene 1: the problem (title card) ---------- */
+#sceneHook{background:radial-gradient(120% 90% at 50% 0%,#15181d 0%,#0b0d10 70%);
+  align-items:center;justify-content:center;text-align:center;padding:40px 30px}
+#sceneHook .mark{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.2em;color:#fff;display:flex;align-items:center;gap:9px;margin-bottom:26px}
+#sceneHook .mark .logo-dot{width:9px;height:9px}
+#sceneHook .prob{font-family:'DM Sans',sans-serif;font-weight:600;font-size:25px;line-height:1.3;color:#fff;max-width:300px}
+#sceneHook .prob em{color:var(--green);font-style:normal}
+#sceneHook .sub{margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.5)}
+
+/* ---------- Form bits (create screen) ---------- */
+.stepper{display:flex;align-items:center;gap:6px;margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase}
+.step-pill{display:flex;align-items:center;gap:5px;color:var(--ink-4)}
+.step-pill.active{color:var(--green-dk)}
+.step-pill.done{color:var(--ink-3)}
+.step-num{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-md);display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0}
+.step-pill.active .step-num{border-color:var(--green);background:var(--green);color:#fff}
+.step-pill.done .step-num{border-color:var(--green);color:var(--green-dk)}
+.step-line{flex:1;height:1.5px;background:var(--border);min-width:8px}
+h1.big{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.02em;margin-bottom:5px}
+.lede{font-size:12px;color:var(--ink-3);line-height:1.45;margin-bottom:14px}
+.fld{margin-bottom:11px}
+.fld label{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.input{background:var(--surface);border:1.5px solid var(--border);border-radius:7px;height:42px;display:flex;align-items:center;padding:0 13px;font-size:14px;color:var(--ink);overflow:hidden}
+.input.tall{height:auto;min-height:42px;padding:10px 13px;line-height:1.4;display:block}
+.input .ph{color:var(--ink-4)}
+.input.filled{border-color:var(--green-bd);box-shadow:0 0 0 3px var(--green-bg)}
+.caret{display:inline-block;width:2px;height:17px;background:var(--green);margin-left:1px;vertical-align:middle;animation:blink 0.7s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.row2{display:flex;gap:9px}
+.row2 .fld{flex:1;margin-bottom:11px}
+
+/* Evidence / photo attach */
+.evgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.evcell{aspect-ratio:1;border-radius:8px;border:1.5px dashed var(--border-md);background:var(--panel);
+  display:flex;align-items:center;justify-content:center;color:var(--ink-4);font-size:22px;overflow:hidden;position:relative}
+.evcell.add{border-style:dashed}
+.evcell.shot{border-style:solid;border-color:var(--green-bd)}
+.evcell.shot::after{content:'✓';position:absolute;right:5px;bottom:4px;width:16px;height:16px;border-radius:50%;
+  background:var(--green);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm)}
+.evcell img,.evcell svg{width:100%;height:100%;object-fit:cover;display:block}
+.hashline{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green-dk);margin-top:8px;letter-spacing:0.04em;opacity:0;transition:opacity 0.3s}
+.hashline.on{opacity:1}
+
+/* Review summary rows */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:11px;box-shadow:var(--shadow-sm)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:11px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.drow{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.drow:last-child{border-bottom:none}
+.dk{color:var(--ink-3);flex-shrink:0}
+.dv{color:var(--ink);text-align:right;font-weight:500;word-break:break-word}
+.dv.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.desc{font-size:12px;color:var(--ink-2);line-height:1.5;background:var(--panel);border-radius:5px;padding:9px 11px;margin-top:7px}
+
+/* Seal button + sealing animation */
+.seal-btn{width:100%;padding:15px;background:var(--green);color:#fff;border:none;border-radius:7px;
+  font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.08em;text-align:center;
+  position:relative;overflow:hidden;box-shadow:0 6px 18px rgba(0,179,86,0.32);transition:transform 0.12s}
+.seal-btn.press{transform:scale(0.97)}
+.seal-btn .scan{position:absolute;top:0;bottom:0;width:55%;left:-60%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)}
+.seal-btn.sealing .scan{animation:scan 0.9s linear infinite}
+@keyframes scan{to{left:120%}}
+.trust-chip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--green-dk);margin-top:10px}
+
+/* Sealed confirmation overlay */
+.seal-done{position:absolute;inset:0;background:rgba(245,246,248,0.96);backdrop-filter:blur(2px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:30px;opacity:0;pointer-events:none;transition:opacity 0.4s}
+.seal-done.on{opacity:1}
+.seal-ring{width:84px;height:84px;border-radius:50%;background:var(--green);color:#fff;font-size:44px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  box-shadow:0 10px 30px rgba(0,179,86,0.4);transform:scale(0.4);transition:transform 0.5s cubic-bezier(.2,1.3,.4,1)}
+.seal-done.on .seal-ring{transform:scale(1)}
+.seal-done h2{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.04em;margin-bottom:6px}
+.seal-done .sd-sub{font-size:13px;color:var(--ink-2);line-height:1.5;max-width:260px;margin-bottom:16px}
+.lockbox{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-3);background:var(--surface);
+  border:1px solid var(--green-bd);border-radius:7px;padding:11px 13px;text-align:left;width:100%;max-width:300px;line-height:1.7;word-break:break-all}
+.lockbox .lk{color:var(--ink-4);text-transform:uppercase;letter-spacing:0.1em;font-size:8px;display:block;margin-top:7px}
+.lockbox .lk:first-child{margin-top:0}
+.lockbox b{color:var(--green-dk);font-weight:600}
+
+/* ---------- Buyer acknowledge ---------- */
+.banner{background:var(--surface);border:1.5px solid var(--green-bd);border-radius:8px;padding:16px;text-align:center;margin-bottom:12px;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.banner-kicker{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);margin-bottom:6px}
+.banner h1{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.03em;line-height:1.05;margin-bottom:6px}
+.banner p{font-size:12px;color:var(--ink-2);line-height:1.45}
+.cf{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.cf:last-child{border-bottom:none}
+.box{width:19px;height:19px;flex-shrink:0;border-radius:5px;border:2px solid var(--border-md);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;margin-top:1px;transition:all 0.2s}
+.cf.on .box{background:var(--green);border-color:var(--green)}
+.cf span{font-size:12.5px;color:var(--ink-2);line-height:1.4}
+.ack-btn{width:100%;padding:15px;background:var(--panel-hi);color:var(--ink-4);border:none;border-radius:7px;
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;text-align:center;margin-top:6px;transition:all 0.2s}
+.ack-btn.ready{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(0,179,86,0.3)}
+.ack-btn.press{transform:scale(0.97)}
+.done-card{background:var(--surface);border:1.5px solid var(--green-bd);border-radius:8px;padding:30px 22px;text-align:center;box-shadow:var(--shadow-md)}
+.done-check{width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 16px;transform:scale(0.4);transition:transform 0.5s cubic-bezier(.2,1.3,.4,1)}
+.done-card.on .done-check{transform:scale(1)}
+.done-card h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.03em;margin-bottom:8px}
+.done-card p{font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:14px}
+
+/* ---------- Verify (money shot) ---------- */
+.verifybg{background:var(--bg)}
+.verdict{background:var(--surface);border:1.5px solid var(--green-bd);border-radius:8px;padding:20px;text-align:center;margin-bottom:12px;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.verdict::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.verdict-check{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 12px;box-shadow:0 8px 22px rgba(0,179,86,0.35)}
+.verdict h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.03em;margin-bottom:5px}
+.verdict-sub{font-size:12px;color:var(--ink-2);line-height:1.5}
+.verdict-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green-dk);margin-top:9px;letter-spacing:0.05em;word-break:break-all}
+.checks{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px}
+.vchip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.09em;text-transform:uppercase;color:var(--green-dk);background:var(--green-bg);border:1px solid var(--green-bd);padding:6px 10px;border-radius:50px}
+.hashbox{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-2);line-height:1.85;word-break:break-all}
+.hashbox .hk{color:var(--ink-4);text-transform:uppercase;letter-spacing:0.1em;font-size:8px;display:block;margin-top:7px}
+.hashbox .hk:first-child{margin-top:0}
+
+/* ---------- Close / CTA ---------- */
+#sceneClose{background:radial-gradient(120% 90% at 50% 0%,#15181d 0%,#0b0d10 70%);
+  align-items:center;justify-content:center;text-align:center;padding:38px 30px}
+#sceneClose .mark{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.2em;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:22px}
+#sceneClose .punch{font-family:'DM Sans',sans-serif;font-weight:700;font-size:24px;line-height:1.28;color:#fff;max-width:300px}
+#sceneClose .punch em{color:var(--green);font-style:normal}
+#sceneClose .cta{margin-top:22px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;
+  font-size:20px;letter-spacing:0.06em;padding:13px 26px;border-radius:8px;box-shadow:0 8px 24px rgba(0,179,86,0.35)}
+#sceneClose .code{margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:0.18em;
+  color:#fff;border:1.5px dashed rgba(255,255,255,0.35);border-radius:7px;padding:9px 16px;display:inline-block}
+#sceneClose .code b{color:var(--green);letter-spacing:0.22em}
+#sceneClose .link{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.55)}
+
+/* ---- Burned-in captions (always visible, muted-safe) ---- */
+#caption{position:absolute;left:0;right:0;bottom:20px;z-index:45;display:flex;justify-content:center;
+  padding:0 18px;pointer-events:none}
+#caption .cap-inner{background:rgba(8,10,13,0.82);color:#fff;font-weight:600;font-size:16px;line-height:1.32;
+  text-align:center;border-radius:10px;padding:11px 15px;max-width:340px;
+  box-shadow:0 6px 22px rgba(0,0,0,0.45);transition:opacity 0.2s;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+#caption .cap-inner b{color:var(--green)}
+#caption.hide .cap-inner{opacity:0}
+
+/* Replay button shown after the run (sits inside the frame, low corner) */
+#replay{position:absolute;z-index:50;left:50%;bottom:78px;transform:translateX(-50%);
+  background:rgba(255,255,255,0.95);color:var(--ink);border:none;border-radius:50px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  padding:11px 20px;box-shadow:var(--shadow-md);cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.3s}
+#replay.on{opacity:1;pointer-events:auto}
+
+/* ---- Out-of-frame helper (NOT recorded) ---- */
+#helper{color:#9aa3ad;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em;
+  text-align:center;line-height:1.7;max-width:420px}
+#helper a{color:var(--green);text-decoration:none}
+#helper b{color:#e4e7ec}
+#helper .pill{display:inline-block;border:1px solid #2a2e35;border-radius:50px;padding:3px 10px;margin:2px}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <!-- progress + beat -->
+  <div id="topbar">
+    <div id="track"><div id="bar"></div></div>
+    <div id="beat"><span class="beat-label" id="beatLabel">The problem</span><span class="beat-time" id="beatTime">0:00</span></div>
+  </div>
+
+  <!-- 1 · HOOK -->
+  <div class="scene" id="sceneHook">
+    <div class="mark"><span class="logo-dot"></span>SENT.</div>
+    <div class="prob">The buyer says it <em>wasn't what they got.</em><br>It's your word against theirs.</div>
+    <div class="sub">If you sell or consign anything…</div>
+  </div>
+
+  <!-- 2 · CREATE -->
+  <div class="scene" id="sceneCreate">
+    <div class="appbar"><a class="logo"><span class="logo-dot"></span>SENT.</a><span class="hdr-tag g">New Transfer</span></div>
+    <div class="screen">
+      <div class="stepper">
+        <span class="step-pill active" id="st1"><span class="step-num">1</span>Details</span>
+        <span class="step-line"></span>
+        <span class="step-pill" id="st2"><span class="step-num">2</span>Evidence</span>
+        <span class="step-line"></span>
+        <span class="step-pill" id="st3"><span class="step-num">3</span>Seal</span>
+      </div>
+      <div id="formFields">
+        <div class="fld"><label>Item</label><div class="input" id="fItem"><span class="ph">e.g. Air Jordan 1 'Chicago'</span></div></div>
+        <div class="row2">
+          <div class="fld"><label>Sale price</label><div class="input" id="fPrice"><span class="ph">0.00</span></div></div>
+          <div class="fld"><label>Condition</label><div class="input" id="fCond"><span class="ph">Select…</span></div></div>
+        </div>
+        <div class="fld"><label>Description</label><div class="input tall" id="fDesc"><span class="ph">Describe the item and anything relevant to the sale.</span></div></div>
+        <div class="fld" id="evBlock" style="opacity:0;transition:opacity .3s">
+          <label>Photo / evidence</label>
+          <div class="evgrid">
+            <div class="evcell shot" id="evShot"></div>
+            <div class="evcell add">+</div>
+            <div class="evcell add">+</div>
+          </div>
+          <div class="hashline" id="evHash">✓ sealed · sha256 9f2c…f08e</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 · SEAL -->
+  <div class="scene" id="sceneSeal">
+    <div class="appbar"><a class="logo"><span class="logo-dot"></span>SENT.</a><span class="hdr-tag g">Review &amp; Seal</span></div>
+    <div class="screen">
+      <div class="stepper">
+        <span class="step-pill done"><span class="step-num">✓</span>Details</span>
+        <span class="step-line"></span>
+        <span class="step-pill done"><span class="step-num">✓</span>Evidence</span>
+        <span class="step-line"></span>
+        <span class="step-pill active"><span class="step-num">3</span>Seal</span>
+      </div>
+      <div class="card">
+        <div class="card-title">// Transfer</div>
+        <div class="drow"><span class="dk">Item</span><span class="dv">Breitling Navitimer B01 Chronograph 43</span></div>
+        <div class="drow"><span class="dk">Price</span><span class="dv">$24,500.00</span></div>
+        <div class="drow"><span class="dk">Condition</span><span class="dv">Excellent — serviced 2025</span></div>
+        <div class="drow"><span class="dk">Evidence</span><span class="dv">3 files · hashed</span></div>
+      </div>
+      <div class="seal-btn" id="sealBtn"><span class="scan"></span><span id="sealLabel">SEAL TRANSFER →</span></div>
+      <div style="text-align:center"><span class="trust-chip">✓ Cryptographically sealed · can't be backdated</span></div>
+    </div>
+    <!-- sealed confirmation -->
+    <div class="seal-done" id="sealDone">
+      <div class="seal-ring">✓</div>
+      <h2>TRANSFER SEALED</h2>
+      <div class="sd-sub">A permanent, timestamped record of exactly what you sold.</div>
+      <div class="lockbox">
+        <span class="lk">Transfer ID</span><b>SENT-TX-8F3A9C2E</b>
+        <span class="lk">Sealed at</span>Fri, 30 May 2026 18:42:07 GMT
+        <span class="lk">Agreement hash (SHA-256)</span>9f2c4b71e0a83d6c5f1849b2a4e1c907d3b6f08e
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 · BUYER ACKNOWLEDGE -->
+  <div class="scene" id="sceneAck">
+    <div class="appbar center"><span class="logo"><span class="logo-dot"></span>SENT.</span></div>
+    <div class="screen" id="ackScreen">
+      <div class="banner">
+        <div class="banner-kicker">You've been sent a Verified Transfer</div>
+        <h1>Breitling Navitimer B01</h1>
+        <p><b style="color:var(--ink)">Marcus Reyes</b> is transferring this to you. Review the condition, then acknowledge.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">// Acknowledge</div>
+        <div class="cf" id="cf1"><span class="box">✓</span><span>I reviewed the item details and condition.</span></div>
+        <div class="cf" id="cf2"><span class="box">✓</span><span>I reviewed the photos and evidence.</span></div>
+        <div class="cf" id="cf3"><span class="box">✓</span><span>I acknowledge receipt of this item as described.</span></div>
+      </div>
+      <div class="ack-btn" id="ackBtn">ACKNOWLEDGE TRANSFER →</div>
+    </div>
+    <!-- acknowledged done -->
+    <div class="screen" id="ackDoneScreen" style="display:none">
+      <div class="done-card" id="doneCard">
+        <div class="done-check">✓</div>
+        <h2>TRANSFER ACKNOWLEDGED</h2>
+        <p>Your acknowledgment is sealed. Both parties now have a permanent record of exactly what was agreed — created before any dispute could exist.</p>
+        <div class="lockbox" style="max-width:none">
+          <span class="lk">Confirmation hash</span>a71d…3e9f · timestamp · IP recorded
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 · VERIFY (money shot) -->
+  <div class="scene verifybg" id="sceneVerify">
+    <div class="appbar"><a class="logo"><span class="logo-dot"></span>SENT.</a><span class="hdr-tag">Public Verification</span></div>
+    <div class="screen">
+      <div class="verdict">
+        <div class="verdict-check">✓</div>
+        <h1>VERIFIED TRANSFER</h1>
+        <div class="verdict-sub">This record is cryptographically sealed and has not been altered.</div>
+        <div class="verdict-id">SENT-TX-8F3A9C2E</div>
+        <div class="checks">
+          <span class="vchip">✓ Verified</span>
+          <span class="vchip">✓ Not altered</span>
+          <span class="vchip">✓ Timestamp confirmed</span>
+          <span class="vchip">✓ Acknowledgment confirmed</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">// Transfer</div>
+        <div class="drow"><span class="dk">Item</span><span class="dv">Breitling Navitimer B01 Chronograph 43</span></div>
+        <div class="drow"><span class="dk">Seller</span><span class="dv">Marcus Reyes</span></div>
+        <div class="drow"><span class="dk">Buyer</span><span class="dv">David Chen</span></div>
+        <div class="drow"><span class="dk">Price</span><span class="dv">$24,500.00</span></div>
+        <div class="drow"><span class="dk">Condition</span><span class="dv">Excellent — serviced 2025</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">// Cryptographic proof</div>
+        <div class="hashbox">
+          <span class="hk">Agreement hash (SHA-256)</span>9f2c4b71e0a83d6c5f1849b2a4e1c907d3b6f08e
+          <span class="hk">Acknowledgment hash</span>a71d8c34902bf65e1d0473e9f228ab19
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 · CLOSE -->
+  <div class="scene" id="sceneClose">
+    <div class="mark"><span class="logo-dot"></span>SENT.</div>
+    <div class="punch">It's not what you <em>said</em> happened — it's what you can <em>prove.</em></div>
+    <div class="cta">TRY IT ON YOUR NEXT SALE</div>
+    <div class="code" id="closeCode" style="display:none">CODE&nbsp;<b>LAUNCH7</b></div>
+    <div class="link" id="closeLink">First one's free · link in bio</div>
+  </div>
+
+  <!-- caption + replay -->
+  <div id="caption"><div class="cap-inner" id="capInner"></div></div>
+  <button id="replay">↺ Replay</button>
+</div>
+
+<div id="helper">
+  <b>SENT — 30-second demo.</b> Screen-record the phone frame above.<br>
+  <span class="pill">R = replay</span>
+  <span class="pill"><a href="?v=launch7">?v=launch7 → code LAUNCH7 ending</a></span>
+  <span class="pill"><a href="?">default → link in bio ending</a></span>
+</div>
+
+<script>
+/* ============================================================
+   Timeline driver. One clock, cue list, caption track.
+   Total runtime = 30s, matching the demo script beats.
+   ============================================================ */
+const LAUNCH7 = new URLSearchParams(location.search).get('v') === 'launch7';
+
+// Close scene adapts to the requested ending.
+(function(){
+  if (LAUNCH7) {
+    document.getElementById('closeCode').style.display = 'inline-block';
+    document.getElementById('closeLink').textContent = 'First one\'s free · link in comments';
+  }
+})();
+
+const scenes = {
+  hook:   document.getElementById('sceneHook'),
+  create: document.getElementById('sceneCreate'),
+  seal:   document.getElementById('sceneSeal'),
+  ack:    document.getElementById('sceneAck'),
+  verify: document.getElementById('sceneVerify'),
+  close:  document.getElementById('sceneClose'),
+};
+
+// Inline product photo (self-contained — a stylised chronograph dial).
+const WATCH_SVG = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+<defs><radialGradient id="g" cx="38%" cy="32%" r="80%"><stop offset="0" stop-color="#3a4150"/><stop offset="0.55" stop-color="#171b22"/><stop offset="1" stop-color="#0a0c10"/></radialGradient>
+<linearGradient id="bz" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9dde4"/><stop offset="0.5" stop-color="#8b94a3"/><stop offset="1" stop-color="#5b6473"/></linearGradient></defs>
+<rect width="100" height="100" fill="#0d0f13"/>
+<circle cx="50" cy="50" r="40" fill="url(#bz)"/><circle cx="50" cy="50" r="34" fill="url(#g)"/>
+<circle cx="50" cy="50" r="34" fill="none" stroke="#00b356" stroke-width="0.8" opacity="0.55"/>
+${Array.from({length:12}).map((_,i)=>{const a=i*Math.PI/6;return `<circle cx="${50+Math.sin(a)*29}" cy="${50-Math.cos(a)*29}" r="1.1" fill="#cfd6e0"/>`;}).join('')}
+<circle cx="50" cy="34" r="6" fill="none" stroke="#3a4150" stroke-width="0.8"/><circle cx="36" cy="56" r="6" fill="none" stroke="#3a4150" stroke-width="0.8"/><circle cx="64" cy="56" r="6" fill="none" stroke="#3a4150" stroke-width="0.8"/>
+<line x1="50" y1="50" x2="50" y2="28" stroke="#eef2f7" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="50" y1="50" x2="68" y2="58" stroke="#eef2f7" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="50" y1="50" x2="42" y2="70" stroke="#00b356" stroke-width="1" stroke-linecap="round"/>
+<circle cx="50" cy="50" r="2" fill="#cfd6e0"/></svg>`;
+document.getElementById('evShot').innerHTML = WATCH_SVG;
+
+function showScene(name){
+  Object.entries(scenes).forEach(([k,el])=>{
+    el.classList.toggle('show', k===name);
+  });
+}
+
+// Caption track: fine-grained so muted viewers can read it.
+// Every spoken line stays on the proof-of-agreement side — no
+// "proves authentic" / "you'll win" claims.
+const captions = [
+  [0.2,  "If you sell or consign anything, you know this nightmare:"],
+  [2.2,  "the buyer says it <b>wasn't what they got.</b>"],
+  [4.0,  "So before I hand off this watch, I seal it on SENT."],
+  [6.2,  "Item, condition, photo — takes 30 seconds."],
+  [8.0,  "I enter what it is, the condition, add a photo — and seal it."],
+  [10.8, "Now there's a permanent, timestamped record of <b>exactly what I sold.</b>"],
+  [13.5, "The buyer gets it, reviews the condition, and confirms."],
+  [16.4, "That confirmation gets <b>locked in</b> too."],
+  [19.0, "Now we both have the same proof — sealed before any dispute."],
+  [21.6, "\"That's not what I bought\" doesn't work anymore."],
+  [23.6, "The record's right here — and it <b>can't be changed.</b>"],
+  [26.5, "It's not what you said happened — it's what you can <b>prove.</b>"],
+  [28.3, LAUNCH7 ? "First one's free — link in comments, <b>code LAUNCH7.</b>"
+                  : "First one's free — link's in the bio. Try it on your next sale."],
+];
+
+// Beat labels per scene window [startSec, label].
+const beats = [
+  [0,    "The problem"],
+  [4,    "Seal it"],
+  [8,    "Record created"],
+  [13.5, "Buyer confirms"],
+  [19,   "The proof"],
+  [26.5, "Your move"],
+];
+
+const capInner = document.getElementById('capInner');
+const bar = document.getElementById('bar');
+const beatLabel = document.getElementById('beatLabel');
+const beatTime = document.getElementById('beatTime');
+const replayBtn = document.getElementById('replay');
+
+let raf = null, t0 = null, fired = new Set();
+const DURATION = 30;
+let typers = [];     // running setIntervals (typewriter)
+let timeouts = [];   // running setTimeouts (button press / deferred resets)
+function later(fn, ms){ const id = setTimeout(fn, ms); timeouts.push(id); return id; }
+
+// Discrete actions fired once when the clock crosses their time.
+// Beat windows: hook 0-4 · create 4-8 · seal 8-13.5 · ack 13.5-19 ·
+// VERIFY 19-26.5 (the hero — held uniquely longest) · close 26.5-30.
+const actions = [
+  [0.0, ()=>showScene('hook')],
+
+  // --- Create (fast) ---
+  [4.0, ()=>{ showScene('create'); typeInto('fItem','Breitling Navitimer B01 Chronograph 43', 1.4); }],
+  [5.7, ()=>{ setField('fPrice','$24,500.00'); }],
+  [6.1, ()=>{ setField('fCond','Excellent — serviced 2025'); }],
+  [6.5, ()=>{ setField('fDesc','Single owner, box & papers, full service in March 2025.'); }],
+  [6.9, ()=>{ document.getElementById('st2').classList.add('active'); document.getElementById('evBlock').style.opacity='1'; }],
+  [7.5, ()=>{ document.getElementById('evHash').classList.add('on'); }],
+
+  // --- Seal ---
+  [8.0, ()=>showScene('seal')],
+  [9.8, ()=>{ const b=document.getElementById('sealBtn'); b.classList.add('press'); later(()=>b.classList.remove('press'),140);
+              b.classList.add('sealing'); document.getElementById('sealLabel').textContent='SEALING…'; }],
+  [11.1,()=>{ document.getElementById('sealDone').classList.add('on'); }],
+
+  // --- Buyer acknowledge ---
+  [13.5,()=>{ showScene('ack');
+              document.getElementById('ackScreen').style.display='';
+              document.getElementById('ackDoneScreen').style.display='none';
+              ['cf1','cf2','cf3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+              document.getElementById('ackBtn').classList.remove('ready'); }],
+  [14.6,()=>document.getElementById('cf1').classList.add('on')],
+  [15.2,()=>document.getElementById('cf2').classList.add('on')],
+  [15.8,()=>{ document.getElementById('cf3').classList.add('on');
+              document.getElementById('ackBtn').classList.add('ready'); }],
+  [16.9,()=>{ const b=document.getElementById('ackBtn'); b.classList.add('press'); b.textContent='SEALING ACKNOWLEDGMENT…';
+              later(()=>b.classList.remove('press'),140); }],
+  [17.9,()=>{ document.getElementById('ackScreen').style.display='none';
+              document.getElementById('ackDoneScreen').style.display='';
+              requestAnimationFrame(()=>document.getElementById('doneCard').classList.add('on')); }],
+
+  // --- Verify money shot (linger 19-26.5 with slow zoom) ---
+  [19.0,()=>{ showScene('verify'); scenes.verify.classList.add('zoom'); }],
+
+  // --- Close (defer dropping .zoom until the crossfade finishes) ---
+  [26.5,()=>{ showScene('close'); later(()=>scenes.verify.classList.remove('zoom'), 500); }],
+];
+
+function setField(id, val){
+  const el = document.getElementById(id);
+  el.classList.add('filled');
+  el.innerHTML = val;
+}
+// Lightweight typewriter for the hero field only (keeps the form lively
+// without making the viewer watch every keystroke on every field).
+function typeInto(id, text, dur){
+  const el = document.getElementById(id);
+  el.classList.add('filled');
+  el.innerHTML = '<span class="t"></span><span class="caret"></span>';
+  const span = el.querySelector('.t');
+  const interval = Math.max(16, (dur ? dur*1000 : 1600) / text.length);
+  let i = 1;                       // seed first glyph so the field is never caret-only
+  span.textContent = text.slice(0, i);
+  const iv = setInterval(()=>{
+    span.textContent = text.slice(0, ++i);
+    if (i >= text.length){ clearInterval(iv); const c=el.querySelector('.caret'); if(c) c.remove(); }
+  }, interval);
+  typers.push(iv);
+}
+
+function currentCaption(t){
+  let cur = '';
+  for (const [tt, txt] of captions){ if (t >= tt) cur = txt; else break; }
+  return cur;
+}
+function currentBeat(t){
+  let label='', start=0;
+  for (const [tt, l] of beats){ if (t >= tt){ label=l; start=tt; } else break; }
+  return label;
+}
+function fmt(t){ const s=Math.max(0,Math.min(DURATION,Math.floor(t))); return '0:'+String(s).padStart(2,'0'); }
+
+function frame(ts){
+  if (t0 === null) t0 = ts;
+  const t = (ts - t0)/1000;
+
+  // fire actions
+  for (const [at, fn] of actions){
+    if (t >= at && !fired.has(at)){ fired.add(at); fn(); }
+  }
+
+  // caption + progress + beat
+  capInner.innerHTML = currentCaption(t);
+  bar.style.width = Math.min(100, (t/DURATION)*100) + '%';
+  beatLabel.textContent = currentBeat(t);
+  beatTime.textContent = fmt(t);
+
+  if (t < DURATION + 0.5){
+    raf = requestAnimationFrame(frame);
+  } else {
+    replayBtn.classList.add('on');
+  }
+}
+
+function start(){
+  // reset
+  typers.forEach(clearInterval); typers = [];
+  timeouts.forEach(clearTimeout); timeouts = [];
+  fired.clear(); t0 = null;
+  replayBtn.classList.remove('on');
+  scenes.verify.classList.remove('zoom');
+  // reset create fields
+  document.getElementById('fItem').innerHTML = '<span class="ph">e.g. Air Jordan 1 \'Chicago\'</span>';
+  document.getElementById('fPrice').innerHTML = '<span class="ph">0.00</span>';
+  document.getElementById('fCond').innerHTML = '<span class="ph">Select…</span>';
+  document.getElementById('fDesc').innerHTML = '<span class="ph">Describe the item and anything relevant to the sale.</span>';
+  ['fItem','fPrice','fCond','fDesc'].forEach(id=>document.getElementById(id).classList.remove('filled'));
+  document.getElementById('evBlock').style.opacity = '0';
+  document.getElementById('evHash').classList.remove('on');
+  document.getElementById('st2').classList.remove('active');
+  // reset seal
+  document.getElementById('sealBtn').classList.remove('sealing');
+  document.getElementById('sealLabel').textContent = 'SEAL TRANSFER →';
+  document.getElementById('sealDone').classList.remove('on');
+  // reset ack
+  const ab = document.getElementById('ackBtn');
+  ab.classList.remove('ready'); ab.textContent='ACKNOWLEDGE TRANSFER →';
+  document.getElementById('doneCard').classList.remove('on');
+
+  showScene('hook');
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(frame);
+}
+
+replayBtn.addEventListener('click', start);
+document.addEventListener('keydown', e=>{ if (e.key==='r' || e.key==='R') start(); });
+
+start();
+</script>
+</body>
+</html>
