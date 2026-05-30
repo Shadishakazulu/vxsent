@@ -147,7 +147,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   <div class="tb-bar">
     <a href="/" class="tb-logo"><div class="tb-dot"></div>SENT.</a>
     <div class="tb-right">
-      <div class="tb-plan" id="tbPlan">Solo · $12.99/mo</div>
+      <div class="tb-plan" id="tbPlan">…</div>
       <div class="tb-user" id="tbUser">you@email.com</div>
       <button class="tb-ham" onclick="toggleSb()" aria-label="Menu">☰</button>
     </div>
@@ -182,7 +182,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   <div class="qp">
     <div class="qp-head">
       <div class="qp-title">// Quick proof</div>
-      <div class="qp-plan">Unlimited · Solo plan</div>
+      <div class="qp-plan" id="qpPlan"></div>
     </div>
     <div class="qp-body">
       <div class="qp-drop" onclick="openProofModal()">
@@ -208,7 +208,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
   <div class="solo-modal">
     <button class="solo-modal-close" onclick="closeProofModal()">×</button>
     <div class="solo-modal-logo"><div class="tb-dot"></div>SENT.</div>
-    <div class="solo-modal-sub">Solo plan · Seal instantly · No payment required</div>
+    <div class="solo-modal-sub" id="soloModalSub">Seal instantly</div>
 
     <div class="solo-dropzone" id="soloDropzone">
       <input type="file" class="solo-file-input" id="soloFileInput" aria-label="Select file">
@@ -270,6 +270,24 @@ let soloFile = null;
 let soloHash = null;
 let soloTimestamp = null;
 
+// Apply the account's real plan state to every place plan status appears, so the
+// header badge, the Quick Proof widget and the proof modal can never disagree.
+// Pay-per-use accounts must never see 'Solo'/'Unlimited' or a trial countdown.
+function applyPlanLabels(soloActive) {
+  const tbPlan = document.getElementById('tbPlan');
+  const qpPlan = document.getElementById('qpPlan');
+  const modalSub = document.getElementById('soloModalSub');
+  if (soloActive) {
+    if (tbPlan) tbPlan.textContent = 'Solo';
+    if (qpPlan) qpPlan.textContent = 'Unlimited · Solo plan';
+    if (modalSub) modalSub.textContent = 'Solo plan · Seal instantly · No payment required';
+  } else {
+    if (tbPlan) tbPlan.textContent = 'Pay-per-use';
+    if (qpPlan) qpPlan.textContent = 'Pay-per-use · Per proof';
+    if (modalSub) modalSub.textContent = 'Pay-per-use · Sealed per proof';
+  }
+}
+
 async function loadDashboard() {
   try {
     const sessRes = await fetch('/api/auth/session');
@@ -279,30 +297,17 @@ async function loadDashboard() {
     currentUserEmail = sess.email;
     document.getElementById('tbUser').textContent = sess.email;
 
-    // Determine plan label. A user with plan='solo' and a future plan_expires_at
-    // is on Solo (whether paid or on a promo trial). Show trial state + days left
-    // when we can tell it's time-limited.
-    const tbPlan = document.getElementById('tbPlan');
+    // Determine the account's REAL plan state using the exact same rule the
+    // file-delivery gate uses on the server (create-proof-solo.js):
+    //   Solo  ==  plan === 'solo'  AND  plan_expires_at is in the future.
+    // This is display-only — it reads the same source of truth, it does not
+    // change any gating. Every on-screen plan label is driven from soloActive
+    // so the badge, the Quick Proof widget, and the proof modal always agree.
     const now = Date.now();
     const expiresAt = sess.plan_expires_at ? new Date(sess.plan_expires_at).getTime() : null;
-    const soloActive = sess.plan === 'solo' && (!expiresAt || expiresAt > now);
+    const soloActive = sess.plan === 'solo' && expiresAt && expiresAt > now;
 
-    if (soloActive) {
-      if (expiresAt) {
-        const daysLeft = Math.max(0, Math.ceil((expiresAt - now) / (24 * 60 * 60 * 1000)));
-        // Heuristic: a trial is a short, fixed window. Paid Solo renews monthly (~28-31 days out).
-        // If 14 days or fewer remain, treat/label as trial so the user sees the clock.
-        tbPlan.textContent = daysLeft <= 14
-          ? `Solo · Trial · ${daysLeft}d left`
-          : 'Solo · $12.99/mo';
-      } else {
-        tbPlan.textContent = 'Solo · $12.99/mo';
-      }
-    } else if (sess.plan === 'solo' && expiresAt && expiresAt <= now) {
-      tbPlan.textContent = 'Solo · Expired';
-    } else {
-      tbPlan.textContent = 'No active plan';
-    }
+    applyPlanLabels(soloActive);
     const proofsRes = await fetch('/api/proofs');
     if (proofsRes.ok) {
       const data = await proofsRes.json();
