@@ -140,9 +140,20 @@ function renderProof(proof) {
     `;
   }
 
+  // Sealed message visibility: for gated file deliveries, withhold the message from
+  // the recipient until they acknowledge receipt. The sender (no confirm flow) and
+  // anyone viewing after confirmation always see it.
+  let messageBlock = '';
+  if (deliveryMessage) {
+    const messageGated = hasFile && showAck && !isConfirmed;
+    messageBlock = messageGated
+      ? `<div style="background:rgba(122,143,166,0.08);border-left:3px solid #7a8fa6;border-radius:3px;padding:14px 16px;margin-bottom:20px"><div style="color:#7a8fa6;font-size:10px;letter-spacing:2px;margin-bottom:6px">🔒 SEALED MESSAGE</div><div style="color:#a0b0c5;font-size:13px;line-height:1.6">${senderEmail || 'The sender'} included a private message. It will be revealed once you acknowledge receipt below.</div></div>`
+      : `<div style="background:rgba(0,255,157,0.05);border-left:3px solid #00ff9d;border-radius:3px;padding:14px 16px;margin-bottom:20px"><div style="color:#7a8fa6;font-size:10px;letter-spacing:2px;margin-bottom:6px">SEALED MESSAGE</div><div style="color:#e0e0e0;font-size:13px;line-height:1.6;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>`;
+  }
+
   document.getElementById('receipt-content').innerHTML = `
     ${statusBanner}
-    ${deliveryMessage ? `<div style="background:rgba(0,255,157,0.05);border-left:3px solid #00ff9d;border-radius:3px;padding:14px 16px;margin-bottom:20px"><div style="color:#7a8fa6;font-size:10px;letter-spacing:2px;margin-bottom:6px">SEALED MESSAGE</div><div style="color:#e0e0e0;font-size:13px;line-height:1.6;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : ''}
+    ${messageBlock}
     <table class="proof-table">
       <tr><td>PROOF ID</td><td class="proof-id">${id}</td></tr>
       <tr><td>FILE</td><td>${fileName}</td></tr>

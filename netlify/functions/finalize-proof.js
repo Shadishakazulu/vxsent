@@ -112,7 +112,14 @@ async function sendRecipientNotification({ recipientEmail, senderEmail, proofId,
   const intro = hasFile
     ? `<strong>${senderEmail}</strong> has sent you a file. To download it, you'll need to acknowledge receipt. This acknowledgment is cryptographically sealed.`
     : `<strong>${senderEmail}</strong> has sent you a file with a cryptographic proof of delivery.`;
-  const msgBlock = deliveryMessage ? `<div style="background:#f0f2f5;border-left:3px solid #00b356;border-radius:4px;padding:12px 16px;margin-bottom:20px"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Message from ${senderEmail}</div><div style="font-size:14px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>` : '';
+  // For gated file deliveries, withhold the sealed message until the recipient
+  // acknowledges receipt — otherwise they could read it without ever acknowledging.
+  // Proof-only deliveries (no gated file) show the message as before.
+  const msgBlock = !deliveryMessage
+    ? ''
+    : hasFile
+      ? `<div style="background:#f0f2f5;border-left:3px solid #9ca3af;border-radius:4px;padding:12px 16px;margin-bottom:20px"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">🔒 Sealed message</div><div style="font-size:13px;color:#6b7280;line-height:1.5">${senderEmail} included a private message. It will be revealed once you acknowledge receipt below.</div></div>`
+      : `<div style="background:#f0f2f5;border-left:3px solid #00b356;border-radius:4px;padding:12px 16px;margin-bottom:20px"><div style="font-family:monospace;font-size:10px;color:#6b7280;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:5px">Message from ${senderEmail}</div><div style="font-size:14px;color:#374151;line-height:1.5;white-space:pre-wrap">${escapeHtml(deliveryMessage)}</div></div>`;
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
