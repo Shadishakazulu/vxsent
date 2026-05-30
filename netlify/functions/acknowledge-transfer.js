@@ -46,6 +46,32 @@ function ackEmailHtml(transfer, confirmedAt, ip, confirmationHash) {
   </div>`;
 }
 
+// Buyer's own copy — confirmation that they acknowledged, the key details,
+// a permanent link back to their record, and the standard SENT disclaimer.
+function buyerAckEmailHtml(transfer, confirmedAt, confirmationHash) {
+  const verifyUrl = `https://vxsent.com/verify/${transfer.id}`;
+  const price = transfer.sale_price != null ? '$' + transfer.sale_price : '—';
+  const acknowledgedUtc = new Date(confirmedAt).toUTCString();
+  return `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8">
+    <div style="background:#00b356;color:#fff;padding:14px 28px;border-radius:8px 8px 0 0"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em">✓ YOUR ACKNOWLEDGMENT IS SEALED</div></div>
+    <div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px">
+      <h2 style="font-size:20px;color:#111318;margin-bottom:8px">You acknowledged the transfer of ${transfer.item_title}.</h2>
+      <p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">This confirms you acknowledged the transfer of <strong>${transfer.item_title}</strong> from <strong>${transfer.seller_name}</strong>. You and the seller now both hold a permanent, independently verifiable record of exactly what was agreed. This email is your copy.</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+        <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280;width:130px">Item</td><td style="padding:8px 0;font-size:12px;color:#111318">${transfer.item_title}</td></tr>
+        <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Price</td><td style="padding:8px 0;font-size:12px;color:#111318">${price}</td></tr>
+        <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Transfer ID</td><td style="padding:8px 0;font-size:11px;color:#111318;font-family:monospace">${transfer.id}</td></tr>
+        <tr style="border-bottom:1px solid #e1e4e8"><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Acknowledged</td><td style="padding:8px 0;font-size:12px;color:#00b356;font-weight:bold">${acknowledgedUtc}</td></tr>
+        <tr><td style="padding:8px 0;font-size:10px;text-transform:uppercase;color:#6b7280">Confirmation Hash</td><td style="padding:8px 0;font-size:10px;color:#111318;font-family:monospace;word-break:break-all">${confirmationHash}</td></tr>
+      </table>
+      <a href="${verifyUrl}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;border-radius:4px">VIEW YOUR VERIFIED RECORD →</a>
+      <p style="font-size:11px;color:#6b7280;margin-top:16px;line-height:1.5">This link is your permanent way back to this record — bookmark it. It's the public verification page for this transfer.</p>
+      <p style="font-size:10px;color:#9ca3af;line-height:1.55;margin-top:20px;padding-top:16px;border-top:1px solid #e1e4e8">This is an independent cryptographic record of the agreement, condition, and acknowledgment between the parties — proof of what was agreed and when. It is not legal advice and does not replace any title transfer, registration, or document required by law.</p>
+    </div>
+    <p style="font-size:10px;color:#9ca3af;text-align:center;margin-top:16px;font-family:monospace;text-transform:uppercase;letter-spacing:0.1em">SENT. — Verified Transfer Infrastructure · vxsent.com</p>
+  </div>`;
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -94,9 +120,19 @@ exports.handler = async (event) => {
     }).eq('id', transferId);
     if (updateError) return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'Failed to record acknowledgment' }) };
 
-    // Notify seller
+    // Notify seller (existing behavior \u2014 unchanged)
     if (transfer.seller_email) {
       await sendEmail(transfer.seller_email, `\u2713 ${transfer.buyer_name} acknowledged your transfer \u2014 ${transfer.item_title}`, ackEmailHtml(transfer, confirmedAt, ip, confirmationHash));
+    }
+
+    // Send the buyer their own copy. sendEmail swallows its own errors, but wrap
+    // here too so a failure can never break the acknowledgment itself.
+    if (transfer.buyer_email) {
+      try {
+        await sendEmail(transfer.buyer_email, `\u2713 You acknowledged the transfer \u2014 ${transfer.item_title}`, buyerAckEmailHtml(transfer, confirmedAt, confirmationHash));
+      } catch (e) {
+        console.error('[SENT-TX] Buyer confirmation email failed (non-fatal):', e.message);
+      }
     }
 
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ confirmed: true, transferId, confirmedAt, confirmationHash, message: 'Transfer acknowledged. Both parties notified.' }) };
