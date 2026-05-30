@@ -472,6 +472,9 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Reference name <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional)</span></label>
     <input id="payProject" type="text" placeholder="e.g. Q2 Agreement" style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'">
 
+    <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Message to recipient <span style="color:#9ca3af;font-size:8px;letter-spacing:0.1em">(optional — sealed into the proof)</span></label>
+    <textarea id="payMessage" rows="3" maxlength="2000" placeholder="e.g. Final version of the contract we discussed — no further revisions included." style="width:100%;padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;font-size:14px;color:#111318;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:16px;box-sizing:border-box;resize:vertical;min-height:60px" onfocus="this.style.borderColor='#00b356'" onblur="this.style.borderColor='#e1e4e8'"></textarea>
+
     <label style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Card details</label>
     <div id="card-element" style="padding:12px 14px;border:1.5px solid #e1e4e8;border-radius:4px;margin-bottom:16px;background:#fff"></div>
 
@@ -559,6 +562,7 @@ async function submitPayment() {
   const email = document.getElementById('payEmail').value.trim();
   const recipientEmail = document.getElementById('payRecipientEmail').value.trim();
   const projectName = document.getElementById('payProject').value.trim();
+  const deliveryMessage = document.getElementById('payMessage').value.trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     document.getElementById('payError').textContent = 'Please enter a valid email address.';
@@ -589,7 +593,8 @@ async function submitPayment() {
         timestamp: currentTimestamp,
         email: email,
         recipientEmail: recipientEmail || '',
-        projectName: projectName || ''
+        projectName: projectName || '',
+        deliveryMessage: deliveryMessage || ''
       })
     });
 

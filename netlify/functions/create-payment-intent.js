@@ -55,7 +55,13 @@ exports.handler = async (event) => {
     let body;
     try { body = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) }; }
 
-    const { fileHash, fileName, fileSize, timestamp, email, recipientEmail, projectName } = body;
+    const { fileHash, fileName, fileSize, timestamp, email, recipientEmail, projectName, deliveryMessage } = body;
+
+    // Normalize the sender's note: trim, cap at the textarea's 2000-char limit,
+    // collapse blank/whitespace-only input to null so it never renders an empty block.
+    const sealedMessage = (typeof deliveryMessage === 'string' && deliveryMessage.trim())
+      ? deliveryMessage.trim().slice(0, 2000)
+      : null;
 
     if (!fileHash || fileHash.length !== 64) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid file hash' }) };
     if (!fileName) return { statusCode: 400, headers, body: JSON.stringify({ error: 'File name required' }) };
@@ -78,6 +84,9 @@ exports.handler = async (event) => {
         user_email: email,
         recipient_email: recipientEmail || '',
         project_name: projectName || '',
+        // Stripe metadata values are capped at 500 chars — store a truncated copy
+        // as a fallback. The full message is persisted on the proof row below.
+        delivery_message: (sealedMessage || '').slice(0, 480),
         product: 'day_pass'
       }
     });
@@ -94,6 +103,7 @@ exports.handler = async (event) => {
         user_id: null,
         recipient_email: recipientEmail || null,
         project_name: projectName || null,
+        delivery_message: sealedMessage,
         is_valid: false,
         rac_enabled: false,
         created_at: now,
