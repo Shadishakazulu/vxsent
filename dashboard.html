@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENT. Dashboard — Your Proof History</title>
+<title>SENT. Dashboard — Proofs &amp; Verified Transfers</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,6 +63,8 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;disp
 .pi-meta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-3);letter-spacing:0.08em;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .pi-tag{padding:1px 6px;border:1px solid var(--border);color:var(--ink-3);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;border-radius:2px}
 .pi-tag.file{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
+.pi-tag.tx{border-color:var(--green-dk);color:#fff;background:var(--green-dk)}
+.pi-tag.ack{border-color:var(--green-bd);color:var(--green-dk);background:var(--green-bg)}
 .pi-actions{display:flex;gap:6px;flex-shrink:0}
 .pi-btn{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink-3);cursor:pointer;border-radius:3px;transition:all 0.15s;white-space:nowrap}
 .pi-btn.primary{border-color:var(--green-bd);color:var(--green-dk)}
@@ -146,7 +148,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
 <nav class="sidebar" id="sidebar">
   <div>
     <div class="sb-label">Workspace</div>
-    <button class="sb-item active"><span class="sb-icon">📋</span>All Proofs</button>
+    <button class="sb-item active"><span class="sb-icon">📨</span>Delivery proofs</button>
     <button class="sb-item" onclick="document.getElementById('transferSection').scrollIntoView({behavior:'smooth'})"><span class="sb-icon">🧾</span>Verified Transfers</button>
   </div>
   <div class="sb-div"></div>
@@ -158,10 +160,10 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
 
 <main class="main">
   <div class="stats">
-    <div class="sc"><div class="sc-label">Total proofs</div><div class="sc-num green" id="statTotal">—</div><div class="sc-sub">Since joining</div></div>
-    <div class="sc"><div class="sc-label">This month</div><div class="sc-num" id="statMonth">—</div><div class="sc-sub">Proofs generated</div></div>
-    <div class="sc"><div class="sc-label">Disputes won</div><div class="sc-num green">3</div><div class="sc-sub">Using SENT. receipts</div></div>
-    <div class="sc"><div class="sc-label">Value protected</div><div class="sc-num green">$8.4K</div><div class="sc-sub">In recovered payments</div></div>
+    <div class="sc"><div class="sc-label">Delivery proofs</div><div class="sc-num green" id="statTotal">—</div><div class="sc-sub">Sealed since joining</div></div>
+    <div class="sc"><div class="sc-label">Proofs this month</div><div class="sc-num" id="statMonth">—</div><div class="sc-sub">Files proofed</div></div>
+    <div class="sc"><div class="sc-label">Verified transfers</div><div class="sc-num green" id="statTransfers">—</div><div class="sc-sub">Bills of sale sealed</div></div>
+    <div class="sc"><div class="sc-label">Acknowledged</div><div class="sc-num" id="statAck">—</div><div class="sc-sub">Buyer confirmed</div></div>
   </div>
 
   <div class="qp">
@@ -178,7 +180,7 @@ input:checked+.toggle-slider:before{transform:translateX(18px)}
     </div>
   </div>
 
-  <div class="sec-hdr"><div class="sec-title">// Recent proofs</div></div>
+  <div class="sec-hdr"><div class="sec-title">// Delivery proofs</div></div>
   <div class="proof-list" id="proofList"><div style="padding:20px;text-align:center;color:var(--ink-3);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Loading proofs...</div></div>
 
   <div class="sec-hdr" id="transferSection" style="margin-top:26px">
@@ -314,16 +316,16 @@ function renderReal(proofs) {
   const c = document.getElementById('proofList');
   c.innerHTML = '';
   proofs.forEach(p => {
-    const fileTag = p.fileDeliveryEnabled ? '<span class="pi-tag file">📦 File</span>' : '';
+    const fileTag = p.fileDeliveryEnabled ? '<span class="pi-tag">📦 Gated file</span>' : '';
     const el = document.createElement('div');
     el.className = 'pi';
     el.innerHTML = `<div class="pi-inner">
       <div class="pi-dot"></div>
       <div>
-        <div class="pi-file">${p.fileName || 'Unknown'} ${fileTag}</div>
+        <div class="pi-file">${esc(p.fileName || 'Unknown')} <span class="pi-tag file">📨 Delivery proof</span> ${fileTag}</div>
         <div class="pi-meta">
-          <span>📅 ${new Date(p.sealedAt).toLocaleDateString()}</span>
-          <span>📦 ${p.fileSize || ''}</span>
+          <span>📅 ${p.sealedAt ? new Date(p.sealedAt).toLocaleDateString() : '—'}</span>
+          ${p.fileSize ? `<span>📦 ${esc(p.fileSize)}</span>` : ''}
         </div>
       </div>
       <div class="pi-actions">
@@ -341,11 +343,17 @@ const TX_CATEGORY = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Elect
 async function loadTransfers() {
   try {
     const res = await fetch('/api/transfers');
-    if (!res.ok) { renderTransfersEmpty(); return; }
+    if (!res.ok) { setTransferStats(null); renderTransfersEmpty(); return; }
     const data = await res.json();
+    setTransferStats(data.stats);
     if (data.transfers && data.transfers.length > 0) renderTransfers(data.transfers);
     else renderTransfersEmpty();
-  } catch (e) { renderTransfersEmpty(); }
+  } catch (e) { setTransferStats(null); renderTransfersEmpty(); }
+}
+
+function setTransferStats(stats) {
+  document.getElementById('statTransfers').textContent = (stats && stats.sealed != null) ? stats.sealed : 0;
+  document.getElementById('statAck').textContent = (stats && stats.acknowledged != null) ? stats.acknowledged : 0;
 }
 
 function renderTransfersEmpty() {
@@ -360,21 +368,24 @@ function renderTransfers(transfers) {
   c.innerHTML = '';
   transfers.forEach(t => {
     const statusTag = t.acknowledged
-      ? '<span class="pi-tag file">✓ Acknowledged</span>'
+      ? '<span class="pi-tag ack">✓ Acknowledged</span>'
       : (t.isValid ? '<span class="pi-tag">Sealed · awaiting ack</span>' : '<span class="pi-tag">Pending payment</span>');
     const price = t.salePrice != null ? '$' + Number(t.salePrice).toLocaleString(undefined,{minimumFractionDigits:2}) : '';
     const dot = t.isValid ? 'var(--green)' : 'var(--ink-4)';
+    // Show the sealed date once sealed; fall back to created date for pending records.
+    const dateVal = t.isValid && t.sealedAt ? t.sealedAt : t.createdAt;
+    const dateLabel = t.isValid && t.sealedAt ? 'Sealed' : 'Started';
     const el = document.createElement('div');
     el.className = 'pi';
     el.innerHTML = `<div class="pi-inner">
       <div class="pi-dot" style="background:${dot}"></div>
       <div>
-        <div class="pi-file">${esc(t.itemTitle || 'Untitled')} ${statusTag}</div>
+        <div class="pi-file">${esc(t.itemTitle || 'Untitled')} <span class="pi-tag tx">🧾 Bill of sale</span> ${statusTag}</div>
         <div class="pi-meta">
-          <span>🧾 ${esc(TX_CATEGORY[t.category] || t.category)}</span>
+          <span>🏷️ ${esc(TX_CATEGORY[t.category] || t.category)}</span>
           ${price ? `<span>💵 ${price}</span>` : ''}
           ${t.buyerName ? `<span>👤 ${esc(t.buyerName)}</span>` : ''}
-          <span>📅 ${t.createdAt ? new Date(t.createdAt).toLocaleDateString() : ''}</span>
+          <span>📅 ${dateLabel} ${dateVal ? new Date(dateVal).toLocaleDateString() : '—'}</span>
         </div>
       </div>
       <div class="pi-actions">
