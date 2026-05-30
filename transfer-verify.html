@@ -86,6 +86,20 @@ const transferId = (m ? m[1] : qid) ? decodeURIComponent(m ? m[1] : qid) : null;
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function showError(msg){ document.getElementById('loadingState').textContent = msg; }
 
+// Humanized labels for the per-category attribute bag (category_attributes).
+const ATTR_LABELS = {
+  size:'Size', sku:'Style / SKU', authentication:'Authentication',
+  metal:'Metal', stones:'Stones', appraisal_cert:'Appraisal / Certificate',
+  serial:'Serial number', imei:'IMEI'
+};
+function attrLabel(k){ return ATTR_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+function attrRows(attrs){
+  if (!attrs || typeof attrs !== 'object') return [];
+  return Object.keys(attrs).filter(k => attrs[k] != null && String(attrs[k]).trim() !== '')
+    .map(k => [attrLabel(k), String(attrs[k])]);
+}
+const CATEGORY_LABELS = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics', general:'General goods' };
+
 async function load() {
   if (!transferId) { showError('No transfer ID provided.'); return; }
   try {
@@ -105,20 +119,8 @@ function render(t, evidence) {
   const acked = t.buyer_confirmed;
   const condition = t.condition === 'Custom' ? (t.condition_custom || 'Custom') : t.condition;
   const price = t.sale_price != null ? '$' + Number(t.sale_price).toLocaleString(undefined,{minimumFractionDigits:2}) : '—';
-
-  const disclosures = [
-    ['Known defects', t.disclosed_defects],['Damage', t.disclosed_damage],
-    ['Missing parts', t.disclosed_missing_parts],['Repairs', t.disclosed_repairs],
-    ['Special conditions', t.disclosed_special_conditions]
-  ].filter(d => d[1]);
-  const terms = [
-    ['Sold As-Is', t.sold_as_is],['No Warranty', t.no_warranty],['Buyer Inspected', t.buyer_inspected],
-    ['Inspection Completed', t.inspection_completed],['Acknowledged Condition', t.buyer_acknowledged_condition]
-  ].filter(x => x[1]).map(x => x[0]);
-  const ids = [
-    ['VIN', t.vin],['Serial', t.serial_number],['Mileage', t.mileage],
-    ['Model', t.model_number],['SKU', t.sku],['Location', t.location]
-  ].filter(d => d[1]);
+  const category = CATEGORY_LABELS[t.category] || t.category;
+  const attrs = attrRows(t.category_attributes);
 
   let gallery = '';
   if (evidence.length) {
@@ -133,14 +135,13 @@ function render(t, evidence) {
 
   content.innerHTML = `
     <div class="verdict ok">
-      <div class="verdict-check">✓</div>
-      <h1>VERIFIED TRANSFER</h1>
-      <div class="verdict-sub">This record is cryptographically sealed and has not been altered.</div>
+      <div class="verdict-check">${sealed ? '✓' : '•'}</div>
+      <h1>${sealed ? 'VERIFIED TRANSFER' : 'TRANSFER PENDING'}</h1>
+      <div class="verdict-sub">${sealed ? 'This record is cryptographically sealed and has not been altered.' : 'This transfer has not been sealed yet.'}</div>
       <div class="verdict-id">${esc(t.id)}</div>
       <div class="checks">
-        <span class="vchip">✓ Verified</span>
-        <span class="vchip">✓ Not altered</span>
-        <span class="vchip">✓ Timestamp confirmed</span>
+        <span class="vchip ${sealed?'':'pending'}">${sealed?'✓ Verified':'• Not yet sealed'}</span>
+        ${sealed?'<span class="vchip">✓ Not altered</span><span class="vchip">✓ Timestamp confirmed</span>':''}
         <span class="vchip ${acked?'':'pending'}">${acked?'✓ Acknowledgment confirmed':'• Awaiting acknowledgment'}</span>
       </div>
     </div>
@@ -153,14 +154,14 @@ function render(t, evidence) {
       <div class="drow"><span class="dk">Price</span><span class="dv">${price}</span></div>
       <div class="drow"><span class="dk">Date</span><span class="dv">${esc(t.transfer_date)||'—'}</span></div>
       <div class="drow"><span class="dk">Condition</span><span class="dv">${esc(condition)||'—'}</span></div>
+      ${category ? `<div class="drow"><span class="dk">Category</span><span class="dv">${esc(category)}</span></div>` : ''}
+      ${t.location ? `<div class="drow"><span class="dk">Location</span><span class="dv">${esc(t.location)}</span></div>` : ''}
       ${t.description ? `<div class="desc">${esc(t.description)}</div>` : ''}
     </div>
 
-    ${ids.length ? `<div class="card"><div class="card-title">// Identifiers</div>${ids.map(d=>`<div class="drow"><span class="dk">${d[0]}</span><span class="dv">${esc(d[1])}</span></div>`).join('')}</div>` : ''}
+    ${attrs.length ? `<div class="card"><div class="card-title">// Item details</div>${attrs.map(d=>`<div class="drow"><span class="dk">${esc(d[0])}</span><span class="dv">${esc(d[1])}</span></div>`).join('')}</div>` : ''}
 
-    ${disclosures.length ? `<div class="card"><div class="card-title">// Disclosures</div>${disclosures.map(d=>`<div class="disc-block"><div class="disc-label">${d[0]}</div><div class="disc-text">${esc(d[1])}</div></div>`).join('')}</div>` : ''}
-
-    ${terms.length ? `<div class="card"><div class="card-title">// Agreement terms</div><div class="terms-row">${terms.map(x=>`<span class="chip">✓ ${x}</span>`).join('')}</div></div>` : ''}
+    ${t.provenance ? `<div class="card"><div class="card-title">// Provenance</div><div class="desc">${esc(t.provenance)}</div></div>` : ''}
 
     ${gallery}
 
