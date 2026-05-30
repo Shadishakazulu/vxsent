@@ -275,11 +275,17 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 }
 @media(max-width:540px){
   .gated-grid{grid-template-columns:1fr}
-  .hero{padding:76px 16px 36px;gap:22px}
-  .hero-product{padding:20px 18px}
-  .hero-unify-hl{margin-bottom:12px}
-  .hp-desc{margin-bottom:12px}
-  .hp-who{margin-bottom:18px}
+  .hero{padding:70px 16px 28px;gap:16px}
+  .hero-kicker{margin-bottom:12px}
+  .hero-unify-hl{font-size:clamp(34px,9vw,46px);margin-bottom:10px}
+  .hero-unify-sub{font-size:14.5px;line-height:1.5}
+  .hero-products{gap:12px}
+  .hero-product{padding:16px 16px}
+  .hp-kicker{margin-bottom:8px}
+  .hp-title{font-size:26px;margin-bottom:8px}
+  .hp-desc{font-size:13px;margin-bottom:12px;line-height:1.5}
+  .hp-cta{padding:14px;font-size:19px}
+  .hp-cta-sub{margin-top:8px}
 }
 </style>
 </head>
@@ -299,16 +305,15 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 <section class="hero">
   <div class="hero-unify">
     <div class="hero-kicker">Verified delivery infrastructure</div>
-    <h1 class="hero-unify-hl">ONE CRYPTOGRAPHIC GUARANTEE.<br><span class="green">TWO WAYS TO USE IT.</span></h1>
-    <p class="hero-unify-sub">Proof for what you <strong>send</strong>, and proof for what you <strong>sell</strong> — sealed before the dispute can exist.</p>
+    <h1 class="hero-unify-hl">PROVE YOU SENT IT.<br><span class="green">PROVE YOU SOLD IT.</span></h1>
+    <p class="hero-unify-sub">Permanent, tamper-evident proof of what you <strong>deliver</strong> and what you <strong>sell</strong> — created before any dispute.</p>
   </div>
 
   <div class="hero-products">
     <div class="hero-product">
       <div class="hp-kicker">Proof of Delivery</div>
       <h2 class="hp-title">PROVE YOU<br><span class="green">DELIVERED IT.</span></h2>
-      <p class="hp-desc">Cryptographic proof of every <strong>file and document you send</strong> — and every acknowledgment you receive.</p>
-      <div class="hp-who">For senders — contracts · invoices · disclosures · deliverables</div>
+      <p class="hp-desc">Tamper-evident proof of every <strong>file you send</strong> — and the acknowledgment back.</p>
       <div class="hp-spacer"></div>
       <button class="hp-cta" onclick="scrollToProof()">SEAL A FILE — $0.99</button>
       <div class="hp-cta-sub">Timestamped · SHA-256 sealed · Verifiable</div>
@@ -317,12 +322,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
     <div class="hero-product">
       <div class="hp-kicker">Verified Bill of Sale</div>
       <h2 class="hp-title">PROVE WHAT<br><span class="green">YOU SOLD.</span></h2>
-      <p class="hp-desc">A tamper-evident record of <strong>the item, its condition, and the buyer's acknowledgment</strong>.</p>
-      <div class="hp-who">For resellers — sneakers · jewelry · electronics · collectibles</div>
-      <div class="hp-who" style="font-size:9px;color:var(--ink-4);margin-top:-18px">Also supports vehicles &amp; boats</div>
+      <p class="hp-desc">Proof of <strong>what you sold, as you described it</strong> — with the buyer's acknowledgment.</p>
       <div class="hp-spacer"></div>
-      <a href="/transfer" class="hp-cta">CREATE A VERIFIED TRANSFER →</a>
-      <div class="hp-cta-sub">Buyer acknowledgment sealed · $4.99 per transfer</div>
+      <a href="/transfer" class="hp-cta">CREATE A VERIFIED TRANSFER — $4.99</a>
+      <div class="hp-cta-sub">Buyer acknowledgment sealed · Verify from any device</div>
     </div>
   </div>
 </section>
