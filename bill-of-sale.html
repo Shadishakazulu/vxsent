@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verified Bill of Sale — Cryptographic Proof Before the Dispute | SENT.</title>
+<meta name="description" content="SENT. Transfer creates a cryptographic, tamper-evident bill of sale for sneakers, jewelry, electronics and any secondhand goods. Seal what was sold — item, condition, price, photos and provenance — before any dispute can exist.">
+<meta name="robots" content="index,follow">
+<meta name="keywords" content="verified bill of sale, cryptographic bill of sale, proof of sale, secondhand sale receipt, marketplace dispute proof, tamper-evident bill of sale">
+<link rel="canonical" href="https://vxsent.com/verified-bill-of-sale">
+<meta property="og:title" content="Verified Bill of Sale — SENT.">
+<meta property="og:description" content="A cryptographic, tamper-evident bill of sale for anything you sell. The proof exists before the dispute can.">
+<meta property="og:url" content="https://vxsent.com/verified-bill-of-sale">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Verified Bill of Sale — SENT.">
+<meta name="twitter:description" content="A cryptographic, tamper-evident bill of sale for anything you sell. The proof exists before the dispute can.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.06);--red-bd:rgba(220,38,38,0.18);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+a{color:inherit}
+header{position:sticky;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:58px;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.15em;color:var(--ink);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%}
+.hdr-nav{display:flex;align-items:center;gap:20px}
+.hdr-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;transition:color 0.15s}
+.hdr-link:hover{color:var(--ink)}
+.hdr-signin{color:var(--green-dk);border:1.5px solid var(--green-bd);padding:6px 14px;border-radius:4px}
+.hdr-signin:hover{background:var(--green-bg);border-color:var(--green)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 48px}
+.crumbs{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);padding:20px 0 0}
+.crumbs a{color:var(--ink-3);text-decoration:none}
+.crumbs a:hover{color:var(--green-dk)}
+
+.hero{padding:46px 0 56px;border-bottom:1px solid var(--border);text-align:center}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:18px;font-weight:500}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(46px,7vw,92px);line-height:0.92;letter-spacing:0.02em;margin-bottom:20px}
+h1 .green{color:var(--green)}
+.lede{font-size:18px;color:var(--ink-2);line-height:1.65;max-width:660px;margin:0 auto 30px}
+.lede strong{color:var(--ink);font-weight:700}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center}
+.btn-primary{display:inline-block;padding:15px 34px;background:var(--green);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.08em;border:none;cursor:pointer;border-radius:4px;text-decoration:none;transition:all 0.18s;box-shadow:0 4px 14px rgba(0,179,86,0.28)}
+.btn-primary:hover{background:var(--green-dk);transform:translateY(-1px)}
+.cta-note{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-top:14px}
+
+section{padding:64px 0;border-bottom:1px solid var(--border)}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:26px;font-weight:500}
+h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.5vw,50px);line-height:0.96;letter-spacing:0.02em;margin-bottom:18px}
+h2 .green{color:var(--green-dk)}
+.prose{font-size:16px;color:var(--ink-2);line-height:1.75;max-width:720px}
+.prose p{margin-bottom:16px}
+.prose strong{color:var(--ink);font-weight:700}
+
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.cat-card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px 26px;text-decoration:none;transition:all 0.15s;box-shadow:var(--shadow-sm)}
+.cat-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:var(--shadow)}
+.cat-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.cat-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.04em;color:var(--ink);margin-bottom:8px}
+.cat-body{font-size:14px;color:var(--ink-2);line-height:1.6;margin-bottom:14px}
+.cat-link{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green-dk);font-weight:600}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{background:var(--surface);border:1px solid var(--border);padding:28px 24px;border-radius:8px;box-shadow:var(--shadow-sm)}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--green);opacity:0.32;line-height:1;margin-bottom:12px}
+.step-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:9px}
+.step-body{font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.disclaimer{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:18px 22px;margin-top:8px}
+.disclaimer-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;font-weight:500}
+.disclaimer-text{font-size:13px;color:var(--ink-2);line-height:1.6}
+
+.final{text-align:center;padding:84px 0}
+.final h2{margin-bottom:16px}
+.final p{font-size:16px;color:var(--ink-2);margin-bottom:28px}
+
+footer{padding:24px 48px;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-top:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.ft-l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3)}
+.ft-l a{color:var(--ink-3);text-decoration:none}
+.ft-l a:hover{color:var(--ink)}
+.ft-r{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3)}
+.ft-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+@media(max-width:860px){
+  header{padding:0 20px}
+  .hdr-nav .hdr-link:not(.hdr-signin){display:none}
+  .wrap{padding:0 20px}
+  .cat-grid,.steps{grid-template-columns:1fr;gap:14px}
+  footer{padding:20px;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><span class="logo-dot"></span>SENT.</a>
+  <nav class="hdr-nav">
+    <a href="/verified-bill-of-sale" class="hdr-link">Bill of Sale</a>
+    <a href="/pricing" class="hdr-link">Pricing</a>
+    <a href="/transfer" class="hdr-link hdr-signin">Create one →</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a> / Verified Bill of Sale
+  </nav>
+</div>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker">SENT. Transfer · Verified Bill of Sale</p>
+    <h1>THE PROOF EXISTS<br><span class="green">BEFORE THE DISPUTE CAN.</span></h1>
+    <p class="lede">A SENT. bill of sale is a <strong>cryptographic, tamper-evident record</strong> of a sale — the item, its condition, the price, both parties, photos and provenance — sealed before money changes hands. When a buyer later claims the item was fake, broken, or "not as described," the proof of exactly what was sold already exists, dated and unalterable.</p>
+    <div class="cta-row">
+      <a href="/transfer" class="btn-primary">CREATE A BILL OF SALE →</a>
+    </div>
+    <p class="cta-note">Sealed in minutes · SHA-256 + signature · Independently verifiable</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// Choose what you're selling</p>
+    <div class="cat-grid">
+      <a href="/verified-bill-of-sale/sneakers" class="cat-card">
+        <div class="cat-tag">Sneakers</div>
+        <div class="cat-title">Bill of Sale for Sneakers</div>
+        <div class="cat-body">Seal size, style/SKU, authentication and condition photos — so a "these are fake" chargeback can't rewrite the sale.</div>
+        <div class="cat-link">Learn more →</div>
+      </a>
+      <a href="/verified-bill-of-sale/jewelry" class="cat-card">
+        <div class="cat-tag">Jewelry &amp; Watches</div>
+        <div class="cat-title">Bill of Sale for Jewelry</div>
+        <div class="cat-body">Bind metal, stones, appraisal or certificate and serial to the exact piece — so "the diamond was swapped" can't stick.</div>
+        <div class="cat-link">Learn more →</div>
+      </a>
+      <a href="/verified-bill-of-sale/electronics" class="cat-card">
+        <div class="cat-tag">Electronics</div>
+        <div class="cat-title">Bill of Sale for Electronics</div>
+        <div class="cat-body">Seal the serial, IMEI, working condition and photos — so "arrived broken," "wrong serial" and return swaps don't pass.</div>
+        <div class="cat-link">Learn more →</div>
+      </a>
+      <a href="/verified-bill-of-sale/general-goods" class="cat-card">
+        <div class="cat-tag">General Goods</div>
+        <div class="cat-title">Bill of Sale for Used Goods</div>
+        <div class="cat-body">For furniture, tools, bikes, collectibles — anything secondhand. Seal the description, condition, price and photos.</div>
+        <div class="cat-link">Learn more →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// How it works — three steps</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Describe the sale</div>
+        <div class="step-body">Enter the buyer and seller, the price, the item and its condition. The form surfaces the right extra fields for your category — or stays universal for general goods.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Add the evidence</div>
+        <div class="step-body">Attach photos, receipts and certificates. Every file is hashed in your browser before it uploads, so the evidence is sealed exactly as it is — and provenance is sealed in alongside it.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Seal &amp; send</div>
+        <div class="step-body">The record is sealed with a timestamp and signature. The buyer acknowledges the terms, and that acknowledgment is sealed in too. Anyone can verify the record — no account required.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">// Why it holds</p>
+    <h2>A RECORD NEITHER SIDE CAN <span class="green">REWRITE.</span></h2>
+    <div class="prose">
+      <p>The usual record of a private sale — a listing, a chat thread, a payment-app note — is controlled by one party and can be edited, deleted, or selectively screenshotted. When a dispute or a chargeback lands, it comes down to one person's word against the other's.</p>
+      <p>A SENT. bill of sale is different. It is sealed cryptographically <strong>before</strong> money changes hands and timestamped in a way that cannot be backdated. The item, condition, price, photos and provenance are bound together into a single tamper-evident record, the buyer's acknowledgment is sealed into the same record, and anyone — a buyer, a marketplace, a payment processor — can independently verify it. <strong>The question is answered before it's asked.</strong></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="disclaimer">
+      <div class="disclaimer-title">Important</div>
+      <div class="disclaimer-text">SENT. Transfer creates cryptographic proof of a transaction and its agreed terms only. It is not a legal title transfer, not a substitute for any state-required form, and not legal advice.</div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>PROVE WHAT YOU SOLD. <span class="green">ONCE.</span></h2>
+    <p>Every sale without a sealed record is a dispute you can't win.</p>
+    <a href="/transfer" class="btn-primary">CREATE A BILL OF SALE →</a>
+    <p class="cta-note">No account needed to verify · Record is permanent</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="ft-l">SENT. — Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-r"><span class="ft-dot"></span>Veridex infrastructure active</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENT. — Verified Transfer</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:0 24px;height:56px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;color:var(--ink)}
+.logo-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.wrap{max-width:600px;margin:0 auto;padding:24px 18px 80px}
+.state{text-align:center;padding:60px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3)}
+
+.banner{background:var(--surface);border:1.5px solid var(--green-bd);border-radius:8px;padding:22px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.banner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.banner-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);margin-bottom:8px}
+.banner h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.03em;line-height:1.05;margin-bottom:8px}
+.banner p{font-size:13px;color:var(--ink-2);line-height:1.55}
+.banner strong{color:var(--ink)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.drow{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.drow:last-child{border-bottom:none}
+.dk{color:var(--ink-3);flex-shrink:0}
+.dv{color:var(--ink);text-align:right;font-weight:500;word-break:break-word}
+.desc{font-size:13px;color:var(--ink-2);line-height:1.6;background:var(--panel);border-radius:5px;padding:11px 13px;margin-top:8px}
+.disc-block{margin-top:10px}
+.disc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:3px}
+.disc-text{font-size:13px;color:var(--ink-2);line-height:1.55;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:5px;padding:9px 12px}
+.terms-row{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-dk);background:var(--green-bg);border:1px solid var(--green-bd);padding:5px 9px;border-radius:50px}
+
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.gal-item{aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--panel);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;text-decoration:none;color:var(--ink-3)}
+.gal-item img{width:100%;height:100%;object-fit:cover}
+.gal-name{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ink-3);padding:4px;text-align:center;word-break:break-word}
+
+.confirms{display:flex;flex-direction:column;gap:2px}
+.cf{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.cf:last-child{border-bottom:none}
+.cf input{width:20px;height:20px;flex-shrink:0;accent-color:var(--green);margin-top:1px}
+.cf span{font-size:14px;color:var(--ink-2);line-height:1.45}
+
+.ack-btn{width:100%;padding:17px;background:var(--green);color:#fff;border:none;border-radius:5px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.08em;cursor:pointer;transition:all 0.15s;margin-top:4px}
+.ack-btn:hover:not(:disabled){background:var(--green-dk)}
+.ack-btn:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
+.ack-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-top:12px;line-height:1.6}
+.err{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;min-height:16px;margin:8px 0;text-align:center}
+
+.done-card{background:var(--surface);border:1.5px solid var(--green-bd);border-radius:8px;padding:32px 24px;text-align:center;box-shadow:var(--shadow-md)}
+.done-check{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 16px}
+.done-card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.03em;margin-bottom:8px}
+.done-card p{font-size:14px;color:var(--ink-2);line-height:1.6;margin-bottom:16px}
+.hashbox{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-3);background:var(--panel);border-radius:5px;padding:12px;word-break:break-all;line-height:1.7;text-align:left}
+.hashbox .hk{color:var(--ink-4);text-transform:uppercase;letter-spacing:0.1em;font-size:9px}
+.hidden{display:none}
+.disclaimer{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:6px;padding:13px 15px;margin-bottom:14px}
+.disclaimer-text{font-size:12px;color:var(--ink-2);line-height:1.55}
+</style>
+</head>
+<body>
+
+<header><div class="logo"><div class="logo-dot"></div>SENT.</div></header>
+
+<div class="wrap">
+  <div class="state" id="loadingState">Loading verified transfer…</div>
+  <div id="content" class="hidden"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const transferId = params.get('id');
+
+async function load() {
+  if (!transferId) { showError('No transfer ID provided.'); return; }
+  try {
+    const res = await fetch(`/api/transfer/${encodeURIComponent(transferId)}`);
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || 'Transfer not found.'); return; }
+    render(data.transfer, data.evidence || []);
+  } catch (e) { showError('Failed to load transfer.'); }
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').textContent = msg;
+}
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// Humanized labels for the per-category attribute bag (category_attributes).
+const ATTR_LABELS = {
+  size:'Size', sku:'Style / SKU', authentication:'Authentication',
+  metal:'Metal', stones:'Stones', appraisal_cert:'Appraisal / Certificate',
+  serial:'Serial number', imei:'IMEI'
+};
+function attrLabel(k){ return ATTR_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+function attrRows(attrs){
+  if (!attrs || typeof attrs !== 'object') return [];
+  return Object.keys(attrs).filter(k => attrs[k] != null && String(attrs[k]).trim() !== '')
+    .map(k => [attrLabel(k), String(attrs[k])]);
+}
+const CATEGORY_LABELS = { sneakers:'Sneakers', jewelry:'Jewelry', electronics:'Electronics', general:'General goods' };
+
+function render(t, evidence) {
+  document.getElementById('loadingState').classList.add('hidden');
+  const content = document.getElementById('content');
+  content.classList.remove('hidden');
+
+  // Already acknowledged?
+  if (t.buyer_confirmed) { renderDone(t, true); return; }
+
+  // Only sealed transfers can be acknowledged.
+  if (!t.is_valid) {
+    content.innerHTML = `<div class="card"><div class="card-title">// Not ready</div><p style="font-size:14px;color:var(--ink-2);line-height:1.6">This transfer has not been sealed yet. Please wait for the seller to finish sealing it, then reopen the link from your email.</p></div>`;
+    return;
+  }
+
+  const condition = t.condition === 'Custom' ? (t.condition_custom || 'Custom') : t.condition;
+  const price = t.sale_price != null ? '$' + Number(t.sale_price).toLocaleString(undefined,{minimumFractionDigits:2}) : '—';
+  const category = CATEGORY_LABELS[t.category] || t.category;
+  const attrs = attrRows(t.category_attributes);
+
+  let gallery = '';
+  if (evidence.length) {
+    gallery = `<div class="card"><div class="card-title">// Evidence (${evidence.length})</div><div class="gallery">` +
+      evidence.map(e => {
+        const isImg = e.fileMimeType && e.fileMimeType.startsWith('image/');
+        if (isImg && e.viewUrl) return `<a class="gal-item" href="${e.viewUrl}" target="_blank" rel="noopener"><img src="${e.viewUrl}" alt="${esc(e.fileName)}"></a>`;
+        const icon = e.fileMimeType && e.fileMimeType.startsWith('video/') ? '🎬' : (e.fileMimeType==='application/pdf'?'📕':'📄');
+        return `<a class="gal-item" href="${e.viewUrl||'#'}" target="_blank" rel="noopener" style="flex-direction:column"><div>${icon}</div><div class="gal-name">${esc(e.fileName)}</div></a>`;
+      }).join('') + `</div></div>`;
+  }
+
+  content.innerHTML = `
+    <div class="banner">
+      <div class="banner-kicker">You have been sent a Verified Transfer</div>
+      <h1>${esc(t.item_title)}</h1>
+      <p><strong>${esc(t.seller_name)}</strong> is transferring this to you. Review the item details, condition, provenance, and photos, then acknowledge. This record protects you too.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Transfer details</div>
+      <div class="drow"><span class="dk">Seller</span><span class="dv">${esc(t.seller_name)}</span></div>
+      <div class="drow"><span class="dk">Buyer</span><span class="dv">${esc(t.buyer_name)}</span></div>
+      <div class="drow"><span class="dk">Price</span><span class="dv">${price}</span></div>
+      <div class="drow"><span class="dk">Date</span><span class="dv">${esc(t.transfer_date) || '—'}</span></div>
+      <div class="drow"><span class="dk">Condition</span><span class="dv">${esc(condition) || '—'}</span></div>
+      ${category ? `<div class="drow"><span class="dk">Category</span><span class="dv">${esc(category)}</span></div>` : ''}
+      ${t.location ? `<div class="drow"><span class="dk">Location</span><span class="dv">${esc(t.location)}</span></div>` : ''}
+      ${t.description ? `<div class="desc">${esc(t.description)}</div>` : ''}
+    </div>
+
+    ${attrs.length ? `<div class="card"><div class="card-title">// Item details</div>${attrs.map(d=>`<div class="drow"><span class="dk">${esc(d[0])}</span><span class="dv">${esc(d[1])}</span></div>`).join('')}</div>` : ''}
+
+    ${t.provenance ? `<div class="card"><div class="card-title">// Provenance</div><div class="desc">${esc(t.provenance)}</div></div>` : ''}
+
+    ${gallery}
+
+    <div class="card">
+      <div class="card-title">// Acknowledge</div>
+      <div class="confirms">
+        <label class="cf"><input type="checkbox" class="ackchk"><span>I reviewed the item details and condition.</span></label>
+        <label class="cf"><input type="checkbox" class="ackchk"><span>I reviewed the photos and evidence.</span></label>
+        <label class="cf"><input type="checkbox" class="ackchk"><span>I reviewed the provenance and ownership history.</span></label>
+        <label class="cf"><input type="checkbox" class="ackchk"><span>I accept the transfer terms as recorded.</span></label>
+        <label class="cf"><input type="checkbox" class="ackchk"><span>I acknowledge receipt of this item as described.</span></label>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <div class="disclaimer-text">This acknowledgment creates an independent, timestamped record of what was agreed. It is not legal advice and does not replace any title transfer or document required by law for this item.</div>
+    </div>
+
+    <div class="err" id="ackErr"></div>
+    <button class="ack-btn" id="ackBtn" disabled onclick="acknowledge()">ACKNOWLEDGE TRANSFER →</button>
+    <div class="ack-note">Your acknowledgment is cryptographically sealed<br>with timestamp · IP · confirmation hash</div>
+  `;
+
+  const checks = Array.from(document.querySelectorAll('.ackchk'));
+  checks.forEach(c => c.addEventListener('change', () => {
+    document.getElementById('ackBtn').disabled = !checks.every(x => x.checked);
+  }));
+}
+
+async function acknowledge() {
+  const btn = document.getElementById('ackBtn');
+  const err = document.getElementById('ackErr');
+  err.textContent = '';
+  btn.disabled = true; btn.textContent = 'SEALING ACKNOWLEDGMENT…';
+  try {
+    const res = await fetch('/api/acknowledge-transfer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transferId })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Failed to acknowledge.'; btn.disabled = false; btn.textContent = 'ACKNOWLEDGE TRANSFER →'; return; }
+    renderDone({ id: transferId, buyer_confirmed_at: data.confirmedAt, buyer_confirmation_hash: data.confirmationHash }, false);
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    btn.disabled = false; btn.textContent = 'ACKNOWLEDGE TRANSFER →';
+  }
+}
+
+function renderDone(t, wasAlready) {
+  const content = document.getElementById('content');
+  document.getElementById('loadingState').classList.add('hidden');
+  content.classList.remove('hidden');
+  content.innerHTML = `
+    <div class="done-card">
+      <div class="done-check">✓</div>
+      <h2>TRANSFER ACKNOWLEDGED</h2>
+      <p>${wasAlready ? 'This transfer was already acknowledged.' : 'Your acknowledgment is sealed.'} Both you and the seller now have a permanent, independently verifiable record of exactly what was agreed — created before any dispute could exist.</p>
+      <div class="hashbox">
+        <div class="hk">Transfer ID</div>${esc(t.id || transferId)}<br><br>
+        ${t.buyer_confirmed_at ? `<div class="hk">Acknowledged</div>${esc(new Date(t.buyer_confirmed_at).toUTCString())}<br><br>` : ''}
+        ${t.buyer_confirmation_hash ? `<div class="hk">Confirmation Hash</div>${esc(t.buyer_confirmation_hash)}` : ''}
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--ink-4)">A copy has been sent to both parties by email.</p>
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

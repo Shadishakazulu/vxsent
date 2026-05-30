@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# App and account pages are intentionally not indexed (also marked noindex):
+Disallow: /dashboard
+Disallow: /transfer
+Disallow: /transfer-ack
+Disallow: /verify
+Disallow: /receipt
+Disallow: /login
+
+Sitemap: https://vxsent.com/sitemap.xml

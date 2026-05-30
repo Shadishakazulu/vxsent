@@ -66,9 +66,61 @@ status = 200
 force = true
 
 
-# Verify endpoint — recipient email links land here.
+# ── SENT Transfer pages ──
+[[redirects]]
+from = "/transfer"
+to = "/transfer.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/transfer-ack"
+to = "/transfer-ack.html"
+status = 200
+force = true
+
+
+# ── SENT Transfer SEO landing pages (Verified Bill of Sale) ──
+# Crawlable marketing pages, one per low-risk category, that link into /transfer.
+[[redirects]]
+from = "/verified-bill-of-sale"
+to = "/bill-of-sale.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/verified-bill-of-sale/sneakers"
+to = "/bill-of-sale-sneakers.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/verified-bill-of-sale/jewelry"
+to = "/bill-of-sale-jewelry.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/verified-bill-of-sale/electronics"
+to = "/bill-of-sale-electronics.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/verified-bill-of-sale/general-goods"
+to = "/bill-of-sale-general-goods.html"
+status = 200
+force = true
+
+
+# Verify endpoint — recipient/buyer email links land here.
 # Format: /verify/SENT-2026-XXX?confirm=true
-# verify.html reads the proof ID from window.location.pathname
+# verify.html branches: SENT-TX-* -> transfer-verify, SENT-* -> receipt
 [[redirects]]
 from = "/verify/*"
 to = "/verify.html"
@@ -177,4 +229,44 @@ status = 200
 [[redirects]]
 from = "/api/revoke-file"
 to = "/.netlify/functions/revoke-file"
+status = 200
+
+
+# ============================================================
+# API REDIRECTS — SENT TRANSFER (Verified Bill of Sale)
+# ============================================================
+
+[[redirects]]
+from = "/api/create-transfer"
+to = "/.netlify/functions/create-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/finalize-transfer"
+to = "/.netlify/functions/finalize-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/acknowledge-transfer"
+to = "/.netlify/functions/acknowledge-transfer"
+status = 200
+
+
+[[redirects]]
+from = "/api/create-transfer-payment"
+to = "/.netlify/functions/create-transfer-payment"
+status = 200
+
+
+[[redirects]]
+from = "/api/transfer/:id"
+to = "/.netlify/functions/get-transfer?id=:id"
+status = 200
+
+
+[[redirects]]
+from = "/api/transfers"
+to = "/.netlify/functions/get-transfers"
 status = 200
