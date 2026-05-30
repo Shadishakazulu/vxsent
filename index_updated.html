@@ -55,22 +55,37 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .hdr-signin{color:var(--green-dk);border:1.5px solid var(--green-bd);padding:6px 14px;border-radius:4px;transition:all 0.15s}
 .hdr-signin:hover{background:var(--green-bg);border-color:var(--green)}
 
-/* HERO */
-.hero{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:80px 48px 60px;max-width:1320px;margin:0 auto}
+/* HERO — dual product */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:44px;padding:96px 48px 64px;max-width:1180px;margin:0 auto}
 
-.hero-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:20px;opacity:0;animation:fu 0.5s 0.1s forwards;display:flex;align-items:center;gap:10px;font-weight:500}
-.hero-kicker::before{content:'';width:18px;height:2px;background:var(--green);flex-shrink:0;border-radius:1px}
+.hero-unify{text-align:center;max-width:760px;margin:0 auto;opacity:0;animation:fu 0.5s 0.1s forwards}
+.hero-kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--green-dk);margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500}
+.hero-kicker::before,.hero-kicker::after{content:'';width:18px;height:2px;background:var(--green);flex-shrink:0;border-radius:1px}
+.hero-unify-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,76px);line-height:0.92;letter-spacing:0.02em;margin-bottom:16px;color:var(--ink)}
+.hero-unify-hl .green{color:var(--green)}
+.hero-unify-sub{font-size:17px;color:var(--ink-2);line-height:1.6;max-width:560px;margin:0 auto}
+.hero-unify-sub strong{color:var(--ink);font-weight:700}
 
-.hero-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7.5vw,98px);line-height:0.9;letter-spacing:0.02em;margin-bottom:22px;opacity:0;animation:fu 0.5s 0.22s forwards}
-.hero-h1 .l1,.hero-h1 .l2{display:block;color:var(--ink)}
-.hero-h1 .l3{display:block;color:var(--green)}
+.hero-products{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:980px;margin:0 auto;width:100%}
+.hero-product{background:var(--surface);border:1.5px solid var(--border-md);border-radius:8px;box-shadow:var(--shadow-md);padding:34px 30px;display:flex;flex-direction:column;position:relative;overflow:hidden;opacity:0;animation:fu 0.5s forwards}
+.hero-product::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.hero-product:nth-child(1){animation-delay:0.24s}
+.hero-product:nth-child(2){animation-delay:0.36s}
+.hp-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.hp-kicker::before{content:'';width:14px;height:2px;background:var(--green);border-radius:1px;flex-shrink:0}
+.hp-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,3.8vw,50px);line-height:0.92;letter-spacing:0.02em;color:var(--ink);margin-bottom:14px}
+.hp-title .green{color:var(--green)}
+.hp-desc{font-size:14.5px;color:var(--ink-2);line-height:1.6;margin-bottom:14px}
+.hp-desc strong{color:var(--ink);font-weight:700}
+.hp-who{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--ink-3);text-transform:uppercase;margin-bottom:24px;line-height:1.6}
+.hp-spacer{flex-grow:1;min-height:8px}
+.hp-cta{display:block;width:100%;text-align:center;padding:16px;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:0.1em;background:var(--green);color:#fff;border:none;cursor:pointer;transition:all 0.2s;border-radius:4px;text-decoration:none}
+.hp-cta:hover{background:var(--green-dk);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,179,86,0.35)}
+.hp-cta-sub{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-4);margin-top:10px}
 
-.hero-sub{font-size:18px;color:var(--ink-2);line-height:1.65;margin-bottom:36px;max-width:460px;opacity:0;animation:fu 0.5s 0.36s forwards}
-.hero-sub strong{color:var(--ink);font-weight:700}
-
-.stat-row{display:flex;gap:36px;opacity:0;animation:fu 0.5s 0.48s forwards}
-.stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);line-height:1}
-.stat-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+/* SEAL WIDGET — Proof of Delivery flow */
+.seal-widget{border-top:1px solid var(--border);padding:60px 48px;max-width:600px;margin:0 auto;width:100%}
+.seal-widget .section-label{text-align:center}
 
 /* PROOF BOX */
 .proof-box{background:var(--surface);border:1.5px solid var(--border-md);box-shadow:var(--shadow-md);position:relative;overflow:hidden;opacity:0;animation:fu 0.5s 0.3s forwards;border-radius:8px}
@@ -247,7 +262,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   .product2-grid{grid-template-columns:1fr;gap:10px}
   .p2-pricing{grid-template-columns:1fr;gap:10px}
   .hdr-nav .hdr-link:not(.hdr-signin){display:none}
-  .hero{grid-template-columns:1fr;gap:36px;padding:80px 20px 48px}
+  .hero{min-height:auto;justify-content:flex-start;gap:30px;padding:84px 20px 48px}
+  .hero-products{grid-template-columns:1fr;gap:14px}
+  .hero-product{padding:24px 22px}
+  .seal-widget{padding:48px 20px}
   .how,.dispute,.final,.gated,.pricing-banner,.contains{padding-left:20px;padding-right:20px}
   .how-grid{grid-template-columns:1fr;gap:10px}
   .gated-grid{grid-template-columns:1fr 1fr;gap:10px}
@@ -257,6 +275,11 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 }
 @media(max-width:540px){
   .gated-grid{grid-template-columns:1fr}
+  .hero{padding:76px 16px 36px;gap:22px}
+  .hero-product{padding:20px 18px}
+  .hero-unify-hl{margin-bottom:12px}
+  .hp-desc{margin-bottom:12px}
+  .hp-who{margin-bottom:18px}
 }
 </style>
 </head>
@@ -274,21 +297,37 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
 </header>
 
 <section class="hero">
-  <div>
+  <div class="hero-unify">
     <div class="hero-kicker">Verified delivery infrastructure</div>
-    <h1 class="hero-h1">
-      <span class="l1">PROVE</span>
-      <span class="l2">YOU</span>
-      <span class="l3">DELIVERED IT.</span>
-    </h1>
-    <p class="hero-sub">SENT. creates <strong>permanent, cryptographic proof</strong> of every file and document you deliver — and every acknowledgment you receive. <strong>Sealed before the dispute can exist.</strong></p>
-    <div class="stat-row">
-      <div class="stat"><div class="stat-num">$0.99</div><div class="stat-label">Per proof</div></div>
-      <div class="stat"><div class="stat-num">60s</div><div class="stat-label">To generate</div></div>
-      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Stays valid</div></div>
-    </div>
+    <h1 class="hero-unify-hl">ONE CRYPTOGRAPHIC GUARANTEE.<br><span class="green">TWO WAYS TO USE IT.</span></h1>
+    <p class="hero-unify-sub">Proof for what you <strong>send</strong>, and proof for what you <strong>sell</strong> — sealed before the dispute can exist.</p>
   </div>
 
+  <div class="hero-products">
+    <div class="hero-product">
+      <div class="hp-kicker">Proof of Delivery</div>
+      <h2 class="hp-title">PROVE YOU<br><span class="green">DELIVERED IT.</span></h2>
+      <p class="hp-desc">Cryptographic proof of every <strong>file and document you send</strong> — and every acknowledgment you receive.</p>
+      <div class="hp-who">For senders — contracts · invoices · disclosures · deliverables</div>
+      <div class="hp-spacer"></div>
+      <button class="hp-cta" onclick="scrollToProof()">SEAL A FILE — $0.99</button>
+      <div class="hp-cta-sub">Timestamped · SHA-256 sealed · Verifiable</div>
+    </div>
+
+    <div class="hero-product">
+      <div class="hp-kicker">Verified Bill of Sale</div>
+      <h2 class="hp-title">PROVE WHAT<br><span class="green">YOU SOLD.</span></h2>
+      <p class="hp-desc">A tamper-evident record of <strong>the item, its condition, and the buyer's acknowledgment</strong>.</p>
+      <div class="hp-who">For resellers — sneakers · jewelry · electronics · collectibles</div>
+      <div class="hp-spacer"></div>
+      <a href="/transfer" class="hp-cta">CREATE A VERIFIED TRANSFER →</a>
+      <div class="hp-cta-sub">Buyer acknowledgment sealed · $4.99 per transfer</div>
+    </div>
+  </div>
+</section>
+
+<section class="seal-widget" id="sealWidget">
+  <div class="section-label">// Proof of Delivery — seal a file now</div>
   <div class="proof-box" id="proofBox">
     <div class="pbx-head">
       <div class="pbx-title">// Generate your SENT. receipt</div>
