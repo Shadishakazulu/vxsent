@@ -124,6 +124,74 @@ function sanitizeMessages(raw) {
   return trimmed;
 }
 
+// Deterministic, no-AI answer used whenever the AI Gateway is unreachable.
+//
+// The assistant's job is narrow — explain SENT.'s two products, the pricing,
+// and point visitors at the right page — so the common questions can be served
+// from a small keyword router with zero external dependencies. This means a
+// missing/down gateway degrades to a still-useful scripted answer instead of a
+// dead "the assistant is unavailable" message. The replies use the same grounded
+// facts as SYSTEM_PROMPT and name routes as plain paths so the widget linkifies
+// them. Plain text only (the widget does not render markdown).
+function fallbackReply(messages) {
+  const last = [...messages].reverse().find((m) => m.role === 'user');
+  const q = (last ? last.content : '').toLowerCase();
+  const has = (re) => re.test(q);
+
+  if (has(/price|pricing|cost|how much|\$|\bpay\b|plan\b|plans|subscri|cheap|fee|free|month/)) {
+    return (
+      "Here's how pricing works:\n\n" +
+      '- Day Pass — $0.99 for unlimited proofs over 24 hours. No account, good for a one-off.\n' +
+      '- Solo — $12.99/month for unlimited proofs, your full proof-history dashboard, and unlimited Verified Bill of Sale transfers included.\n' +
+      '- Verified Bill of Sale — $4.99 per transfer (free on Solo).\n' +
+      '- Team plans from $29/month, plus Enterprise.\n\n' +
+      'Rough rule: if you proof more than about 13 times a month, Solo is cheaper than day passes. See full details at /pricing.'
+    );
+  }
+  if (has(/bill of sale|transfer|resell|\bsell\b|\bsold\b|buyer|seller|secondhand|second-hand|\bused\b|sneaker|jewel|electronic|vehicle|\bcar\b|goods/)) {
+    return (
+      'SENT Transfer creates a Verified Bill of Sale — a cryptographic, tamper-evident record for secondhand goods like sneakers, jewelry, electronics, general goods, and vehicles. ' +
+      "It seals the item, condition, price, photos, and the buyer's acknowledgment with a timestamp so it can't be backdated.\n\n" +
+      'Note: it records what was agreed and the condition — it is not a legal title transfer and does not replace state-required forms (like a DMV title or odometer disclosure). ' +
+      'Start one at /transfer, or read more at /verified-bill-of-sale.'
+    );
+  }
+  if (has(/verif|receipt|is it real|authentic|genuine|check a proof|confirm/)) {
+    return (
+      'Anyone can verify a SENT receipt or transfer — no account needed. ' +
+      'Head to /verify and enter the receipt, or open the link from your confirmation email. ' +
+      'You can view a delivery receipt at /receipt.'
+    );
+  }
+  if (has(/log ?in|sign ?in|sign ?up|account|dashboard|my proof|history|my receipts/)) {
+    return (
+      'Sign in is passwordless — you get a magic link by email. Go to /login to sign in. ' +
+      'Once in, your full proof history lives at /dashboard.'
+    );
+  }
+  if (has(/demo|example|show me|see it work|walkthrough/)) {
+    return 'You can watch a short product demo at /demo. To try it for real, drop a file on the home page (/) or start a Verified Bill of Sale at /transfer.';
+  }
+  if (has(/how.*work|what is|what'?s sent|what does sent|proof of delivery|fingerprint|\bhash\b|explain|about sent|what can you/)) {
+    return (
+      'SENT. creates permanent, independently-verifiable proof. There are two products:\n\n' +
+      '- Proof of Delivery — drop any file (contract, invoice, deliverable) and SENT generates a cryptographic fingerprint, timestamp, and signature, creating a permanent receipt. On Solo and above, the file stays locked until the recipient acknowledges it. Anyone can verify a receipt with no account.\n' +
+      '- SENT Transfer — a Verified Bill of Sale for secondhand goods.\n\n' +
+      'See it all on the home page (/), or check /pricing for plans.'
+    );
+  }
+  // Greeting or anything unrecognized — orient the visitor.
+  return (
+    'Happy to help. SENT. gives you permanent, verifiable proof — either Proof of Delivery for files you send, or a Verified Bill of Sale for secondhand goods. ' +
+    'A few places to start:\n\n' +
+    '- /pricing — plans and cost\n' +
+    '- /transfer — create a Verified Bill of Sale\n' +
+    '- /verify — verify a receipt or transfer\n' +
+    '- /demo — a short product demo\n\n' +
+    'Ask me about pricing, how proof of delivery works, or where to find something.'
+  );
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -152,18 +220,18 @@ exports.handler = async (event) => {
 
   const gateway = resolveGateway();
   if (!gateway) {
-    // Both credential pairs are missing. This means the AI Gateway is not active
-    // for this runtime — most commonly because the team has AI Features disabled,
-    // the account is not on a credit-based plan, or the site has never had a
-    // production deploy. None of these are fixable from inside the function.
+    // Both credential pairs are missing — the AI Gateway is not active for this
+    // runtime (team not on a credit-based plan, AI Features disabled, or no
+    // production deploy yet). This is NOT fixable from inside the function, so
+    // rather than show a dead "unavailable" message we serve a scripted answer
+    // from the grounded knowledge base. The visitor still gets a useful reply.
     console.error(
       '[SENT] assistant: no AI Gateway credentials in this runtime ' +
-      '(checked ANTHROPIC_* and NETLIFY_AI_GATEWAY_*). Verify the team is on a ' +
-      'credit-based plan with AI Features enabled and a production deploy exists.'
+      '(checked ANTHROPIC_* and NETLIFY_AI_GATEWAY_*). Serving scripted fallback. ' +
+      'Enable AI Gateway: Netlify > Project configuration > Build & deploy > ' +
+      'Build with AI, on a credit-based plan, then redeploy.'
     );
-    return jsonResponse(503, {
-      error: 'The assistant is temporarily unavailable. Please try again in a moment.',
-    });
+    return jsonResponse(200, { reply: fallbackReply(messages), degraded: true });
   }
 
   try {
@@ -187,9 +255,7 @@ exports.handler = async (event) => {
         `[SENT] assistant gateway error via ${gateway.via} (status ${res.status}):`,
         detail.slice(0, 500)
       );
-      return jsonResponse(502, {
-        error: 'The assistant is temporarily unavailable. Please try again in a moment.',
-      });
+      return jsonResponse(200, { reply: fallbackReply(messages), degraded: true });
     }
 
     const data = await res.json();
@@ -201,15 +267,13 @@ exports.handler = async (event) => {
 
     if (!reply) {
       console.error('[SENT] assistant: gateway returned no text content');
-      return jsonResponse(502, { error: 'Empty response from model' });
+      return jsonResponse(200, { reply: fallbackReply(messages), degraded: true });
     }
     return jsonResponse(200, { reply });
   } catch (err) {
     // Network error, timeout (AbortError), or malformed JSON from the gateway.
     const detail = (err && err.message) || String(err);
     console.error(`[SENT] assistant error via ${gateway.via}:`, detail);
-    return jsonResponse(502, {
-      error: 'The assistant is temporarily unavailable. Please try again in a moment.',
-    });
+    return jsonResponse(200, { reply: fallbackReply(messages), degraded: true });
   }
 };
