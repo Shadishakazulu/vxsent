@@ -1,17 +1,32 @@
 // netlify/functions/assistant.js
 // POST /api/assistant — site navigation & FAQ assistant for vxsent.com (SENT.)
 //
-// Backed by the Netlify AI Gateway (no API key management). Netlify injects the
-// gateway endpoint + key into the function runtime; this handler calls it with
-// the platform's built-in fetch — no third-party SDK to bundle. The model is
-// given a grounded knowledge base of SENT's products, pricing, and page routes,
-// and answers visitor questions in plain language.
+// Backed by the Netlify AI Gateway (no API key management). The model is given a
+// grounded knowledge base of SENT's products, pricing, and page routes, and
+// answers visitor questions in plain language.
 //
-// Why a raw fetch and not the Anthropic SDK: earlier versions required
-// '@anthropic-ai/sdk'. When that package was not present in the deployed
-// function bundle, the require threw at cold start and every request returned
-// "assistant unavailable" before any logic ran. fetch is part of the Node
-// runtime, so there is nothing to install and nothing that can go missing.
+// Why the official @anthropic-ai/sdk and not a raw fetch: the AI Gateway
+// credentials Netlify provides are short-lived, per-context tokens that are only
+// minted for a compute context when Netlify detects that context actually uses
+// AI. That detection works by scanning the deployed function bundle for a known
+// provider SDK import. An earlier version of this handler called the gateway
+// with a bare `fetch` and no SDK import; Netlify saw no AI usage, never
+// provisioned runtime credentials for the function, and every request failed
+// with "AI Gateway env vars are not present" — the assistant read as
+// permanently unavailable even though the gateway itself was healthy. Importing
+// the SDK at module load both fixes that detection and gives us zero-config
+// auth: `new Anthropic()` reads ANTHROPIC_BASE_URL + ANTHROPIC_API_KEY that
+// Netlify injects at runtime. The dependency is declared in this directory's
+// package.json so it is installed and bundled with the function.
+//
+// The SDK is loaded defensively and a raw-fetch path is kept as a fallback, so a
+// missing bundle degrades to a clean error instead of throwing at cold start.
+let Anthropic = null;
+try {
+  Anthropic = require('@anthropic-ai/sdk');
+} catch (err) {
+  console.error('[SENT] assistant: @anthropic-ai/sdk failed to load —', (err && err.message) || err);
+}
 
 const MODEL = 'claude-haiku-4-5';
 const REQUEST_TIMEOUT_MS = 25000;
@@ -142,9 +157,43 @@ exports.handler = async (event) => {
     return jsonResponse(400, { error: 'No message provided' });
   }
 
+  // Preferred path: the official SDK with zero-config auth. Importing it (above)
+  // is what gets the function provisioned with AI Gateway credentials at runtime.
+  if (Anthropic) {
+    try {
+      const client = new Anthropic({ timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
+      const msg = await client.messages.create({
+        model: MODEL,
+        max_tokens: 600,
+        system: SYSTEM_PROMPT,
+        messages,
+      });
+      const reply = (msg.content || [])
+        .filter((block) => block.type === 'text')
+        .map((block) => block.text)
+        .join('')
+        .trim();
+      if (!reply) {
+        return jsonResponse(502, { error: 'Empty response from model' });
+      }
+      return jsonResponse(200, { reply });
+    } catch (err) {
+      // The SDK surfaces an HTTP status on .status for gateway-side failures
+      // (auth, rate limit, credit) and a plain message for network/timeout.
+      const status = err && err.status;
+      const detail = (err && err.message) || String(err);
+      console.error(`[SENT] assistant SDK error (status ${status || 'n/a'}):`, detail.slice(0, 500));
+      return jsonResponse(502, {
+        error: 'The assistant is temporarily unavailable. Please try again in a moment.',
+      });
+    }
+  }
+
+  // Fallback path: the SDK could not be loaded from the bundle. Call the gateway
+  // directly with whatever credentials Netlify exposes to this runtime.
   const anthropic = resolveGateway();
   if (!anthropic) {
-    console.error('[SENT] assistant: AI Gateway env vars are not present');
+    console.error('[SENT] assistant: AI Gateway env vars are not present and the SDK is unavailable');
     return jsonResponse(502, {
       error: 'The assistant is temporarily unavailable. Please try again in a moment.',
     });
