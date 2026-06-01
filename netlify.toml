@@ -157,6 +157,12 @@ force = true
 # ============================================================
 
 [[redirects]]
+from = "/api/assistant"
+to = "/.netlify/functions/assistant"
+status = 200
+
+
+[[redirects]]
 from = "/api/create-payment-intent"
 to = "/.netlify/functions/create-payment-intent"
 status = 200

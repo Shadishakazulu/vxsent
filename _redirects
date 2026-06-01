@@ -3,6 +3,7 @@
 # This file kept for any rules not in netlify.toml.
 
 # API routes → Netlify Functions
+/api/assistant                  /.netlify/functions/assistant                   200
 /api/create-payment-intent      /.netlify/functions/create-payment-intent       200
 /api/checkout                   /.netlify/functions/create-checkout-session     200
 /api/create-checkout-session    /.netlify/functions/create-checkout-session     200
