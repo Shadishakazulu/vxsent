@@ -42,6 +42,10 @@ body{font-family:'Courier New',monospace;background:#0a1628;color:#00ff9d;min-he
 .download-success h3{color:#00ff9d;font-size:14px;letter-spacing:3px;margin-bottom:10px}
 .download-success p{color:#a0b0c5;font-size:13px;line-height:1.6}
 .deletion-timer{font-size:11px;color:#ffc107;margin-top:10px;font-family:monospace}
+.share-row{display:flex;gap:10px;flex-wrap:wrap}
+.share-row .btn{flex:1 1 auto;text-align:center;margin:0}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#0d1f3c;border:1px solid #00ff9d;color:#00ff9d;padding:12px 20px;border-radius:3px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:9999;box-shadow:0 6px 24px rgba(0,0,0,0.4)}
+.toast-show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -170,8 +174,9 @@ function renderProof(proof) {
       ${proof.file_deleted_at ? `<tr><td>FILE DELETED</td><td style="color:#ffc107">${new Date(proof.file_deleted_at).toUTCString()}</td></tr>` : ''}
     </table>
     <hr class="divider">
-    <div>
-      <button class="btn btn-outline" onclick="copyLink('https://vxsent.com/verify/${id}')">COPY VERIFY LINK</button>
+    <div class="share-row">
+      <button class="btn btn-primary" id="shareBtn" onclick="shareProof('${id}')">SHARE PROOF</button>
+      <button class="btn btn-outline" id="copyBtn" onclick="copyLink('https://vxsent.com/verify/${id}', 'copyBtn')">COPY VERIFY LINK</button>
     </div>
     ${ackSection}
   `;
@@ -219,10 +224,80 @@ async function acknowledgeAndDownload(pid) {
   }
 }
 
-function copyLink(url) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).catch(() => {});
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
   }
+  toast.textContent = msg;
+  toast.classList.add('toast-show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('toast-show'), 2200);
+}
+
+function flashButton(btnId, label) {
+  const btn = btnId && document.getElementById(btnId);
+  if (!btn) return;
+  const original = btn.dataset.label || btn.textContent;
+  btn.dataset.label = original;
+  btn.textContent = label;
+  clearTimeout(btn._flash);
+  btn._flash = setTimeout(() => { btn.textContent = btn.dataset.label; }, 2200);
+}
+
+async function copyToClipboard(url) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try { await navigator.clipboard.writeText(url); return true; } catch (e) {}
+  }
+  // Fallback for older browsers / insecure contexts
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function copyLink(url, btnId) {
+  const ok = await copyToClipboard(url);
+  if (ok) {
+    flashButton(btnId, 'COPIED ✓');
+    showToast('Verify link copied to clipboard');
+  } else {
+    showToast('Copy failed — link: ' + url);
+  }
+}
+
+async function shareProof(pid) {
+  const url = `https://vxsent.com/verify/${pid}`;
+  const shareData = {
+    title: 'SENT. Proof of Delivery',
+    text: 'Verify this cryptographic proof of delivery on SENT.',
+    url
+  };
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (e) {
+      // User cancelled or share failed — fall through to copy fallback
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  // No native share support — copy the link instead
+  const ok = await copyToClipboard(url);
+  showToast(ok ? 'Verify link copied to clipboard' : 'Could not share — link: ' + url);
 }
 
 async function fetchProofById(pid) {
