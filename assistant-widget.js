@@ -12,13 +12,16 @@
   window.__sentAssistantMounted = true;
 
   var GREETING =
-    "Hi! The SENT. assistant here. Ask me anything about proof of delivery, " +
-    "the Verified Bill of Sale, pricing, or where to find something on the site.";
+    "Hi! The SENT. assistant here. Ask me anything about how the app works — " +
+    "proof of delivery, the Verified Bill of Sale, verifying a receipt, accounts, " +
+    "pricing, or where to find something on the site.";
 
   var SUGGESTIONS = [
     'How does SENT work?',
+    'How do I verify a receipt?',
     'What does it cost?',
-    'Make a bill of sale',
+    'How does a bill of sale work?',
+    'How do I sign in?',
   ];
 
   // Known routes, longest first, so nested paths linkify before their parents.
@@ -150,7 +153,7 @@
       var res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history.slice(-12) }),
+        body: JSON.stringify({ messages: history.slice(-16) }),
       });
       var data = await res.json().catch(function () { return {}; });
       hideTyping();
