@@ -111,9 +111,15 @@ export const handler = async (event) => {
     // If proof has a file, generate signed download URL
     let downloadUrl = null;
     if (proof.file_storage_path) {
+      // Pass `download` so Supabase serves the file with a
+      // `Content-Disposition: attachment` header. Without it the file is served
+      // inline with its native content type, and because the signed URL lives on
+      // a different origin (*.supabase.co) the browser ignores the <a download>
+      // attribute and instead navigates to the raw URL — rendering HTML/text
+      // files as a wall of source text in the address bar instead of downloading.
       const { data: signedData, error: signError } = await supabase.storage
         .from('proof-files')
-        .createSignedUrl(proof.file_storage_path, 1800); // 30 min validity
+        .createSignedUrl(proof.file_storage_path, 1800, { download: proof.file_name || true }); // 30 min validity, force download
 
       if (signError) {
         console.error('[acknowledge] Sign URL error:', JSON.stringify(signError));
