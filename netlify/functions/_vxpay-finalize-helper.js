@@ -6,17 +6,10 @@
 // and Transfer and verifies through the same /verify/:id surface.
 //
 // CRITICAL: single source of truth for VX Pay RAC chain writing.
+// Agreement rows are persisted to the Netlify Database.
 
 import { createHash } from 'crypto';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
-  );
-}
+import { getDb } from './_vxpay-common.js';
 
 function sha256(str) { return createHash('sha256').update(str).digest('hex'); }
 
@@ -120,13 +113,12 @@ export function buildVxpayChainHash({ agreementId, buyerEmail, sellerEmail, agre
  * mark valid. Returns { agreementHash, chainHash, veridexSignature, algorithm }.
  */
 export async function finalizeVxpay({ agreementId, sealedAt }) {
-  const supabase = getSupabase();
-  const { data: agreement, error: aErr } = await supabase
-    .from('vxpay_agreements').select('*').eq('id', agreementId).maybeSingle();
-  if (aErr || !agreement) throw new Error('VX Pay agreement not found for finalize');
+  const db = getDb();
+  const agreements = await db.sql`SELECT * FROM vxpay_agreements WHERE id = ${agreementId}`;
+  const agreement = agreements[0];
+  if (!agreement) throw new Error('VX Pay agreement not found for finalize');
 
-  const { data: evidence } = await supabase
-    .from('vxpay_evidence').select('file_hash').eq('agreement_id', agreementId);
+  const evidence = await db.sql`SELECT file_hash FROM vxpay_evidence WHERE agreement_id = ${agreementId}`;
   const evidenceHashes = (evidence || []).map(e => e.file_hash);
 
   const ts = sealedAt || new Date().toISOString();
@@ -137,15 +129,16 @@ export async function finalizeVxpay({ agreementId, sealedAt }) {
   });
   const veridexResult = await callVeridex({ agreementId, agreementHash, chainHash, timestamp: ts });
 
-  const { error: upErr } = await supabase.from('vxpay_agreements').update({
-    agreement_hash: agreementHash,
-    rac_chain_hash: chainHash,
-    veridex_signature: veridexResult.signature,
-    sealed_at: ts,
-    is_valid: true,
-    status: 'sealed'
-  }).eq('id', agreementId);
-  if (upErr) throw new Error(`Failed to seal VX Pay agreement: ${upErr.message}`);
+  await db.sql`
+    UPDATE vxpay_agreements SET
+      agreement_hash = ${agreementHash},
+      rac_chain_hash = ${chainHash},
+      veridex_signature = ${veridexResult.signature},
+      sealed_at = ${ts},
+      is_valid = ${true},
+      status = ${'sealed'}
+    WHERE id = ${agreementId}
+  `;
 
   return { agreementHash, chainHash, veridexSignature: veridexResult.signature, algorithm: veridexResult.algorithm };
 }

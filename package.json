@@ -10,6 +10,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@netlify/database": "^1.1.0",
     "@supabase/supabase-js": "^2.38.0",
     "resend": "^1.0.0",
     "stripe": "^14.0.0"

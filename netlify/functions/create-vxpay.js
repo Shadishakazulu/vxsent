@@ -1,55 +1,15 @@
 // netlify/functions/create-vxpay.js
 // VX Pay — create an escrowed payment agreement (buyer or seller opens it).
-// Mirrors create-transfer.js: session auth, insert, returns the new agreement id.
+// Session auth via Supabase, agreement row persisted to the Netlify Database.
 // Finalize (finalize-vxpay.js) seals it after evidence uploads complete.
 
 import { randomBytes } from 'crypto';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
-  );
-}
+import { getDb, verifySession, CORS_HEADERS } from './_vxpay-common.js';
 
 function generateVxpayId() {
   const year = new Date().getFullYear();
   return `VXPAY-${year}-${randomBytes(4).toString('hex').toUpperCase()}`;
 }
-
-function getSessionToken(event) {
-  const cookie = event.headers.cookie || event.headers.Cookie || '';
-  const m1 = cookie.match(/vxsent_session=([^;]+)/);
-  if (m1) return m1[1];
-  const m2 = cookie.match(/session_token=([^;]+)/);
-  if (m2) return m2[1];
-  return null;
-}
-
-async function verifySession(event) {
-  const token = getSessionToken(event);
-  if (!token) return null;
-  const supabase = getSupabase();
-  const now = new Date().toISOString();
-  let { data: user } = await supabase
-    .from('users').select('id, email, plan, plan_expires_at')
-    .eq('session_token', token).gt('session_expires_at', now).single();
-  if (user) return user;
-  const { data: user2 } = await supabase
-    .from('users').select('id, email, plan, plan_expires_at')
-    .eq('magic_token', token).gt('magic_token_expires', now).single();
-  return user2 || null;
-}
-
-const CORS_HEADERS = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Credentials': 'true'
-};
 
 export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS_HEADERS, body: '' };
@@ -66,38 +26,34 @@ export async function handler(event) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Missing field: ${f}` }) };
     }
 
-    const supabase = getSupabase();
+    const db = getDb();
     const id = generateVxpayId();
     const createdByRole = body.created_by_role === 'seller' ? 'seller' : 'buyer';
+    const categoryAttributes = JSON.stringify(body.category_attributes || {});
 
-    const { error } = await supabase.from('vxpay_agreements').insert({
-      id,
-      user_id: user?.id ?? null,
-      created_by_role: createdByRole,
-      buyer_email: body.buyer_email, buyer_name: body.buyer_name, buyer_phone: body.buyer_phone || null,
-      seller_email: body.seller_email, seller_name: body.seller_name, seller_phone: body.seller_phone || null,
-      item_title: body.item_title,
-      category: body.category || 'general',
-      amount: body.amount,
-      currency: body.currency || 'USD',
-      description: body.description || null,
-      condition: body.condition || null,
-      condition_custom: body.condition_custom || null,
-      provenance: body.provenance || null,
-      category_attributes: body.category_attributes || {},
-      location: body.location || null,
-      notes: body.notes || null,
-      inspection_period_hours: body.inspection_period_hours ?? 72,
-      release_conditions: body.release_conditions || null,
-      sold_as_is: !!body.sold_as_is,
-      no_warranty: !!body.no_warranty,
-      onchain_chain_id: body.onchain_chain_id ?? null,
-      onchain_vault_address: body.onchain_vault_address || null,
-      onchain_transaction_id: body.onchain_transaction_id || null,
-      status: 'pending',
-      payment_ref: body.payment_ref || null
-    });
-    if (error) throw new Error(error.message);
+    await db.sql`
+      INSERT INTO vxpay_agreements (
+        id, user_id, created_by_role,
+        buyer_email, buyer_name, buyer_phone,
+        seller_email, seller_name, seller_phone,
+        item_title, category, amount, currency, description,
+        condition, condition_custom, provenance, category_attributes,
+        location, notes, inspection_period_hours, release_conditions,
+        sold_as_is, no_warranty,
+        onchain_chain_id, onchain_vault_address, onchain_transaction_id,
+        status, payment_ref
+      ) VALUES (
+        ${id}, ${user?.id ?? null}, ${createdByRole},
+        ${body.buyer_email}, ${body.buyer_name}, ${body.buyer_phone || null},
+        ${body.seller_email}, ${body.seller_name}, ${body.seller_phone || null},
+        ${body.item_title}, ${body.category || 'general'}, ${body.amount}, ${body.currency || 'USD'}, ${body.description || null},
+        ${body.condition || null}, ${body.condition_custom || null}, ${body.provenance || null}, ${categoryAttributes}::jsonb,
+        ${body.location || null}, ${body.notes || null}, ${body.inspection_period_hours ?? 72}, ${body.release_conditions || null},
+        ${!!body.sold_as_is}, ${!!body.no_warranty},
+        ${body.onchain_chain_id ?? null}, ${body.onchain_vault_address || null}, ${body.onchain_transaction_id || null},
+        ${'pending'}, ${body.payment_ref || null}
+      )
+    `;
 
     return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ id, status: 'pending' }) };
   } catch (err) {
