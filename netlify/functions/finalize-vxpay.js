@@ -2,6 +2,9 @@
 // Seal a VX Pay agreement: compute agreement hash + RAC chain + signature.
 // Mirrors finalize-transfer.js.
 
+import { finalizeVxpay } from './_vxpay-finalize-helper.js';
+import { CORS_HEADERS } from './_vxpay-common.js';
+
 export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
