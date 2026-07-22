@@ -27,6 +27,16 @@ package = "@netlify/plugin-functions-install-core"
   schedule = "*/5 * * * *"
 
 
+# The Stripe webhook now seals VX Pay agreements, which pulls in the native
+# @netlify/database driver (waddler). That package exposes its drivers through
+# package.json "exports" subpath maps, which the legacy zisi tracer cannot
+# resolve (it fails with EISDIR while tracing require('@netlify/database')).
+# esbuild honors "exports" maps, so bundle this CommonJS function with esbuild —
+# the same bundler the ESM VX Pay functions already use for the same import.
+[functions."stripe-webhook"]
+  node_bundler = "esbuild"
+
+
 # ============================================================
 # PAGE REDIRECTS
 # ============================================================

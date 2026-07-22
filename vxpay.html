@@ -6,6 +6,7 @@
 <title>VX Pay — Create Escrow Agreement</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--green:#00b356;--green-dk:#009347;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);--border:#e1e4e8;--shadow-sm:0 1px 2px rgba(0,0,0,0.06)}
@@ -24,9 +25,14 @@ input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--border
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 button{width:100%;margin-top:16px;padding:13px;border:none;border-radius:6px;background:var(--green);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif}
 button:disabled{opacity:.5}
+#card-element{padding:12px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg);margin-top:6px}
+.pay-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.pay-amt{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--ink)}
 .result{margin-top:16px;padding:14px;border-radius:6px;background:var(--green-bg);border:1px solid var(--green-bd);font-size:13px;display:none}
 .result a{color:var(--green-dk);font-family:'JetBrains Mono',monospace;word-break:break-all}
 .err{color:#dc2626;font-size:13px;margin-top:10px}
+.muted{font-size:11px;color:var(--ink-3);margin-top:8px;text-align:center}
+.hidden{display:none}
 footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);padding:24px}
 </style>
 </head>
@@ -37,42 +43,57 @@ footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;le
 </header>
 <div class="wrap">
   <p class="intro">Create an <strong>escrowed payment agreement</strong>. Buyer funds → seller delivers → buyer acknowledges → funds release. Sealed with a Veridex RAC proof and independently verifiable at <code>/verify/&lt;id&gt;</code> — the same trust rail as SENT and Transfer.</p>
-  <div class="card">
-    <div class="card-title">Parties</div>
-    <div class="row">
-      <div><label>Buyer name</label><input id="buyer_name"></div>
-      <div><label>Buyer email</label><input id="buyer_email" type="email"></div>
-    </div>
-    <div class="row">
-      <div><label>Seller name</label><input id="seller_name"></div>
-      <div><label>Seller email</label><input id="seller_email" type="email"></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Deal</div>
-    <label>Item title</label><input id="item_title">
-    <div class="row">
-      <div><label>Amount</label><input id="amount" type="number" step="0.01"></div>
-      <div><label>Category</label>
-        <select id="category"><option>general</option><option>sneakers</option><option>jewelry</option><option>electronics</option></select>
+
+  <div id="formSection">
+    <div class="card">
+      <div class="card-title">Parties</div>
+      <div class="row">
+        <div><label>Buyer name</label><input id="buyer_name"></div>
+        <div><label>Buyer email</label><input id="buyer_email" type="email"></div>
+      </div>
+      <div class="row">
+        <div><label>Seller name</label><input id="seller_name"></div>
+        <div><label>Seller email</label><input id="seller_email" type="email"></div>
       </div>
     </div>
-    <label>Release conditions</label><textarea id="release_conditions" rows="2" placeholder="What must be true for funds to release?"></textarea>
-    <div class="row">
-      <div><label>Inspection window (hours)</label><input id="inspection_period_hours" type="number" value="72"></div>
-      <div><label>Opened by</label><select id="created_by_role"><option value="buyer">Buyer</option><option value="seller">Seller</option></select></div>
+    <div class="card">
+      <div class="card-title">Deal</div>
+      <label>Item title</label><input id="item_title">
+      <div class="row">
+        <div><label>Amount</label><input id="amount" type="number" step="0.01"></div>
+        <div><label>Category</label>
+          <select id="category"><option>general</option><option>sneakers</option><option>jewelry</option><option>electronics</option><option>collectibles</option></select>
+        </div>
+      </div>
+      <label>Release conditions</label><textarea id="release_conditions" rows="2" placeholder="What must be true for funds to release?"></textarea>
+      <div class="row">
+        <div><label>Inspection window (hours)</label><input id="inspection_period_hours" type="number" value="72"></div>
+        <div><label>Opened by</label><select id="created_by_role"><option value="buyer">Buyer</option><option value="seller">Seller</option></select></div>
+      </div>
+      <button id="continueBtn">Continue to Payment →</button>
+      <div class="err" id="err"></div>
     </div>
-    <button id="submit">Create &amp; Seal Agreement</button>
-    <div class="err" id="err"></div>
+  </div>
+
+  <div class="card hidden" id="paySection">
+    <div class="card-title">Seal your escrow agreement</div>
+    <div class="pay-head"><span>VX Pay escrow agreement</span><span class="pay-amt">$7.99</span></div>
+    <p class="muted" style="text-align:left;margin:0 0 12px">One-time fee to create and cryptographically seal this agreement. On <a href="/pricing">Solo</a>, escrow agreements are unlimited.</p>
+    <label>Card details</label>
+    <div id="card-element"></div>
+    <button id="payBtn">Pay $7.99 &amp; Seal Agreement</button>
+    <div class="err" id="payErr"></div>
+    <div class="muted">🔒 Secured by Stripe · Agreement sealed on payment</div>
     <div class="result" id="result"></div>
   </div>
 </div>
 <footer>VX Pay — Escrowed Payment Infrastructure · vxsent.com</footer>
 <script>
 const $ = id => document.getElementById(id);
-$('submit').onclick = async () => {
-  $('err').textContent=''; $('result').style.display='none';
-  const payload = {
+let stripe=null, cardEl=null, agreementId=null, clientSecret=null;
+
+function collectPayload(){
+  return {
     buyer_name:$('buyer_name').value, buyer_email:$('buyer_email').value,
     seller_name:$('seller_name').value, seller_email:$('seller_email').value,
     item_title:$('item_title').value, amount:parseFloat($('amount').value),
@@ -80,22 +101,69 @@ $('submit').onclick = async () => {
     inspection_period_hours:parseInt($('inspection_period_hours').value||'72',10),
     created_by_role:$('created_by_role').value
   };
+}
+
+$('continueBtn').onclick = async () => {
+  $('err').textContent='';
+  const p = collectPayload();
   for (const k of ['buyer_name','buyer_email','seller_name','seller_email','item_title']) {
-    if(!payload[k]){ $('err').textContent='Please fill in '+k.replace('_',' ')+'.'; return; }
+    if(!p[k]){ $('err').textContent='Please fill in '+k.replace('_',' ')+'.'; return; }
   }
-  if(!payload.amount || payload.amount<=0){ $('err').textContent='Enter a valid amount.'; return; }
-  $('submit').disabled=true; $('submit').textContent='Creating…';
+  if(!p.amount || p.amount<=0){ $('err').textContent='Enter a valid amount.'; return; }
+  $('continueBtn').disabled=true; $('continueBtn').textContent='Creating…';
   try{
-    const c = await fetch('/api/vxpay/create',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});
+    // 1. create pending agreement (server decides if payment is required)
+    const c = await fetch('/api/vxpay/create',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(p)});
     if(!c.ok) throw new Error((await c.json()).error||('HTTP '+c.status));
-    const { id } = await c.json();
-    const f = await fetch('/api/vxpay/finalize',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({id})});
-    if(!f.ok) throw new Error((await f.json()).error||('finalize HTTP '+f.status));
-    const sealed = await f.json();
-    $('result').style.display='block';
-    $('result').innerHTML = `✅ Sealed <strong>${id}</strong><br>Verify: <a href="${sealed.verify_url}">${sealed.verify_url}</a>`;
-  }catch(e){ $('err').textContent = e.message; }
-  finally{ $('submit').disabled=false; $('submit').textContent='Create & Seal Agreement'; }
+    const created = await c.json();
+    agreementId = created.id;
+
+    // Solo/Pro/Enterprise: sealed for free server-side — skip payment entirely.
+    if (created.requiresPayment === false || created.sealed) {
+      $('formSection').classList.add('hidden');
+      $('paySection').classList.remove('hidden');
+      $('paySection').querySelector('.card-title').textContent = '// Sealed — included on your plan';
+      document.querySelector('.pay-head').innerHTML = '<span>Escrow agreement sealed</span><span class="pay-amt" style="color:var(--green-dk)">$0.00</span>';
+      $('card-element').classList.add('hidden');
+      $('payBtn').classList.add('hidden');
+      $('result').style.display='block';
+      $('result').innerHTML = `✅ Sealed <strong>${agreementId}</strong> (included on your plan).<br>Redirecting to your verification page.`;
+      setTimeout(()=>{ window.location.href = '/verify/' + agreementId; }, 1600);
+      return;
+    }
+
+    // 2. Pay-as-you-go: create PaymentIntent ($7.99)
+    const pay = await fetch('/api/vxpay/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agreementId, payerEmail:p.buyer_email})});
+    if(!pay.ok) throw new Error((await pay.json()).error||'Payment init failed');
+    const pd = await pay.json();
+    clientSecret = pd.clientSecret;
+    // 3. mount Stripe card
+    stripe = Stripe(pd.publishableKey);
+    const elements = stripe.elements();
+    cardEl = elements.create('card');
+    $('formSection').classList.add('hidden');
+    $('paySection').classList.remove('hidden');
+    cardEl.mount('#card-element');
+  }catch(e){ $('err').textContent=e.message; $('continueBtn').disabled=false; $('continueBtn').textContent='Continue to Payment →'; }
+};
+
+$('payBtn').onclick = async () => {
+  $('payErr').textContent='';
+  if(!stripe||!cardEl||!clientSecret){ $('payErr').textContent='Payment not ready — refresh and retry.'; return; }
+  $('payBtn').disabled=true; $('payBtn').textContent='Processing…';
+  try{
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, { payment_method:{ card: cardEl } });
+    if(error){ $('payErr').textContent=error.message; $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement'; return; }
+    if(paymentIntent && paymentIntent.status==='succeeded'){
+      // Webhook seals server-side. Redirect to the verification page.
+      $('result').style.display='block';
+      $('result').innerHTML = `✅ Payment received. Sealing <strong>${agreementId}</strong>…<br>Redirecting to your verification page.`;
+      setTimeout(()=>{ window.location.href = '/verify/' + agreementId; }, 1800);
+    } else {
+      $('payErr').textContent='Payment status: '+(paymentIntent?paymentIntent.status:'unknown');
+      $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement';
+    }
+  }catch(e){ $('payErr').textContent=e.message; $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement'; }
 };
 </script>
 </body>
