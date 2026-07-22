@@ -27,3 +27,13 @@
 
 # Page routes are now handled by netlify.toml
 # /verify/:id route is now handled by netlify.toml + verify.html (do NOT add /verify rules here)
+
+# ============================================================
+# VX Pay — API routes → Netlify Functions
+# ============================================================
+/api/vxpay/create               /.netlify/functions/create-vxpay                200
+/api/vxpay/finalize             /.netlify/functions/finalize-vxpay              200
+/api/vxpay/fund                 /.netlify/functions/fund-vxpay                  200
+/api/vxpay/deliver              /.netlify/functions/deliver-vxpay               200
+/api/vxpay/acknowledge          /.netlify/functions/acknowledge-vxpay           200
+/api/vxpay/:id                  /.netlify/functions/get-vxpay?id=:id            200

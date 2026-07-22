@@ -1,23 +1,18 @@
-// netlify/functions/assistant.js
+// netlify/functions/assistant.mjs
 // POST /api/assistant — site navigation & FAQ assistant for vxsent.com (SENT.)
 //
-// Backed by the Netlify AI Gateway, so there is no API key to manage. Netlify
-// injects the gateway credentials into every function runtime automatically;
-// this handler simply reads them and calls the gateway over plain HTTPS.
-//
-// IMPORTANT — why there is no AI SDK dependency here:
-// Earlier versions of this function depended on `@anthropic-ai/sdk`, in the
-// belief that Netlify only provisions the AI Gateway credentials when it detects
-// a provider SDK import in the deployed bundle. That belief is incorrect.
-// Per Netlify's documentation, the AI Gateway environment variables
+// Written with the modern Netlify Functions v2 runtime (`export default async
+// (req) => Response`). This matters: the Netlify AI Gateway credentials
 // (ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL and the always-present
-// NETLIFY_AI_GATEWAY_KEY / NETLIFY_AI_GATEWAY_BASE_URL) are set in ALL compute
-// contexts at function initialization, regardless of which — if any — AI library
-// is bundled. Making the SDK the primary code path therefore added a real,
-// deploy-time failure mode (the package having to install and bundle correctly)
-// to guard against a problem that does not exist. The official "REST API /
-// Direct Fetch" approach below needs no dependency, cannot fail to bundle, and
-// has been verified to return a healthy response from the live gateway.
+// NETLIFY_AI_GATEWAY_KEY / NETLIFY_AI_GATEWAY_BASE_URL) are injected ONLY into
+// the v2/v3 function runtime. A legacy v1 function (`exports.handler`) builds
+// and deploys fine but never receives those variables, so it can only ever hit
+// the scripted fallback. Using v2 keeps the AI path working.
+//
+// There is no AI SDK dependency here on purpose: the gateway variables are set
+// in every modern compute context regardless of which — if any — AI library is
+// bundled. The direct-fetch approach below needs no dependency and cannot fail
+// to bundle.
 
 const MODEL = 'claude-haiku-4-5';
 const REQUEST_TIMEOUT_MS = 20000;
@@ -141,11 +136,10 @@ function resolveGateway() {
 }
 
 function jsonResponse(statusCode, body) {
-  return {
-    statusCode,
+  return new Response(JSON.stringify(body), {
+    status: statusCode,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  };
+  });
 }
 
 // Normalize whatever the client sent into a clean, bounded message array.
@@ -263,28 +257,28 @@ function fallbackReply(messages) {
   );
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
+export default async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
       headers: {
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
-    };
+    });
   }
-  if (event.httpMethod !== 'POST') {
+  if (req.method !== 'POST') {
     return jsonResponse(405, { error: 'Method not allowed' });
   }
 
   let payload;
   try {
-    payload = JSON.parse(event.body || '{}');
+    payload = await req.json();
   } catch {
     return jsonResponse(400, { error: 'Invalid JSON body' });
   }
 
-  const messages = sanitizeMessages(payload.messages);
+  const messages = sanitizeMessages(payload && payload.messages);
   if (!messages.length) {
     return jsonResponse(400, { error: 'No message provided' });
   }

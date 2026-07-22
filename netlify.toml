@@ -91,6 +91,21 @@ status = 200
 force = true
 
 
+# ── VX Pay pages (Escrow) ──
+[[redirects]]
+from = "/vxpay"
+to = "/vxpay.html"
+status = 200
+force = true
+
+
+[[redirects]]
+from = "/vxpay-verify"
+to = "/vxpay-verify.html"
+status = 200
+force = true
+
+
 # Self-running 30-second product demo (screen-record source).
 [[redirects]]
 from = "/demo"
