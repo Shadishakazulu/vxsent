@@ -467,6 +467,66 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   </div>
 </section>
 
+<!-- ============================================================
+     SENT (Proof of Delivery) — FIRST PRODUCT section
+     Matches the exact style of the Transfer ("Second product") and
+     VX Pay ("Third product") sections so all three read as a set.
+
+     INSERT this block immediately BEFORE the Transfer section, i.e. right
+     before:  <section class="product2" id="transfer"> ... (the "Second
+     product · Verified Bill of Sale" section). This makes the sequence read
+     FIRST → SECOND → THIRD.
+
+     Reuses the same product2 / p2-card / p2-price classes → zero CSS changes.
+     Copy + pricing taken verbatim from the live SENT product ($0.99, SHA-256,
+     gated delivery on Solo).
+============================================================ -->
+<section class="product2" id="proof">
+  <div class="product2-inner">
+    <div class="product2-kicker">First product · Proof of Delivery</div>
+    <h2 class="product2-hl">PROVE YOU SENT IT —<br><span class="green">BEFORE THE DISPUTE.</span></h2>
+    <p class="product2-sub"><strong>SENT</strong> creates permanent, tamper-evident proof of every <strong>file you deliver</strong> — contract, invoice, statement, disclosure, design, deliverable. A cryptographic fingerprint of the exact file at the exact moment, sealed and timestamped <strong>before it ever leaves your hands</strong>. When delivery is questioned, the answer already exists.</p>
+    <div class="product2-who">For anyone who delivers work — freelancers · agencies · legal · finance · design</div>
+    <div class="product2-who" style="font-size:9px;color:var(--ink-4);margin-top:-32px;margin-bottom:40px">Timestamped · SHA-256 sealed · Independently verifiable</div>
+
+    <div class="product2-grid">
+      <div class="p2-card">
+        <div class="p2-card-icon">📁</div>
+        <div class="p2-card-title">Seal the file</div>
+        <div class="p2-card-body">Drop any file — any type, any size. SENT generates a SHA-256 fingerprint of the exact file at the exact moment, before it ever leaves your hands. Nothing about it can change without breaking the seal.</div>
+      </div>
+      <div class="p2-card">
+        <div class="p2-card-icon">🔗</div>
+        <div class="p2-card-title">Send the link — or lock the file</div>
+        <div class="p2-card-body">A permanent receipt is created with hash, timestamp, and cryptographic signature. On Solo and above, the file itself stays locked until the recipient acknowledges — and that acknowledgment is sealed into the record.</div>
+      </div>
+      <div class="p2-card">
+        <div class="p2-card-icon">✓</div>
+        <div class="p2-card-title">The record is final</div>
+        <div class="p2-card-body">Anyone can verify the receipt — no account required. The timestamp is permanent, the acknowledgment is independent. If delivery is ever questioned, the proof was created before the dispute could exist.</div>
+      </div>
+    </div>
+
+    <div class="p2-pricing">
+      <div class="p2-price">
+        <div class="p2-price-amt">$0.99<span class="per">per proof</span></div>
+        <div class="p2-price-lbl">Pay as you go. <strong>No account required</strong> — drop a file, pay once at the seal, get a permanent receipt.</div>
+      </div>
+      <div class="p2-price featured">
+        <div class="p2-price-amt">Included<span class="per">on Solo</span></div>
+        <div class="p2-price-lbl"><strong>Unlimited proofs + gated file delivery</strong> on Solo — $12.99/mo. The file stays locked until receipt is confirmed.</div>
+      </div>
+    </div>
+
+    <div class="p2-cta-row">
+      <a href="#proof-uploader" class="p2-btn" onclick="if(window.scrollToProof){scrollToProof();return false;}">SEAL A FILE — $0.99 →</a>
+      <span class="final-note" style="margin:0">Timestamped · SHA-256 sealed · Verify from any device</span>
+    </div>
+
+    <p class="p2-disclaimer">SENT creates cryptographic proof of delivery — a tamper-evident record of a file's exact contents and the moment it was sealed, plus any acknowledgment received. It is proof of delivery and receipt, not legal advice, and does not alter the underlying contents of any document. Verification requires no account.</p>
+  </div>
+</section>
+
 <section class="product2" id="transfer">
   <div class="product2-inner">
     <div class="product2-kicker">Second product · Verified Bill of Sale</div>
