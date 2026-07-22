@@ -319,6 +319,30 @@ status = 200
 
 
 # ============================================================
+# API REDIRECTS — VX PAY (Escrowed Payment Agreement)
+# ============================================================
+
+[[redirects]]
+from = "/api/vxpay/create"
+to = "/.netlify/functions/create-vxpay"
+status = 200
+
+
+[[redirects]]
+from = "/api/vxpay/finalize"
+to = "/.netlify/functions/finalize-vxpay"
+status = 200
+
+
+# Public read for the verification page. Must stay AFTER the named routes above
+# so /api/vxpay/create and /api/vxpay/finalize are not captured by :id.
+[[redirects]]
+from = "/api/vxpay/:id"
+to = "/.netlify/functions/get-vxpay?id=:id"
+status = 200
+
+
+# ============================================================
 # API REDIRECTS — ADMIN (read-only analytics, allowlist-gated)
 # ============================================================
 
