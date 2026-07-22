@@ -5,6 +5,7 @@
 
 import { randomBytes } from 'crypto';
 import { getDb, verifySession, CORS_HEADERS } from './_vxpay-common.js';
+import { finalizeVxpay } from './_vxpay-finalize-helper.js';
 
 function generateVxpayId() {
   const year = new Date().getFullYear();
@@ -55,7 +56,33 @@ export async function handler(event) {
       )
     `;
 
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ id, status: 'pending' }) };
+    // ── Entitlement gate (mirrors create-transfer.js) ────────────────
+    // Solo / Pro / Enterprise plans include unlimited escrow agreements:
+    // seal for FREE immediately. Everyone else must pay $7.99 (the page then
+    // calls /api/vxpay/create-payment and the webhook seals on payment).
+    const planExpiry = user?.plan_expires_at ? new Date(user.plan_expires_at) : null;
+    const hasPlan = !!user &&
+      (user.plan === 'solo' || user.plan === 'pro' || user.plan === 'enterprise') &&
+      planExpiry && planExpiry > new Date();
+
+    if (hasPlan) {
+      try {
+        const sealed = await finalizeVxpay({ agreementId: id });
+        // Tag payment_ref so the record shows it was plan-covered.
+        await db.sql`UPDATE vxpay_agreements SET payment_ref = ${`${user.plan}_plan`} WHERE id = ${id}`;
+        const baseUrl = process.env.URL || 'https://vxsent.com';
+        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({
+          id, status: 'sealed', requiresPayment: false, sealed: true,
+          rac_chain_hash: sealed.chainHash,
+          verify_url: `${baseUrl}/verify/${id}`
+        }) };
+      } catch (e) {
+        // If the free seal errors, fall through to the paid path rather than fail.
+        console.error('[create-vxpay] plan auto-seal failed, falling back to payment:', e.message);
+      }
+    }
+
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ id, status: 'pending', requiresPayment: true }) };
   } catch (err) {
     console.error('[create-vxpay]', err);
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: err.message }) };

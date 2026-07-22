@@ -32,6 +32,7 @@
 # VX Pay — API routes → Netlify Functions
 # ============================================================
 /api/vxpay/create               /.netlify/functions/create-vxpay                200
+/api/vxpay/create-payment       /.netlify/functions/create-vxpay-payment        200
 /api/vxpay/finalize             /.netlify/functions/finalize-vxpay              200
 /api/vxpay/fund                 /.netlify/functions/fund-vxpay                  200
 /api/vxpay/deliver              /.netlify/functions/deliver-vxpay               200

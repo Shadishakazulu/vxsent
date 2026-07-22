@@ -442,6 +442,129 @@ async function sealSingleTransfer({ supabase, resend, metadata, paymentIntentId 
   console.log('[webhook] single transfer sealed:', transferId);
 }
 
+// ─── VX PAY (escrowed payment agreement) ────────────────────────────────────
+// VX Pay agreements live on the Netlify Database (managed Postgres), so the
+// seal reads/writes there. The `payments` audit table stays in Supabase.
+// Hash construction mirrors _vxpay-finalize-helper.js exactly (buyer identity,
+// seller scope, 'vxpay' domain tag) so the webhook seal is byte-identical to
+// the free (plan) seal path.
+
+function buildVxpayAgreementHash(a, evidenceHashes) {
+  const canonical = JSON.stringify({
+    kind: 'vxpay_escrow',
+    buyer: { name: a.buyer_name, email: a.buyer_email },
+    seller: { name: a.seller_name, email: a.seller_email },
+    item: {
+      title: a.item_title, category: a.category || '',
+      amount: a.amount != null ? String(a.amount) : '', currency: a.currency || 'USD',
+      description: a.description || '', condition: a.condition || '',
+      condition_custom: a.condition_custom || '', provenance: a.provenance || '',
+      attributes: (() => {
+        const attrs = a.category_attributes;
+        if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) return {};
+        const out = {}; for (const k of Object.keys(attrs).sort()) {
+          const v = attrs[k]; if (v === null || v === undefined || v === '') continue;
+          out[k] = typeof v === 'string' ? v : String(v);
+        } return out;
+      })(),
+      location: a.location || '', notes: a.notes || ''
+    },
+    terms: {
+      inspection_period_hours: a.inspection_period_hours != null ? String(a.inspection_period_hours) : '',
+      release_conditions: a.release_conditions || '',
+      sold_as_is: !!a.sold_as_is, no_warranty: !!a.no_warranty
+    },
+    onchain: {
+      chain_id: a.onchain_chain_id != null ? String(a.onchain_chain_id) : '',
+      vault_address: a.onchain_vault_address || '', transaction_id: a.onchain_transaction_id || ''
+    },
+    evidence: (evidenceHashes || []).slice().sort()
+  });
+  return sha256(canonical);
+}
+
+function buildVxpayChainHash({ agreementId, buyerEmail, sellerEmail, agreementHash, timestamp }) {
+  const identityHash = sha256(buyerEmail + agreementId);
+  const scopeHash = sha256(`${sellerEmail}:${agreementHash}`);
+  return sha256(`${identityHash}:${scopeHash}:vxpay:${timestamp}`);
+}
+
+async function sealVxpayAgreement({ supabase, resend, metadata, paymentIntentId }) {
+  const agreementId = metadata.vxpay_id;
+  if (!agreementId) { console.warn('[webhook] vxpay_agreement with no vxpay_id'); return; }
+
+  // Agreements are stored on the Netlify Database.
+  const { getDatabase } = require('@netlify/database');
+  const db = getDatabase();
+
+  const rows = await db.sql`SELECT * FROM vxpay_agreements WHERE id = ${agreementId}`;
+  const a = rows[0];
+  if (!a) { console.error('[webhook] vxpay agreement not found:', agreementId); return; }
+  if (a.is_valid) { console.log('[webhook] vxpay agreement already sealed:', agreementId); return; }
+
+  const evidence = await db.sql`SELECT file_hash FROM vxpay_evidence WHERE agreement_id = ${agreementId}`;
+  const evidenceHashes = (evidence || []).map(e => e.file_hash);
+
+  const sealedAt = new Date().toISOString();
+  const agreementHash = buildVxpayAgreementHash(a, evidenceHashes);
+  const chainHash = buildVxpayChainHash({
+    agreementId, buyerEmail: a.buyer_email, sellerEmail: a.seller_email, agreementHash, timestamp: sealedAt
+  });
+
+  let signature;
+  try {
+    const veridexUrl = process.env.VERIDEX_API_URL;
+    const veridexKey = process.env.VERIDEX_API_KEY;
+    if (veridexUrl && veridexKey) {
+      const r = await fetch(`${veridexUrl}/v1/guardedCommit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${veridexKey}`, 'X-Idempotency-Key': agreementId, 'X-RAC-Version': '1.0' },
+        body: JSON.stringify({ action: 'seal_vxpay', agreement_id: agreementId, agreement_hash: agreementHash, rac_chain_hash: chainHash, timestamp: sealedAt })
+      });
+      if (!r.ok) throw new Error(`Veridex ${r.status}`);
+      const j = await r.json();
+      signature = j.signature;
+    } else {
+      signature = sha256(`${agreementId}:${agreementHash}:${sealedAt}`);
+    }
+  } catch (e) {
+    console.error('[webhook] vxpay Veridex failed, fallback:', e.message);
+    signature = sha256(`${agreementId}:${agreementHash}:${sealedAt}`);
+  }
+
+  await db.sql`
+    UPDATE vxpay_agreements SET
+      agreement_hash = ${agreementHash},
+      rac_chain_hash = ${chainHash},
+      veridex_signature = ${signature},
+      sealed_at = ${sealedAt},
+      is_valid = ${true},
+      status = ${'sealed'},
+      payment_ref = ${paymentIntentId}
+    WHERE id = ${agreementId}
+  `;
+
+  // Mark the Supabase payments audit row succeeded.
+  await supabase.from('payments').update({ status: 'succeeded' }).eq('stripe_payment_id', paymentIntentId);
+
+  // Notify both parties the escrow agreement is sealed.
+  const baseUrl = 'https://vxsent.com';
+  if (resend) {
+    await sendEmail({
+      resend, from: 'receipts@vxsent.com', to: a.buyer_email,
+      subject: `Escrow agreement sealed — ${a.item_title}`,
+      html: `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8"><div style="background:#00b356;color:#fff;padding:14px 28px;border-radius:8px 8px 0 0"><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em">✓ ESCROW SEALED</div></div><div style="background:#fff;border:1px solid #e1e4e8;border-top:none;border-radius:0 0 8px 8px;padding:32px"><h2 style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#111318;margin-bottom:8px">YOUR ESCROW AGREEMENT IS LIVE.</h2><p style="font-size:13px;color:#374151;line-height:1.65;margin-bottom:20px">Your agreement with <strong>${a.seller_name}</strong> is cryptographically sealed. Once you fund it, the seller delivers — and funds release when you acknowledge.</p><a href="${baseUrl}/verify/${agreementId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;border-radius:4px">VIEW ESCROW →</a></div></div>`
+    });
+    await sendEmail({
+      resend, from: 'receipts@vxsent.com', to: a.seller_email,
+      subject: `${a.buyer_name} opened an escrow agreement with you — ${a.item_title}`,
+      html: `<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:0 auto;padding:40px 20px;background:#f5f6f8"><div style="background:#fff;border:1px solid #e1e4e8;border-radius:8px;padding:32px;border-top:3px solid #00b356"><h2 style="font-size:20px;color:#111318;margin-bottom:12px">You have an escrow agreement.</h2><p style="font-size:14px;color:#374151;line-height:1.65;margin-bottom:24px"><strong>${a.buyer_name}</strong> has opened a sealed escrow agreement for <strong>${a.item_title}</strong>. Once they fund it, deliver the item and the buyer's acknowledgment releases your funds.</p><a href="${baseUrl}/verify/${agreementId}" style="display:inline-block;padding:14px 28px;background:#00b356;color:#fff;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.1em;border-radius:4px">VIEW ESCROW →</a></div></div>`
+    });
+  }
+
+  console.log('[webhook] vxpay agreement sealed:', agreementId);
+}
+
 // ─── MAIN HANDLER ────────────────────────────────────────────────────────────
 
 exports.handler = async (event) => {
@@ -522,6 +645,12 @@ exports.handler = async (event) => {
           break;
         }
 
+        // VX Pay escrow agreement via Checkout
+        if (meta.product === 'vxpay_agreement') {
+          await sealVxpayAgreement({ supabase, resend, metadata: meta, paymentIntentId });
+          break;
+        }
+
         if (!meta.proof_id) {
           console.warn('[webhook] No proof_id in checkout session metadata — skipping');
           break;
@@ -552,6 +681,12 @@ exports.handler = async (event) => {
           break;
         }
 
+        // VX Pay escrow agreement path
+        if (meta.product === 'vxpay_agreement') {
+          await sealVxpayAgreement({ supabase, resend, metadata: meta, paymentIntentId: pi.id });
+          break;
+        }
+
         if (!meta.proof_id) {
           console.warn('[webhook] No proof_id in PaymentIntent metadata — skipping');
           break;
@@ -574,6 +709,13 @@ exports.handler = async (event) => {
         if (meta.product === 'single_transfer' && meta.transfer_id) {
           await supabase.from('payments').update({ status: 'failed' }).eq('stripe_payment_id', pi.id);
           console.log('[webhook] Transfer payment failed:', meta.transfer_id);
+          break;
+        }
+
+        // VX Pay payment failed — leave agreement pending (creator can retry); mark payment failed
+        if (meta.product === 'vxpay_agreement' && meta.vxpay_id) {
+          await supabase.from('payments').update({ status: 'failed' }).eq('stripe_payment_id', pi.id);
+          console.log('[webhook] VX Pay payment failed:', meta.vxpay_id);
           break;
         }
 
