@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VX Pay — Verify Escrow Agreement</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --red:#dc2626;--border:#e1e4e8;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0f12;--surface:#16191d;--panel:#1e2228;--ink:#f0f2f5;--ink-2:#c8cdd6;--ink-3:#9ca3af;--ink-4:#6b7280;--border:#2a2f36}}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;color:var(--ink);text-decoration:none}
+.logo-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
+.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3)}
+.wrap{max-width:620px;margin:0 auto;padding:24px 18px 80px}
+.state{text-align:center;padding:60px 20px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3)}
+.verdict{border-radius:8px;padding:24px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow-md);position:relative;overflow:hidden;background:var(--surface);border:1.5px solid var(--green-bd)}
+.verdict.pending{border-color:var(--amber-bd)}
+.verdict::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green),var(--green-dk))}
+.verdict.pending::before{background:linear-gradient(90deg,var(--amber),#d97706)}
+.verdict-check{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px}
+.verdict.pending .verdict-check{background:var(--amber)}
+.verdict h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.03em;margin-bottom:6px}
+.verdict-sub{font-size:13px;color:var(--ink-2);line-height:1.55}
+.verdict-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green-dk);margin-top:10px;letter-spacing:0.06em;word-break:break-all}
+.checks{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.vchip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-dk);background:var(--green-bg);border:1px solid var(--green-bd);padding:6px 10px;border-radius:50px}
+.vchip.pending{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-bd)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.drow{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.drow:last-child{border-bottom:none}
+.dk{color:var(--ink-3);flex-shrink:0}.dv{color:var(--ink);text-align:right;font-weight:500;word-break:break-word}
+.dv.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.steps{display:flex;gap:6px;margin-top:4px}
+.step{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-4);padding:8px 4px;border-radius:5px;background:var(--panel);border:1px solid var(--border)}
+.step.done{color:var(--green-dk);background:var(--green-bg);border-color:var(--green-bd)}
+.hashbox{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-2);line-height:1.9;word-break:break-all}
+.hashbox .hk{color:var(--ink-4);text-transform:uppercase;letter-spacing:0.1em;font-size:9px;display:block;margin-top:8px}
+.hashbox .hk:first-child{margin-top:0}
+footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);padding:24px}
+</style>
+</head>
+<body>
+<header>
+  <a href="/" class="logo"><span class="logo-dot"></span>VX PAY</a>
+  <span class="hdr-tag">Escrow Verification</span>
+</header>
+<div class="wrap" id="root"><div class="state">Loading…</div></div>
+<footer>VX Pay — Escrowed Payment Infrastructure · vxsent.com</footer>
+<script>
+const STEPS = ['sealed','funded','delivered','released'];
+const STEP_LABEL = { sealed:'Sealed', funded:'Funded', delivered:'Delivered', released:'Released' };
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function money(a,c){ if(a==null)return '—'; return (c||'USD')+' '+Number(a).toLocaleString(undefined,{minimumFractionDigits:2}); }
+
+function stepIndex(status){
+  const order=['pending','sealed','funded','delivered','acknowledged','released','refunded','disputed'];
+  return order.indexOf(status);
+}
+
+async function main(){
+  const id = new URLSearchParams(location.search).get('id') || (location.pathname.match(/\/verify\/([^\/\?]+)/)||[])[1];
+  const root = document.getElementById('root');
+  if(!id){ root.innerHTML='<div class="state">No agreement id.</div>'; return; }
+  let data;
+  try{
+    const res = await fetch('/api/vxpay/'+encodeURIComponent(id));
+    if(!res.ok) throw new Error(res.status);
+    data = await res.json();
+  }catch(e){ root.innerHTML='<div class="state">Agreement not found.</div>'; return; }
+
+  const a = data.agreement;
+  const sealed = a.is_valid;
+  const released = a.status==='released';
+  const si = stepIndex(a.status);
+
+  const stepHtml = STEPS.map(s=>{
+    const done = stepIndex(s) <= si && si>=stepIndex('sealed');
+    return `<div class="step ${done?'done':''}">${STEP_LABEL[s]}</div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="verdict ${sealed?'':'pending'}">
+      <div class="verdict-check">${sealed?'✓':'…'}</div>
+      <h1>${released?'ESCROW RELEASED':sealed?'VERIFIED ESCROW AGREEMENT':'AGREEMENT PENDING'}</h1>
+      <div class="verdict-sub">${sealed
+        ? 'This escrow agreement was cryptographically sealed with a Veridex RAC proof. Its terms are tamper-evident.'
+        : 'This agreement has not been sealed yet.'}</div>
+      <div class="verdict-id">${esc(a.id)}</div>
+      <div class="checks">
+        <span class="vchip">Agreement hash</span>
+        <span class="vchip">RAC chain</span>
+        <span class="vchip">Veridex signature</span>
+        ${a.buyer_acknowledgement_hash?'<span class="vchip">Buyer acknowledged</span>':''}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Escrow lifecycle</div>
+      <div class="steps">${stepHtml}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Agreement</div>
+      <div class="drow"><span class="dk">Item</span><span class="dv">${esc(a.item_title)}</span></div>
+      <div class="drow"><span class="dk">Amount</span><span class="dv">${money(a.amount,a.currency)}</span></div>
+      <div class="drow"><span class="dk">Buyer</span><span class="dv">${esc(a.buyer_name)}</span></div>
+      <div class="drow"><span class="dk">Seller</span><span class="dv">${esc(a.seller_name)}</span></div>
+      <div class="drow"><span class="dk">Inspection window</span><span class="dv">${esc(a.inspection_period_hours)} h</span></div>
+      ${a.onchain_transaction_id?`<div class="drow"><span class="dk">On-chain vault</span><span class="dv mono">${esc(a.onchain_transaction_id).slice(0,18)}…</span></div>`:''}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cryptographic proof</div>
+      <div class="hashbox">
+        <span class="hk">Agreement hash (SHA-256)</span>${esc(a.agreement_hash)||'—'}
+        <span class="hk">RAC chain hash</span>${esc(a.rac_chain_hash)||'—'}
+        <span class="hk">Veridex signature</span>${esc(a.veridex_signature)||'—'}
+        ${a.buyer_acknowledgement_hash?`<span class="hk">Buyer acknowledgement hash</span>${esc(a.buyer_acknowledgement_hash)}`:''}
+      </div>
+    </div>
+
+    ${data.evidence && data.evidence.length ? `<div class="card">
+      <div class="card-title">Evidence (${data.evidence.length})</div>
+      ${data.evidence.map(e=>`<div class="drow"><span class="dk">${esc(e.file_name)}</span><span class="dv mono">${esc(e.file_hash).slice(0,16)}…</span></div>`).join('')}
+    </div>`:''}
+  `;
+}
+main();
+</script>
+</body>
+</html>

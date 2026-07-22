@@ -6,6 +6,7 @@
 <title>SENT. — Verify</title>
 <script>
 // /verify/:id router.
+//  - VXPAY-...    -> VX Pay escrow verification page   (ADDED)
 //  - SENT-TX-...  -> transfer verification page
 //  - SENT-...     -> proof receipt/acknowledge page (existing behavior)
 const path = window.location.pathname;
@@ -14,7 +15,9 @@ const proofId = match ? decodeURIComponent(match[1]) : null;
 const params = new URLSearchParams(window.location.search);
 const confirm = params.get('confirm');
 
-if (proofId && proofId.startsWith('SENT-TX-')) {
+if (proofId && proofId.startsWith('VXPAY-')) {
+  window.location.replace('/vxpay-verify.html?id=' + encodeURIComponent(proofId));
+} else if (proofId && proofId.startsWith('SENT-TX-')) {
   window.location.replace('/transfer-verify.html?id=' + encodeURIComponent(proofId));
 } else if (proofId) {
   const confirmParam = confirm ? '&confirm=' + confirm : '&confirm=true';
