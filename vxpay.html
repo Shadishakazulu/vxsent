@@ -92,6 +92,15 @@ footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;le
 const $ = id => document.getElementById(id);
 let stripe=null, cardEl=null, agreementId=null, clientSecret=null;
 
+async function responseError(response, fallback){
+  try {
+    const body = await response.json();
+    return body.error || body.errorMessage || fallback || ('HTTP '+response.status);
+  } catch {
+    return fallback || ('HTTP '+response.status);
+  }
+}
+
 function collectPayload(){
   return {
     buyer_name:$('buyer_name').value, buyer_email:$('buyer_email').value,
@@ -114,7 +123,7 @@ $('continueBtn').onclick = async () => {
   try{
     // 1. create pending agreement (server decides if payment is required)
     const c = await fetch('/api/vxpay/create',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(p)});
-    if(!c.ok) throw new Error((await c.json()).error||('HTTP '+c.status));
+    if(!c.ok) throw new Error(await responseError(c));
     const created = await c.json();
     agreementId = created.id;
 
@@ -134,7 +143,7 @@ $('continueBtn').onclick = async () => {
 
     // 2. Pay-as-you-go: create PaymentIntent ($7.99)
     const pay = await fetch('/api/vxpay/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agreementId, payerEmail:p.buyer_email})});
-    if(!pay.ok) throw new Error((await pay.json()).error||'Payment init failed');
+    if(!pay.ok) throw new Error(await responseError(pay,'Payment init failed'));
     const pd = await pay.json();
     clientSecret = pd.clientSecret;
     // 3. mount Stripe card
