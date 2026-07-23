@@ -3,13 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENT. Pricing — $0.99 or $12.99/month</title>
-<meta name="description" content="Two options. $0.99 for one proof right now. $12.99/month for unlimited proofs. Both create permanent, cryptographic proof of delivery.">
+<title>SENT. Pricing — Delivery Proof, Verified Transfer & Escrow</title>
+<meta name="description" content="Compare SENT. pricing for delivery proof, verified bills of sale, and escrow payments. Pay per use or choose Solo for unlimited proofs, transfers, and VX Pay.">
+<meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://vxsent.com/pricing">
+<meta property="og:title" content="SENT. Pricing — Proof, Transfer & Escrow">
+<meta property="og:description" content="Compare pay-as-you-go and Solo pricing for delivery proofs, verified transfers, and VX Pay escrow agreements.">
+<meta property="og:url" content="https://vxsent.com/pricing">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SENT. Pricing — Proof, Transfer & Escrow">
+<meta name="twitter:description" content="One pricing page for delivery proof, verified bills of sale, and escrow payments released on acknowledgment.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"WebPage","@id":"https://vxsent.com/pricing#webpage","url":"https://vxsent.com/pricing","name":"SENT. Pricing — Delivery Proof, Verified Transfer & Escrow","description":"Pricing for SENT. proof of delivery, verified transfer, and VX Pay escrow payment agreements."},
+    {"@type":"ItemList","name":"SENT. product pricing","itemListElement":[
+      {"@type":"ListItem","position":1,"item":{"@type":"Offer","name":"SENT. Day Pass","price":"0.99","priceCurrency":"USD","url":"https://vxsent.com/"}},
+      {"@type":"ListItem","position":2,"item":{"@type":"Offer","name":"SENT. Verified Transfer","price":"4.99","priceCurrency":"USD","url":"https://vxsent.com/verified-bill-of-sale"}},
+      {"@type":"ListItem","position":3,"item":{"@type":"Offer","name":"VX Pay sealed agreement","price":"7.99","priceCurrency":"USD","url":"https://vxsent.com/escrow-payments"}},
+      {"@type":"ListItem","position":4,"item":{"@type":"Offer","name":"SENT. Solo","price":"12.99","priceCurrency":"USD","url":"https://vxsent.com/pricing","description":"Monthly plan with unlimited delivery proofs, unlimited verified transfers, and included VX Pay agreements while active."}}
+    ]}
+  ]
+}
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -89,6 +111,23 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .card:not(.feat) .card-cta{background:var(--panel);color:var(--ink-2);border:1.5px solid var(--border-md)}
 .card:not(.feat) .card-cta:hover{background:var(--panel-hi);border-color:var(--border-md)}
 
+/* PRODUCT RATES */
+.products-wrap{max-width:1040px;margin:0 auto;padding:0 48px 56px}
+.products-intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:18px}
+.products-intro h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,52px);line-height:.95;letter-spacing:.03em}
+.products-intro p{max-width:490px;font-size:14px;color:var(--ink-2);line-height:1.65}
+.product-grid{display:grid;grid-template-columns:1.05fr .95fr 1.1fr;gap:14px}
+.product-rate{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:26px;box-shadow:var(--shadow-sm);overflow:hidden}
+.product-rate::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--green)}
+.product-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--green-dk);margin-bottom:12px}
+.product-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em;margin-bottom:8px}
+.product-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);font-weight:500;margin-bottom:14px}
+.product-copy{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:18px}
+.product-link{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-dk);text-decoration:none;font-weight:500}
+.product-link:hover{text-decoration:underline}
+.included-note{margin-top:14px;padding:15px 18px;background:var(--green-lt);border:1px solid var(--green-bd);border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.included-note strong{color:var(--ink)}
+
 /* WHEN */
 .when{max-width:880px;margin:0 auto;padding:0 48px 48px}
 .section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;font-weight:500}
@@ -153,8 +192,9 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
   .hero{padding:90px 16px 40px}
   .hero-hl{font-size:clamp(36px,9vw,56px)}
   .hero-sub{font-size:14px}
-  .hero,.cards-wrap,.when,.math-wrap,.comp-wrap,.ent-wrap,.closing,footer{padding-left:16px;padding-right:16px}
+  .hero,.cards-wrap,.products-wrap,.when,.math-wrap,.comp-wrap,.ent-wrap,.closing,footer{padding-left:16px;padding-right:16px}
   .cards-grid,.when-grid{grid-template-columns:1fr}
+  .products-intro{display:block}.products-intro h2{margin-bottom:12px}.product-grid{grid-template-columns:1fr}
   .ent-inner{flex-direction:column;gap:18px;padding:22px 20px}
   .comp-row{grid-template-columns:1fr 60px 60px}
   .comp-cell{padding:8px 8px;font-size:8px}
@@ -173,14 +213,15 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
   <a href="/" class="hdr-back">← Back</a>
 </header>
 
+<main>
 <div class="hero">
-  <div class="hero-over">Simple. Two options.</div>
-  <div class="hero-hl">
+  <div class="hero-over">One platform. Three products.</div>
+  <h1 class="hero-hl">
     <span class="dim">HOW OFTEN DO</span><br>
     YOU NEED TO<br>
     <span class="green">PROVE IT?</span>
-  </div>
-  <p class="hero-sub">That's the only question. Pick the answer that fits. Both give you the same proof — permanently sealed, independently verifiable, legally admissible.</p>
+  </h1>
+  <p class="hero-sub">Seal a file delivery, verify a sale, or coordinate an escrow payment. Pay for one record now, or use Solo for ongoing proof across all three products.</p>
 </div>
 
 <div class="cards-wrap">
@@ -215,13 +256,16 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
         <div class="card-answer">"I proof things more than I realize."</div>
         <div class="price-row"><span class="price-cur">$</span><span class="price-num">12.99</span></div>
         <div class="price-period">/ month</div>
-        <div class="card-save">Unlimited all month · Saves $16.89 vs daily</div>
+        <div class="card-save">Unlimited all month · Saves $16.71 vs 30 daily passes</div>
         <div class="card-divider"></div>
         <div class="card-headline">Proof on every project. Always.</div>
-        <div class="card-desc">If you send deliverables more than twice a month, Solo pays for itself. Unlimited proofs, full history, exportable records. Never lose a dispute again.</div>
+        <div class="card-desc">If you create records more than a few times a month, Solo pays for itself. Use SENT. across deliveries, verified transfers, and escrow agreements from one account.</div>
         <div class="card-items">
           <div class="card-item"><span class="card-check">✓</span>Everything in Day Pass</div>
           <div class="card-item"><span class="card-check">✓</span>Unlimited proofs all month</div>
+          <div class="card-item"><span class="card-check">✓</span>Unlimited verified transfers</div>
+          <div class="card-item"><span class="card-check">✓</span>VX Pay escrow agreements included</div>
+          <div class="card-item"><span class="card-check">✓</span>Gated delivery + sealed acknowledgments</div>
           <div class="card-item"><span class="card-check">✓</span>Full proof history dashboard</div>
           <div class="card-item"><span class="card-check">✓</span>Exportable records for invoices</div>
           <div class="card-item"><span class="card-check">✓</span>One-click re-verify any proof</div>
@@ -233,6 +277,40 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
 
   </div>
 </div>
+
+<section class="products-wrap" aria-labelledby="product-pricing-title">
+  <div class="products-intro">
+    <div>
+      <div class="section-label">// Pricing by product</div>
+      <h2 id="product-pricing-title">THREE WAYS TO<br><span style="color:var(--green-dk)">SEAL THE RECORD.</span></h2>
+    </div>
+    <p>Every product creates a timestamped, tamper-evident record with an independent verification path. Choose a one-off agreement or cover recurring work with Solo.</p>
+  </div>
+  <div class="product-grid">
+    <article class="product-rate">
+      <div class="product-tag">Proof of delivery</div>
+      <div class="product-name">SENT. RECEIPT</div>
+      <div class="product-price">$0.99 Day Pass · unlimited proofs for 24 hours</div>
+      <p class="product-copy">Seal exact files, timestamps, delivery events, and recipient acknowledgments into a permanent verification record.</p>
+      <a class="product-link" href="/">Seal a file →</a>
+    </article>
+    <article class="product-rate">
+      <div class="product-tag">Verified bill of sale</div>
+      <div class="product-name">SENT. TRANSFER</div>
+      <div class="product-price">$4.99 per verified transfer · included with Solo</div>
+      <p class="product-copy">Record the item, condition, price, parties, provenance, and buyer acknowledgment before a private-sale dispute begins.</p>
+      <a class="product-link" href="/verified-bill-of-sale">Explore verified transfers →</a>
+    </article>
+    <article class="product-rate">
+      <div class="product-tag">Escrow payment agreement</div>
+      <div class="product-name">VX PAY</div>
+      <div class="product-price">$7.99 per sealed agreement · included with Solo</div>
+      <p class="product-copy">Set funding, delivery, inspection, and release terms before money or goods move, then seal each acknowledgment and release event.</p>
+      <a class="product-link" href="/escrow-payments">Explore escrow payments →</a>
+    </article>
+  </div>
+  <div class="included-note"><strong>The plan promise is now explicit:</strong> active Solo, Pro, and Enterprise plans include VX Pay agreements. Solo also includes unlimited monthly delivery proofs and unlimited verified transfers.</div>
+</section>
 
 <div class="when">
   <div class="section-label">// Who buys which</div>
@@ -252,6 +330,7 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
       <div class="when-item"><span class="wa">→</span>Had a dispute before, never want one again</div>
       <div class="when-item"><span class="wa">→</span>Proof on every draft, revision, and final</div>
       <div class="when-item"><span class="wa">→</span>Want the history dashboard and scope lock</div>
+      <div class="when-item"><span class="wa">→</span>Create verified transfers or escrow agreements</div>
     </div>
   </div>
 </div>
@@ -259,8 +338,8 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
 <div class="math-wrap">
   <div class="math-box">
     <div class="math-label">// The math is simple</div>
-    <div class="math-hl">IF YOU PROOF MORE THAN<br><span>13 TIMES A MONTH</span><br>SOLO PAYS FOR ITSELF.</div>
-    <div class="math-body">At $0.99 per day pass, 13 day passes cost $12.87 — more than a month of Solo. The first time you proof a draft, a revision, and a final on one project you've already crossed the threshold. Most freelancers who buy a day pass convert to Solo within the first month.</div>
+    <div class="math-hl">AT <span>14 DAY PASSES</span><br>SOLO COSTS LESS —<br>BEFORE TRANSFER OR ESCROW VALUE.</div>
+    <div class="math-body">Fourteen $0.99 day passes cost $13.86, already more than a $12.99 month of Solo. Unlimited verified transfers and included VX Pay agreements make the subscription comparison stronger for anyone using more than file-delivery proof.</div>
   </div>
 </div>
 
@@ -278,6 +357,8 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
     <div class="comp-row"><div class="comp-cell feat">PDF receipt download</div><div class="comp-cell val"><span class="gcheck">✓</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
     <div class="comp-row"><div class="comp-cell feat">Proof history dashboard</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
     <div class="comp-row"><div class="comp-cell feat">Unlimited monthly proofs</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">Unlimited verified transfers</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
+    <div class="comp-row"><div class="comp-cell feat">VX Pay escrow agreements</div><div class="comp-cell val"><span class="dash">$7.99 each</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
     <div class="comp-row"><div class="comp-cell feat">Exportable records</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
     <div class="comp-row"><div class="comp-cell feat">Scope Lock</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
     <div class="comp-row"><div class="comp-cell feat">One-click re-verify</div><div class="comp-cell val"><span class="dash">—</span></div><div class="comp-cell val"><span class="gcheck">✓</span></div></div>
@@ -307,9 +388,10 @@ footer{border-top:1px solid var(--border);padding:20px 48px;display:flex;align-i
     Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a>
   </div>
 </div>
+</main>
 
 <footer>
-  <div class="ft-l">SENT. — Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-l">SENT. — <a href="/verified-bill-of-sale">Verified Bill of Sale</a> · <a href="/escrow-payments">Escrow Payments</a> · Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
   <div class="ft-r"><div class="ft-dot"></div>Infrastructure active</div>
 </footer>
 
