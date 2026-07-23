@@ -3,177 +3,492 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VX Pay — Create Escrow Agreement</title>
+<title>SENT. — Create VX Pay Agreement</title>
+<meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.stripe.com/v3/" async></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--green:#00b356;--green-dk:#009347;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);--border:#e1e4e8;--shadow-sm:0 1px 2px rgba(0,0,0,0.06)}
-@media (prefers-color-scheme:dark){:root{--bg:#0d0f12;--surface:#16191d;--panel:#1e2228;--ink:#f0f2f5;--ink-2:#c8cdd6;--ink-3:#9ca3af;--border:#2a2f36}}
+:root{
+  --bg:#f5f6f8;--surface:#fff;--panel:#f0f2f5;--panel-hi:#e4e7ec;
+  --ink:#111318;--ink-2:#374151;--ink-3:#6b7280;--ink-4:#9ca3af;
+  --green:#00b356;--green-dk:#009347;--green-lt:#e6f7ee;--green-bg:rgba(0,179,86,0.07);--green-bd:rgba(0,179,86,0.22);
+  --red:#dc2626;--red-bg:rgba(220,38,38,0.06);--red-bd:rgba(220,38,38,0.18);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.06);--amber-bd:rgba(180,83,9,0.22);
+  --border:#e1e4e8;--border-md:#c8cdd6;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow:0 1px 4px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);--shadow-md:0 4px 16px rgba(0,0,0,0.1),0 2px 4px rgba(0,0,0,0.06);
+}
 body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
-header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;color:var(--ink);text-decoration:none}
+header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:var(--shadow-sm)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.15em;display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
 .logo-dot{width:7px;height:7px;background:var(--green);border-radius:50%}
-.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3)}
-.wrap{max-width:620px;margin:0 auto;padding:24px 18px 80px}
-.intro{font-size:14px;color:var(--ink-2);line-height:1.6;margin-bottom:20px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow-sm)}
-.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
-label{display:block;font-size:12px;color:var(--ink-3);margin:10px 0 4px;font-weight:600}
-input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px}
+.hdr-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--green-dk)}
+.wrap{max-width:680px;margin:0 auto;padding:28px 20px 80px}
+.stepper{display:flex;align-items:center;gap:8px;margin-bottom:28px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase}
+.step-pill{display:flex;align-items:center;gap:7px;color:var(--ink-4)}
+.step-pill.active{color:var(--green-dk)}
+.step-pill.done{color:var(--ink-3)}
+.step-num{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-md);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.step-pill.active .step-num{border-color:var(--green);background:var(--green);color:#fff}
+.step-pill.done .step-num{border-color:var(--green);color:var(--green-dk)}
+.step-line{flex:1;height:1.5px;background:var(--border);min-width:12px}
+h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.03em;line-height:1;margin-bottom:6px}
+.lede{font-size:14px;color:var(--ink-2);line-height:1.6;margin-bottom:24px}
+.lede-break{display:block;margin-top:4px}
+.price-box{display:grid;grid-template-columns:auto 1fr;gap:12px 18px;align-items:start;background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:16px;margin-bottom:24px}
+.price-amount{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;color:var(--green-dk);line-height:1}
+.price-copy{font-size:13px;color:var(--ink-2);line-height:1.5}
+.price-benefits{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;padding-top:14px;border-top:1px solid var(--green-bd)}
+.price-benefit{position:relative;padding-left:20px;font-size:12px;font-weight:600;color:var(--ink-2);line-height:1.4}
+.price-benefit::before{content:'✓';position:absolute;left:0;top:0;color:var(--green-dk);font-family:'JetBrains Mono',monospace;font-weight:500}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;margin-top:14px}
+label:first-of-type{margin-top:0}
+label .opt{color:var(--ink-4);text-transform:none;letter-spacing:0}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;color:var(--ink);outline:none;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;background:var(--surface)}
+input:focus,select:focus,textarea:focus{border-color:var(--green)}
+textarea{resize:vertical;min-height:64px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-button{width:100%;margin-top:16px;padding:13px;border:none;border-radius:6px;background:var(--green);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif}
-button:disabled{opacity:.5}
-#card-element{padding:12px 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg);margin-top:6px}
-.pay-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-.pay-amt{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--ink)}
-.result{margin-top:16px;padding:14px;border-radius:6px;background:var(--green-bg);border:1px solid var(--green-bd);font-size:13px;display:none}
-.result a{color:var(--green-dk);font-family:'JetBrains Mono',monospace;word-break:break-all}
-.err{color:#dc2626;font-size:13px;margin-top:10px}
-.muted{font-size:11px;color:var(--ink-3);margin-top:8px;text-align:center}
+@media(max-width:520px){.row,.price-benefits{grid-template-columns:1fr}.price-box{grid-template-columns:1fr}.price-benefits{grid-column:1}.price-copy{margin-top:-4px}.actions{flex-direction:column-reverse}.btn-ghost{width:100%}}
+.toggles{display:flex;flex-direction:column;gap:2px}
+.tg{display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+.tg:last-child{border-bottom:none}
+.tg input{width:18px;height:18px;flex-shrink:0;accent-color:var(--green)}
+.tg span{font-size:14px;color:var(--ink-2)}
+.disclaimer{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+.disclaimer-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;font-weight:500}
+.disclaimer-text{font-size:12px;color:var(--ink-2);line-height:1.55}
+.rev-section{margin-bottom:18px}
+.rev-h{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-4);margin-bottom:8px}
+.rev-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.rev-row:last-child{border-bottom:none}
+.rev-k{color:var(--ink-3);flex-shrink:0}
+.rev-v{color:var(--ink);text-align:right;font-weight:500;word-break:break-word}
+.rev-disc{font-size:13px;color:var(--ink-2);line-height:1.6;background:var(--panel);border-radius:5px;padding:10px 13px;margin-top:4px;white-space:pre-wrap}
+.trust-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.trust-chip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-dk);background:var(--green-bg);border:1px solid var(--green-bd);padding:5px 9px;border-radius:50px}
+.confirm-box{background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+.confirm-box label{margin:0;display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-transform:none;letter-spacing:0;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink-2);line-height:1.5}
+.confirm-box input{width:18px;height:18px;flex-shrink:0;accent-color:var(--green);margin-top:1px}
+.err{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;min-height:16px;margin-bottom:10px}
+.actions{display:flex;gap:10px;margin-top:8px}
+.btn{flex:1;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.08em;border:none;border-radius:4px;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--green-dk)}
+.btn-primary:disabled{background:var(--panel-hi);color:var(--ink-4);cursor:not-allowed}
+.btn-ghost{flex:0 0 auto;padding:14px 22px;background:transparent;color:var(--ink-3);border:1.5px solid var(--border-md)}
+.btn-ghost:hover{border-color:var(--ink-3);color:var(--ink)}
 .hidden{display:none}
-footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-3);padding:24px}
+.pay-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.72);z-index:600;align-items:center;justify-content:center;padding:20px}
+.pay-overlay.open{display:flex}
+.pay-modal{background:var(--surface);border-radius:10px;padding:28px;max-width:430px;width:100%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);max-height:92vh;overflow-y:auto}
+.pay-close{position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;font-size:22px;color:var(--ink-3);line-height:1}
+.pay-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;display:flex;align-items:center;gap:7px;color:var(--ink)}
+.pay-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green-dk);margin:4px 0 16px}
+.pay-item{font-size:14px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:11px 13px;margin-bottom:16px;word-break:break-word}
+.pay-label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+.pay-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:4px;font-size:14px;margin-bottom:14px;font-family:'DM Sans',sans-serif}
+.pay-input:focus{border-color:var(--green);outline:none}
+.pay-card{padding:13px;border:1.5px solid var(--border);border-radius:4px;margin-bottom:12px}
+.pay-err{font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;min-height:16px;margin-bottom:10px;letter-spacing:0.06em}
+.pay-note{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-4);margin-top:12px;line-height:1.6}
 </style>
 </head>
 <body>
 <header>
-  <a href="/" class="logo"><span class="logo-dot"></span>VX PAY</a>
-  <span class="hdr-tag">Escrow Agreement</span>
+  <a href="/dashboard" class="logo"><span class="logo-dot"></span>SENT.</a>
+  <span class="hdr-tag">VX Pay Escrow</span>
 </header>
-<div class="wrap">
-  <p class="intro">Create an <strong>escrowed payment agreement</strong>. Buyer funds → seller delivers → buyer acknowledges → funds release. Sealed with a Veridex RAC proof and independently verifiable at <code>/verify/&lt;id&gt;</code> — the same trust rail as SENT and Transfer.</p>
 
-  <div id="formSection">
-    <div class="card">
-      <div class="card-title">Parties</div>
-      <div class="row">
-        <div><label>Buyer name</label><input id="buyer_name"></div>
-        <div><label>Buyer email</label><input id="buyer_email" type="email"></div>
-      </div>
-      <div class="row">
-        <div><label>Seller name</label><input id="seller_name"></div>
-        <div><label>Seller email</label><input id="seller_email" type="email"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Deal</div>
-      <label>Item title</label><input id="item_title">
-      <div class="row">
-        <div><label>Amount</label><input id="amount" type="number" step="0.01"></div>
-        <div><label>Category</label>
-          <select id="category"><option>general</option><option>sneakers</option><option>jewelry</option><option>electronics</option><option>collectibles</option></select>
-        </div>
-      </div>
-      <label>Release conditions</label><textarea id="release_conditions" rows="2" placeholder="What must be true for funds to release?"></textarea>
-      <div class="row">
-        <div><label>Inspection window (hours)</label><input id="inspection_period_hours" type="number" value="72"></div>
-        <div><label>Opened by</label><select id="created_by_role"><option value="buyer">Buyer</option><option value="seller">Seller</option></select></div>
-      </div>
-      <button id="continueBtn">Continue to Payment →</button>
-      <div class="err" id="err"></div>
-    </div>
+<main class="wrap">
+  <div class="stepper" id="stepper">
+    <div class="step-pill active" data-step="1"><span class="step-num">1</span>Deal</div>
+    <div class="step-line"></div>
+    <div class="step-pill" data-step="2"><span class="step-num">2</span>Terms</div>
+    <div class="step-line"></div>
+    <div class="step-pill" data-step="3"><span class="step-num">3</span>Review &amp; Pay</div>
   </div>
 
-  <div class="card hidden" id="paySection">
-    <div class="card-title">Seal your escrow agreement</div>
-    <div class="pay-head"><span>VX Pay escrow agreement</span><span class="pay-amt">$7.99</span></div>
-    <p class="muted" style="text-align:left;margin:0 0 12px">One-time fee to create and cryptographically seal this agreement. On <a href="/pricing">Solo</a>, escrow agreements are unlimited.</p>
-    <label>Card details</label>
-    <div id="card-element"></div>
-    <button id="payBtn">Pay $7.99 &amp; Seal Agreement</button>
-    <div class="err" id="payErr"></div>
-    <div class="muted">🔒 Secured by Stripe · Agreement sealed on payment</div>
-    <div class="result" id="result"></div>
+  <section id="step1">
+    <h1>CREATE ESCROW AGREEMENT</h1>
+    <p class="lede">Set the deal before money or goods move. <strong>The buyer funds, the seller delivers, and release follows the terms recorded here.</strong><span class="lede-break">Every sealed agreement receives a timestamped, independently verifiable record.</span></p>
+    <div class="price-box">
+      <span class="price-amount">$7.99</span>
+      <span class="price-copy">per sealed agreement. <strong style="color:var(--ink)">Included with an active Solo, Pro, or Enterprise plan.</strong></span>
+      <div class="price-benefits" aria-label="Included with every VX Pay agreement">
+        <div class="price-benefit">Buyer acknowledgment trail</div>
+        <div class="price-benefit">Release conditions recorded</div>
+        <div class="price-benefit">Tamper-evident proof created</div>
+        <div class="price-benefit">Verification page generated</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Parties</div>
+      <div class="row">
+        <div><label for="buyer_name">Buyer name</label><input id="buyer_name" type="text" autocomplete="name" placeholder="Buyer full name"></div>
+        <div><label for="buyer_email">Buyer email</label><input id="buyer_email" type="email" autocomplete="email" placeholder="buyer@email.com"></div>
+      </div>
+      <div class="row">
+        <div><label for="seller_name">Seller name</label><input id="seller_name" type="text" placeholder="Seller full name"></div>
+        <div><label for="seller_email">Seller email</label><input id="seller_email" type="email" placeholder="seller@email.com"></div>
+      </div>
+      <label for="created_by_role">Agreement opened by</label>
+      <select id="created_by_role"><option value="buyer">Buyer</option><option value="seller">Seller</option></select>
+    </div>
+
+    <div class="card">
+      <div class="card-title">// Deal</div>
+      <label for="item_title">Item or service</label>
+      <input id="item_title" type="text" placeholder="e.g. 2021 MacBook Pro 14-inch">
+      <div class="row">
+        <div><label for="amount">Escrow amount</label><input id="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+        <div><label for="category">Category</label><select id="category"><option value="general">General goods</option><option value="sneakers">Sneakers</option><option value="jewelry">Jewelry</option><option value="electronics">Electronics</option><option value="collectibles">Collectibles</option><option value="vehicle">Vehicle</option><option value="boat">Boat</option></select></div>
+      </div>
+      <label for="description">Description</label>
+      <textarea id="description" placeholder="Describe exactly what is being purchased, including identifying details."></textarea>
+      <label for="location">Transaction location <span class="opt">(optional)</span></label>
+      <input id="location" type="text" placeholder="City, State">
+    </div>
+    <div class="err" id="err1" role="alert"></div>
+    <div class="actions"><button class="btn btn-primary" type="button" onclick="goStep(2)">CONTINUE TO TERMS →</button></div>
+  </section>
+
+  <section id="step2" class="hidden">
+    <h1>SET THE TERMS</h1>
+    <p class="lede">Write release conditions that both parties can understand and verify. Avoid vague phrases when a measurable condition is available.</p>
+    <div class="card">
+      <div class="card-title">// Release</div>
+      <label for="release_conditions">Release conditions</label>
+      <textarea id="release_conditions" placeholder="e.g. Release after the buyer confirms delivery and the serial number matches the agreement."></textarea>
+      <div class="row">
+        <div><label for="inspection_period_hours">Inspection window</label><select id="inspection_period_hours"><option value="24">24 hours</option><option value="48">48 hours</option><option value="72" selected>72 hours</option><option value="120">5 days</option><option value="168">7 days</option></select></div>
+        <div><label for="condition">Item condition</label><select id="condition"><option value="">Select…</option><option value="New">New</option><option value="Excellent">Excellent</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="As-Is">As-Is</option><option value="Custom">Custom</option></select></div>
+      </div>
+      <label for="provenance">Provenance or identifying details <span class="opt">(optional)</span></label>
+      <textarea id="provenance" placeholder="Serial number, receipt history, authentication report, ownership details, or other identifiers."></textarea>
+      <label for="notes">Additional notes <span class="opt">(optional)</span></label>
+      <textarea id="notes" placeholder="Any final terms or context both parties should see."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title">// Disclosures</div>
+      <div class="toggles">
+        <label class="tg"><input id="sold_as_is" type="checkbox"><span>The item is sold as-is.</span></label>
+        <label class="tg"><input id="no_warranty" type="checkbox"><span>No warranty is provided beyond the written terms.</span></label>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <div class="disclaimer-title">Important — agreement scope</div>
+      <div class="disclaimer-text">VX Pay records the parties' agreement and release conditions. It does not replace legally required title, registration, tax, licensing, or disclosure documents.</div>
+    </div>
+    <div class="err" id="err2" role="alert"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" type="button" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" type="button" onclick="goStep(3)">REVIEW AGREEMENT →</button>
+    </div>
+  </section>
+
+  <section id="step3" class="hidden">
+    <h1>REVIEW &amp; SEAL</h1>
+    <p class="lede">Check every detail before creating the pending agreement. Payment is requested only when the signed-in account does not include VX Pay sealing.</p>
+    <div class="card" id="reviewCard"></div>
+    <div class="confirm-box">
+      <label><input id="confirmAccurate" type="checkbox"><span>I confirm that the parties, deal details, and release conditions shown above are accurate and ready to be sealed.</span></label>
+    </div>
+    <div class="err" id="err3" role="alert"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" type="button" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" id="createBtn" type="button" disabled onclick="createAgreement()">CREATE AGREEMENT →</button>
+    </div>
+    <div class="trust-row" style="justify-content:center;margin-top:16px">
+      <span class="trust-chip">✓ Veridex sealed</span>
+      <span class="trust-chip">✓ Buyer acknowledgment</span>
+      <span class="trust-chip">✓ Independently verifiable</span>
+    </div>
+  </section>
+</main>
+
+<div class="pay-overlay" id="payOverlay" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="pay-modal">
+    <button class="pay-close" type="button" onclick="closePayModal()" aria-label="Close">×</button>
+    <div class="pay-logo"><span class="logo-dot"></span>SENT.</div>
+    <div class="pay-sub" id="payTitle">VX Pay agreement · Sealed on payment</div>
+    <div class="pay-item" id="payItem">—</div>
+    <label class="pay-label" for="payEmail">Receipt email</label>
+    <input class="pay-input" id="payEmail" type="email" autocomplete="email">
+    <label class="pay-label" for="card-element">Card details</label>
+    <div id="card-element" class="pay-card"></div>
+    <div class="pay-err" id="payErr" role="alert"></div>
+    <button class="btn btn-primary" id="payBtn" type="button" onclick="submitPayment()" style="width:100%">PAY $7.99 — SEAL AGREEMENT</button>
+    <div class="pay-note">🔒 Secured by Stripe · The verification record seals after payment succeeds</div>
   </div>
 </div>
-<footer>VX Pay — Escrowed Payment Infrastructure · vxsent.com</footer>
+
 <script>
 const $ = id => document.getElementById(id);
-let stripe=null, cardEl=null, agreementId=null, clientSecret=null;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+let currentStep = 1;
+let stripe = null;
+let cardElement = null;
+let agreementId = null;
+let clientSecret = null;
 
-async function responseError(response, fallback){
-  try {
-    const body = await response.json();
-    return body.error || body.errorMessage || fallback || ('HTTP '+response.status);
-  } catch {
-    return fallback || ('HTTP '+response.status);
-  }
+function value(id) {
+  return $(id).value.trim();
 }
 
-function collectPayload(){
+function money(amount) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+}
+
+function collectPayload() {
   return {
-    buyer_name:$('buyer_name').value, buyer_email:$('buyer_email').value,
-    seller_name:$('seller_name').value, seller_email:$('seller_email').value,
-    item_title:$('item_title').value, amount:parseFloat($('amount').value),
-    category:$('category').value, release_conditions:$('release_conditions').value,
-    inspection_period_hours:parseInt($('inspection_period_hours').value||'72',10),
-    created_by_role:$('created_by_role').value
+    buyer_name: value('buyer_name'),
+    buyer_email: value('buyer_email'),
+    seller_name: value('seller_name'),
+    seller_email: value('seller_email'),
+    created_by_role: $('created_by_role').value,
+    item_title: value('item_title'),
+    amount: Number($('amount').value),
+    currency: 'USD',
+    category: $('category').value,
+    description: value('description'),
+    location: value('location'),
+    release_conditions: value('release_conditions'),
+    inspection_period_hours: Number($('inspection_period_hours').value),
+    condition: $('condition').value,
+    provenance: value('provenance'),
+    notes: value('notes'),
+    sold_as_is: $('sold_as_is').checked,
+    no_warranty: $('no_warranty').checked
   };
 }
 
-$('continueBtn').onclick = async () => {
-  $('err').textContent='';
-  const p = collectPayload();
-  for (const k of ['buyer_name','buyer_email','seller_name','seller_email','item_title']) {
-    if(!p[k]){ $('err').textContent='Please fill in '+k.replace('_',' ')+'.'; return; }
-  }
-  if(!p.amount || p.amount<=0){ $('err').textContent='Enter a valid amount.'; return; }
-  $('continueBtn').disabled=true; $('continueBtn').textContent='Creating…';
-  try{
-    // 1. create pending agreement (server decides if payment is required)
-    const c = await fetch('/api/vxpay/create',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(p)});
-    if(!c.ok) throw new Error(await responseError(c));
-    const created = await c.json();
-    agreementId = created.id;
+function validateDeal(payload) {
+  if (!payload.buyer_name || !payload.seller_name || !payload.item_title) return 'Add both party names and the item or service.';
+  if (!EMAIL_RE.test(payload.buyer_email) || !EMAIL_RE.test(payload.seller_email)) return 'Enter valid email addresses for both parties.';
+  if (!Number.isFinite(payload.amount) || payload.amount <= 0) return 'Enter an escrow amount greater than $0.';
+  return '';
+}
 
-    // Solo/Pro/Enterprise: sealed for free server-side — skip payment entirely.
-    if (created.requiresPayment === false || created.sealed) {
-      $('formSection').classList.add('hidden');
-      $('paySection').classList.remove('hidden');
-      $('paySection').querySelector('.card-title').textContent = '// Sealed — included on your plan';
-      document.querySelector('.pay-head').innerHTML = '<span>Escrow agreement sealed</span><span class="pay-amt" style="color:var(--green-dk)">$0.00</span>';
-      $('card-element').classList.add('hidden');
-      $('payBtn').classList.add('hidden');
-      $('result').style.display='block';
-      $('result').innerHTML = `✅ Sealed <strong>${agreementId}</strong> (included on your plan).<br>Redirecting to your verification page.`;
-      setTimeout(()=>{ window.location.href = '/verify/' + agreementId; }, 1600);
+function validateTerms(payload) {
+  if (!payload.release_conditions) return 'Describe the conditions required to release the escrowed funds.';
+  return '';
+}
+
+function addReviewRow(section, label, content) {
+  const row = document.createElement('div');
+  row.className = 'rev-row';
+  const key = document.createElement('span');
+  key.className = 'rev-k';
+  key.textContent = label;
+  const val = document.createElement('span');
+  val.className = 'rev-v';
+  val.textContent = content || '—';
+  row.append(key, val);
+  section.appendChild(row);
+}
+
+function addReviewSection(card, heading) {
+  const section = document.createElement('div');
+  section.className = 'rev-section';
+  const title = document.createElement('div');
+  title.className = 'rev-h';
+  title.textContent = heading;
+  section.appendChild(title);
+  card.appendChild(section);
+  return section;
+}
+
+function renderReview() {
+  const payload = collectPayload();
+  const card = $('reviewCard');
+  card.replaceChildren();
+  const title = document.createElement('div');
+  title.className = 'card-title';
+  title.textContent = '// Agreement summary';
+  card.appendChild(title);
+
+  const deal = addReviewSection(card, 'Deal');
+  addReviewRow(deal, 'Item or service', payload.item_title);
+  addReviewRow(deal, 'Escrow amount', money(payload.amount));
+  addReviewRow(deal, 'Category', $('category').selectedOptions[0].textContent);
+  addReviewRow(deal, 'Opened by', payload.created_by_role === 'seller' ? 'Seller' : 'Buyer');
+
+  const parties = addReviewSection(card, 'Parties');
+  addReviewRow(parties, 'Buyer', `${payload.buyer_name} · ${payload.buyer_email}`);
+  addReviewRow(parties, 'Seller', `${payload.seller_name} · ${payload.seller_email}`);
+
+  const terms = addReviewSection(card, 'Release terms');
+  addReviewRow(terms, 'Inspection window', `${payload.inspection_period_hours} hours`);
+  addReviewRow(terms, 'Condition', payload.condition || 'Not specified');
+  const conditions = document.createElement('div');
+  conditions.className = 'rev-disc';
+  conditions.textContent = payload.release_conditions;
+  terms.appendChild(conditions);
+
+  const disclosures = [];
+  if (payload.sold_as_is) disclosures.push('Sold as-is');
+  if (payload.no_warranty) disclosures.push('No warranty');
+  if (disclosures.length) {
+    const disclosureSection = addReviewSection(card, 'Disclosures');
+    const chips = document.createElement('div');
+    chips.className = 'trust-row';
+    disclosures.forEach(disclosure => {
+      const chip = document.createElement('span');
+      chip.className = 'trust-chip';
+      chip.textContent = `✓ ${disclosure}`;
+      chips.appendChild(chip);
+    });
+    disclosureSection.appendChild(chips);
+  }
+}
+
+function goStep(nextStep) {
+  const payload = collectPayload();
+  $('err1').textContent = '';
+  $('err2').textContent = '';
+  $('err3').textContent = '';
+  if (nextStep > 1) {
+    const dealError = validateDeal(payload);
+    if (dealError) {
+      $('err1').textContent = dealError;
+      nextStep = 1;
+    }
+  }
+  if (nextStep > 2) {
+    const termsError = validateTerms(payload);
+    if (termsError) {
+      $('err2').textContent = termsError;
+      nextStep = 2;
+    } else {
+      renderReview();
+    }
+  }
+  currentStep = nextStep;
+  [1, 2, 3].forEach(step => $('step' + step).classList.toggle('hidden', step !== currentStep));
+  document.querySelectorAll('.step-pill').forEach(pill => {
+    const step = Number(pill.dataset.step);
+    pill.classList.toggle('active', step === currentStep);
+    pill.classList.toggle('done', step < currentStep);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function responseError(response, fallback) {
+  try {
+    const body = await response.json();
+    return body.error || body.errorMessage || fallback || `HTTP ${response.status}`;
+  } catch {
+    return fallback || `HTTP ${response.status}`;
+  }
+}
+
+async function createAgreement() {
+  $('err3').textContent = '';
+  if (!$('confirmAccurate').checked) {
+    $('err3').textContent = 'Confirm the agreement details before continuing.';
+    return;
+  }
+  const button = $('createBtn');
+  const payload = collectPayload();
+  button.disabled = true;
+  button.textContent = 'CREATING…';
+  try {
+    if (agreementId) {
+      if (clientSecret) {
+        $('payOverlay').classList.add('open');
+      } else {
+        await openPayment(payload);
+      }
       return;
     }
-
-    // 2. Pay-as-you-go: create PaymentIntent ($7.99)
-    const pay = await fetch('/api/vxpay/create-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agreementId, payerEmail:p.buyer_email})});
-    if(!pay.ok) throw new Error(await responseError(pay,'Payment init failed'));
-    const pd = await pay.json();
-    clientSecret = pd.clientSecret;
-    // 3. mount Stripe card
-    stripe = Stripe(pd.publishableKey);
-    const elements = stripe.elements();
-    cardEl = elements.create('card');
-    $('formSection').classList.add('hidden');
-    $('paySection').classList.remove('hidden');
-    cardEl.mount('#card-element');
-  }catch(e){ $('err').textContent=e.message; $('continueBtn').disabled=false; $('continueBtn').textContent='Continue to Payment →'; }
-};
-
-$('payBtn').onclick = async () => {
-  $('payErr').textContent='';
-  if(!stripe||!cardEl||!clientSecret){ $('payErr').textContent='Payment not ready — refresh and retry.'; return; }
-  $('payBtn').disabled=true; $('payBtn').textContent='Processing…';
-  try{
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, { payment_method:{ card: cardEl } });
-    if(error){ $('payErr').textContent=error.message; $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement'; return; }
-    if(paymentIntent && paymentIntent.status==='succeeded'){
-      // Webhook seals server-side. Redirect to the verification page.
-      $('result').style.display='block';
-      $('result').innerHTML = `✅ Payment received. Sealing <strong>${agreementId}</strong>…<br>Redirecting to your verification page.`;
-      setTimeout(()=>{ window.location.href = '/verify/' + agreementId; }, 1800);
-    } else {
-      $('payErr').textContent='Payment status: '+(paymentIntent?paymentIntent.status:'unknown');
-      $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement';
+    const response = await fetch('/api/vxpay/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error(await responseError(response, 'Agreement creation failed.'));
+    const created = await response.json();
+    agreementId = created.id;
+    if (created.requiresPayment === false || created.sealed) {
+      button.textContent = 'SEALED — OPENING RECORD';
+      window.setTimeout(() => { window.location.href = `/verify/${encodeURIComponent(agreementId)}`; }, 900);
+      return;
     }
-  }catch(e){ $('payErr').textContent=e.message; $('payBtn').disabled=false; $('payBtn').textContent='Pay $7.99 & Seal Agreement'; }
-};
+    await openPayment(payload);
+  } catch (error) {
+    $('err3').textContent = error.message;
+    button.disabled = false;
+    button.textContent = 'CREATE AGREEMENT →';
+  }
+}
+
+async function openPayment(payload) {
+  if (typeof window.Stripe !== 'function') throw new Error('Secure payment form is still loading. Please try again.');
+  const payerEmail = payload.created_by_role === 'seller' ? payload.seller_email : payload.buyer_email;
+  const response = await fetch('/api/vxpay/create-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agreementId, payerEmail })
+  });
+  if (!response.ok) throw new Error(await responseError(response, 'Payment initialization failed.'));
+  const payment = await response.json();
+  if (!payment.clientSecret || !payment.publishableKey) throw new Error('Payment configuration is incomplete.');
+  clientSecret = payment.clientSecret;
+  stripe = window.Stripe(payment.publishableKey);
+  cardElement = stripe.elements().create('card');
+  $('payEmail').value = payerEmail;
+  $('payItem').textContent = `${payload.item_title} · ${money(payload.amount)} escrow · Agreement ${agreementId}`;
+  $('payOverlay').classList.add('open');
+  cardElement.mount('#card-element');
+}
+
+function closePayModal() {
+  $('payOverlay').classList.remove('open');
+  $('createBtn').disabled = false;
+  $('createBtn').textContent = 'CONTINUE TO PAYMENT →';
+}
+
+async function submitPayment() {
+  $('payErr').textContent = '';
+  const payerEmail = value('payEmail');
+  if (!EMAIL_RE.test(payerEmail)) {
+    $('payErr').textContent = 'Enter a valid receipt email.';
+    return;
+  }
+  if (!stripe || !cardElement || !clientSecret) {
+    $('payErr').textContent = 'Payment is not ready. Close this window and try again.';
+    return;
+  }
+  const button = $('payBtn');
+  button.disabled = true;
+  button.textContent = 'PROCESSING…';
+  try {
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement, billing_details: { email: payerEmail } }
+    });
+    if (result.error) throw new Error(result.error.message);
+    if (!result.paymentIntent || result.paymentIntent.status !== 'succeeded') {
+      throw new Error(`Payment status: ${result.paymentIntent?.status || 'unknown'}`);
+    }
+    button.textContent = 'PAID — SEALING AGREEMENT';
+    window.setTimeout(() => { window.location.href = `/verify/${encodeURIComponent(agreementId)}`; }, 1400);
+  } catch (error) {
+    $('payErr').textContent = error.message;
+    button.disabled = false;
+    button.textContent = 'PAY $7.99 — SEAL AGREEMENT';
+  }
+}
+
+$('confirmAccurate').addEventListener('change', event => {
+  $('createBtn').disabled = !event.target.checked;
+});
 </script>
 </body>
 </html>

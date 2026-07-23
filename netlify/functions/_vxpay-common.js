@@ -6,13 +6,20 @@
 // the existing Supabase `users` table, so session verification continues to
 // read from Supabase while agreement rows are stored on the Netlify Database.
 
-import { getDatabase } from '@netlify/database';
+import { getDatabase, MissingDatabaseConnectionError } from '@netlify/database';
 import { createClient } from '@supabase/supabase-js';
 
 // Netlify Database handle — connection is configured automatically from the
 // site's provisioned database, no connection string needed.
 export function getDb() {
-  return getDatabase();
+  try {
+    return getDatabase();
+  } catch (error) {
+    if (error instanceof MissingDatabaseConnectionError || error?.name === 'MissingDatabaseConnectionError') {
+      throw new Error('VX Pay database is not connected to this deploy context. Enable Netlify Database for this site and redeploy.');
+    }
+    throw error;
+  }
 }
 
 // Supabase is used only for auth (the `users` table).
