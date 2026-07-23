@@ -106,6 +106,13 @@ force = true
 
 
 [[redirects]]
+from = "/escrow-payments"
+to = "/escrow-payments.html"
+status = 200
+force = true
+
+
+[[redirects]]
 from = "/vxpay-verify"
 to = "/vxpay-verify.html"
 status = 200

@@ -3,19 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SENT. — Prove You Delivered It | vxsent.com</title>
-<meta name="description" content="SENT. is verified delivery infrastructure — permanent, cryptographic proof of every file you deliver, plus a verified bill of sale that proves what you sold, its condition, and that the buyer acknowledged it. Sealed before the dispute can exist.">
-<meta property="og:title" content="SENT. — Prove You Delivered It">
-<meta property="og:description" content="Verified delivery infrastructure. Permanent, cryptographic proof of every file and document you deliver — and every acknowledgment you receive. Sealed before the dispute can exist.">
+<title>SENT. — Proof of Delivery, Verified Bill of Sale & Escrow</title>
+<meta name="description" content="Cryptographic proof of delivery, verified bills of sale, and escrow payment agreements. Seal terms, acknowledgments, and release events before disputes.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:title" content="SENT. — Delivery Proof, Verified Transfers & Escrow">
+<meta property="og:description" content="Three ways to create tamper-evident proof before a dispute: file delivery receipts, verified bills of sale, and escrow payments released on acknowledgment.">
 <meta property="og:url" content="https://vxsent.com">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SENT. — Delivery Proof, Verified Transfers & Escrow">
+<meta name="twitter:description" content="Seal what you delivered, what you sold, and when escrow funds should release — with independently verifiable cryptographic records.">
 <link rel="canonical" href="https://vxsent.com">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='8' fill='%2300b356'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://js.stripe.com/v3/" async></script>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"Organization","@id":"https://vxsent.com/#organization","name":"SENT.","url":"https://vxsent.com/"},
+    {"@type":"WebSite","@id":"https://vxsent.com/#website","url":"https://vxsent.com/","name":"SENT.","publisher":{"@id":"https://vxsent.com/#organization"}},
+    {"@type":"WebPage","@id":"https://vxsent.com/#webpage","url":"https://vxsent.com/","name":"SENT. — Proof of Delivery, Verified Bill of Sale & Escrow","description":"Cryptographic proof of delivery, verified bills of sale, and escrow payment agreements with sealed acknowledgments and release events.","isPartOf":{"@id":"https://vxsent.com/#website"}},
+    {"@type":"ItemList","name":"SENT. verification products","itemListElement":[
+      {"@type":"ListItem","position":1,"item":{"@type":"Service","name":"SENT. Proof of Delivery","url":"https://vxsent.com/","offers":{"@type":"Offer","price":"0.99","priceCurrency":"USD"}}},
+      {"@type":"ListItem","position":2,"item":{"@type":"Service","name":"SENT. Verified Transfer","url":"https://vxsent.com/verified-bill-of-sale","offers":{"@type":"Offer","price":"4.99","priceCurrency":"USD"}}},
+      {"@type":"ListItem","position":3,"item":{"@type":"Service","name":"VX Pay Escrow Payment Agreement","url":"https://vxsent.com/escrow-payments","offers":{"@type":"Offer","price":"7.99","priceCurrency":"USD"}}}
+    ]}
+  ]
+}
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -296,7 +314,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   <a href="/" class="logo"><div class="logo-dot"></div>SENT.</a>
   <nav class="hdr-nav">
     <a href="/transfer" class="hdr-link">Verified Transfer</a>
-    <a href="/vxpay" class="hdr-link">VX Pay — Escrow</a>
+    <a href="/escrow-payments" class="hdr-link">VX Pay — Escrow</a>
     <a href="/pricing" class="hdr-link">Pricing</a>
     <a href="/dashboard" class="hdr-link">Dashboard</a>
     <a href="https://eyespai.com" class="hdr-link" target="_blank" rel="noopener">EYEspAI</a>
@@ -304,11 +322,12 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   </nav>
 </header>
 
+<main>
 <section class="hero">
   <div class="hero-unify">
     <div class="hero-kicker">Verified delivery infrastructure</div>
-    <h1 class="hero-unify-hl">PROVE YOU SENT IT.<br><span class="green">PROVE YOU SOLD IT.</span></h1>
-    <p class="hero-unify-sub">Permanent, tamper-evident proof of what you <strong>deliver</strong> and what you <strong>sell</strong> — created before any dispute.</p>
+    <h1 class="hero-unify-hl">PROVE YOU SENT IT.<br><span class="green">PROVE THE WHOLE DEAL.</span></h1>
+    <p class="hero-unify-sub">Permanent, tamper-evident proof of what you <strong>deliver</strong>, what you <strong>sell</strong>, and when <strong>escrow funds release</strong> — created before any dispute.</p>
   </div>
 
   <div class="hero-products">
@@ -335,7 +354,7 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
       <h2 class="hp-title">PAY WHEN<br><span class="green">IT'S PROVEN.</span></h2>
       <p class="hp-desc">Buyer funds up front, seller delivers, and money <strong>releases on the buyer's acknowledgment</strong>.</p>
       <div class="hp-spacer"></div>
-      <a href="/vxpay" class="hp-cta">START AN ESCROW DEAL — $7.99</a>
+      <a href="/escrow-payments" class="hp-cta">EXPLORE ESCROW PAYMENTS — $7.99</a>
       <div class="hp-cta-sub">Funds held · Released on acknowledgment · Verifiable</div>
     </div>
   </div>
@@ -683,9 +702,10 @@ footer{border-top:1px solid var(--border);padding:22px 48px;display:flex;align-i
   <button class="final-btn" onclick="scrollToProof()">SEAL YOUR FIRST FILE — $0.99</button>
   <div class="final-note">No account required · Receipt is permanent · Verify from any device</div>
 </section>
+</main>
 
 <footer>
-  <div class="ft-l">SENT. — <a href="/verified-bill-of-sale">Verified Bill of Sale</a> · Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
+  <div class="ft-l">SENT. — <a href="/verified-bill-of-sale">Verified Bill of Sale</a> · <a href="/escrow-payments">Escrow Payments</a> · Powered by <a href="https://eyespai.com" target="_blank" rel="noopener">Veridex · EYEspAI</a> / MegaGamer Inc. · Patent Pending</div>
   <div class="ft-r"><div class="ft-dot"></div>Veridex infrastructure active</div>
 </footer>
 
